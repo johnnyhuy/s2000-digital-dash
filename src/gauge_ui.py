@@ -1073,13 +1073,36 @@ def _thermometer_icon(pygame, surf, cx: int, cy: int, col) -> None:
 
 
 def _pump_icon(pygame, surf, cx: int, cy: int, col) -> None:
-    """AP1 FUEL pictogram: pump body, window, hose loop, nozzle, foot."""
-    pygame.draw.rect(surf, col, pygame.Rect(cx - 8, cy - 6, 12, 17), border_radius=2)
-    pygame.draw.rect(surf, col, pygame.Rect(cx - 6, cy - 12, 8, 6), border_radius=1)
-    pygame.draw.rect(surf, WELL, pygame.Rect(cx - 5, cy - 2, 6, 4))
-    pygame.draw.arc(surf, col, pygame.Rect(cx, cy - 6, 16, 16), -0.35, 1.7, 2)
-    pygame.draw.rect(surf, col, pygame.Rect(cx + 12, cy + 2, 4, 10), border_radius=1)
-    pygame.draw.rect(surf, col, pygame.Rect(cx - 8, cy + 11, 12, 2), border_radius=1)
+    """AP1 FUEL pictogram: rounded pump body, square display window,
+    hose curving from the right shoulder down to a short nozzle + tip,
+    and a wider flat base.
+
+    OEM glyph plate (refs/oem/plates/oem_dash_glyphs_plate.png): the
+    silhouette is body → display window → hose → nozzle with a clear
+    grip, on a slight platform. Previous UI stitched this from rect +
+    arc primitives but the body was too narrow, the display sat mid-body,
+    and the arc left the nozzle unattached. The new version uses a
+    wider rounded body, a square readout in the upper third, and a
+    composed hose (segments + arc + cap) landing a short nozzle with
+    a tip tick on the right.
+    """
+    # Wider, slightly taller body with rounded corners
+    pygame.draw.rect(surf, col, pygame.Rect(cx - 7, cy - 7, 14, 18), border_radius=3)
+    # Square display window in the upper third of the body
+    pygame.draw.rect(surf, WELL, pygame.Rect(cx - 6, cy - 6, 9, 6), border_radius=1)
+    # Hose: short stub from the right shoulder of the body, then a
+    # quarter-circle arc curving over and down to the right of the pump,
+    # finished with a short vertical nozzle and a small tip tick.
+    pygame.draw.line(surf, col, (cx + 7, cy - 2), (cx + 11, cy - 2), 2)
+    pygame.draw.arc(
+        surf, col,
+        pygame.Rect(cx + 8, cy - 6, 8, 12),
+        math.pi / 2, math.pi, 2,
+    )
+    pygame.draw.line(surf, col, (cx + 12, cy - 2), (cx + 12, cy + 4), 2)
+    pygame.draw.circle(surf, col, (cx + 12, cy + 4), 2)
+    # Slightly wider, flat base / platform under the body
+    pygame.draw.rect(surf, col, pygame.Rect(cx - 10, cy + 11, 20, 3), border_radius=1)
 
 
 def _side_arch_point(rect: tuple[int, int, int, int], frac: float) -> tuple[float, float]:
