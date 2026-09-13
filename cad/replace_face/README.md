@@ -1,4 +1,4 @@
-# Option 1 — replace-face printable stack (arc lock)
+# Option 1 - replace-face printable stack (arc lock)
 
 **This is not a verified AP1 drop-in.** Do not print these parts for the
 car until you have measured the cluster bay **and** the OEM face with
@@ -6,7 +6,7 @@ callipers. Every critical size in the SCAD is marked `PLACEHOLDER` or
 `TODO measure`. The millimetre envelope (170 × 72.3 mm, 2.35:1) is
 **ESTIMATED** from [`refs/flat/DIMENSIONS.md`](../../refs/flat/DIMENSIONS.md).
 
-![Mask plate — every window is a display aperture](preview/acrylic_face.png)
+![Mask plate - every window is a display aperture](preview/acrylic_face.png)
 
 ## One lock, three renderers
 
@@ -32,11 +32,11 @@ y-up with `X() Y() W() H()`; arc maths uses `tach_pt()` / `crown_pt()`.
 
 The OEM face is a printed plate over a segment LCD. Here the whole face is
 drawn by a **7" 16:9 AMOLED** (Wisecoco-class, ~164 × 100 module, ~154 × 87
-active — PLACEHOLDER) and the mask only leaves **windows** where the OEM
+active - PLACEHOLDER) and the mask only leaves **windows** where the OEM
 face had backlit or printed-on-glass content:
 
 - one **annular sector** from just outside the bar-graph band to just
-  inside the numerals (band, ticks, 0–9, hatch overrun) — the panel draws
+  inside the numerals (band, ticks, 0–9, hatch overrun) - the panel draws
   the amber bar graph exactly as `gauge_ui.py` does
 - **speed** and **odo / trip** LCD windows
 - **TEMP** and **FUEL** block bars with their icons and C/H · E/F letters
@@ -64,7 +64,7 @@ Each printable is **one solid**.
 | `backlight.scad` → `backlight.stl` | Tray: hood silhouette + panel envelope, face rebate, 7" pocket, board cavity, FPC / cable notches | PETG / ASA |
 | `backlight_web.scad` → `backlight_web.stl` | 0.9 mm light-baffle web between panel glass and mask | PETG / ASA |
 | `acrylic_face.scad` → `acrylic_face.stl` | Arched mask with the display windows above | laser acrylic, or PETG / ASA as a tracing template |
-| `button_rocker.scad` → `button_rocker.stl` | −/+ PUSH CANCEL rocker (no stem — switch UNKNOWN) | TPU / silicone |
+| `button_rocker.scad` → `button_rocker.stl` | −/+ PUSH CANCEL rocker (no stem - switch UNKNOWN) | TPU / silicone |
 | `button_sel.scad`, `button_trip.scad` | SEL / TRIP ovals | TPU / silicone |
 
 Preview only (never export as a printable): `assembly.scad` (exploded
@@ -87,35 +87,35 @@ uv run --extra cad python cad/replace_face/mesh_export.py --explode 0
 `stl/` (raw CGAL dumps, one body each), then `mesh_export.py` (trimesh,
 no Blender): merge / degenerate / winding clean, refuses anything not
 watertight, writes `print/stl`, `print/obj`, faceted `print/step`
-(honest tessellation — not a B-rep rebuild) and the coloured exploded
+(honest tessellation - not a B-rep rebuild) and the coloured exploded
 `preview/assembly.glb`. Needs OpenSCAD on `PATH` (`brew install --cask
 openscad@snapshot` on macOS) and `uv`.
 
 ## Stack (front → rear)
 
-1. **Rubber buttons** — TPU 95A or cast silicone.
-2. **Mask** — 2 mm PLACEHOLDER. Black / smoked acrylic for real, PETG / ASA
+1. **Rubber buttons** - TPU 95A or cast silicone.
+2. **Mask** - 2 mm PLACEHOLDER. Black / smoked acrylic for real, PETG / ASA
    print as a template.
-3. **Baffle web** — `web_t` 1.0 mm gap, 0.9 mm part. Layout only, not optics.
-4. **7" AMOLED** — bought module in the tray pocket, glass toward the mask.
+3. **Baffle web** - `web_t` 1.0 mm gap, 0.9 mm part. Layout only, not optics.
+4. **7" AMOLED** - bought module in the tray pocket, glass toward the mask.
    `panel_*` in `dims.scad` are PLACEHOLDER; check the vendor drawing.
-5. **Tray** — floor, rim, board cavity under the panel. Outer rim is
-   `offset(wall)` around the hood + panel envelope — a print wall, **not** a
+5. **Tray** - floor, rim, board cavity under the panel. Outer rim is
+   `offset(wall)` around the hood + panel envelope - a print wall, **not** a
    measured bay clip.
-6. **Switches under the buttons** — not modelled (see the open problem above).
+6. **Switches under the buttons** - not modelled (see the open problem above).
 
 | Part | Use | Do not use |
 | --- | --- | --- |
-| Tray, web, printed mask proxy | **PETG or ASA** | **PLA** — creeps on a sun-soaked dash |
+| Tray, web, printed mask proxy | **PETG or ASA** | **PLA** - creeps on a sun-soaked dash |
 | Buttons | TPU 95A, or silicone from a printed master | PLA |
 | Production mask | Cast acrylic (laser) | PLA |
 
 ## Measure list (callipers required)
 
 - [ ] OEM face overall width × height × thickness; hood crown radius and spring points
-- [ ] Bay opening width × height × depth, lip, corner radius, fastener / clip pattern — **do not drill from this CAD**
+- [ ] Bay opening width × height × depth, lip, corner radius, fastener / clip pattern - **do not drill from this CAD**
 - [ ] Glass plane to bay rear; sight line so the stack does not reflect in the windscreen
-- [ ] Panel module outline, active area, thickness, FPC exit — replace `panel_*`
+- [ ] Panel module outline, active area, thickness, FPC exit - replace `panel_*`
 - [ ] Rocker, SEL, TRIP centre-to-centre and outline; whether PUSH CANCEL is the rocker push
 - [ ] Button travel and the actual switch / encoder, and where it can live beside the panel
 - [ ] Mask thickness; alignment pin locations (the four holes here are fiction)
@@ -126,5 +126,5 @@ openscad@snapshot` on macOS) and `uv`.
 - Not the overlay-only 7" bezel (`cad/bezel_7in_placeholder.scad`)
 - Not optically designed; not a finished cabin part
 
-If the face lock moves, it moves in `src/face_spec.py` — never by hand
+If the face lock moves, it moves in `src/face_spec.py` - never by hand
 in `face_lock.scad` or a mesh.

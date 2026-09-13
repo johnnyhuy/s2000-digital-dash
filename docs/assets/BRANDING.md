@@ -17,7 +17,7 @@ Product name in docs and chrome is **S2000 Digital Dash** (AP1 + AP2 faces).
 The live GitHub repo is `johnnyhuy/s2000-digital-dash`. See the root README.
 
 Cluster type is **M PLUS Rounded 1c** Bold / ExtraBold (tach numerals,
-C/H, E/F, bezel and LCD legends) — the closest OFL match to the OEM plate's
+C/H, E/F, bezel and LCD legends) - the closest OFL match to the OEM plate's
 rounded gothic. **Oxanium** sets the READY card and masthead; **Share Tech
 Mono** is the harness JSON / protocol face. Speed and odo are **red 7-seg**
 with mitred 45° joints, matching the AP1 photo. Faces live under

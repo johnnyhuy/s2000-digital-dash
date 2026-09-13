@@ -1,7 +1,7 @@
-# Face dimensions — the arc lock
+# Face dimensions - the arc lock
 
 Canonical geometry for the **AP1** (default) and **AP2** face styles. The
-numbers live in **`src/face_spec.py`** — this page explains them; if the
+numbers live in **`src/face_spec.py`** - this page explains them; if the
 two disagree, the Python wins. The spec exports the same lock to the web
 harness (`apps/harness/lib/faceSpec.json`) and the replace-face CAD
 (`cad/replace_face/face_lock.scad`), so pygame, SVG and the printed mask
@@ -27,8 +27,8 @@ Physical envelope (OEM face, estimated): **170 mm × 72.3 mm** → **2.35:1**.
 The previous lock drew the tach as a quadratic bezier and placed elements
 by eyeballed `%` constants spread across `gauge_ui.py`. Fitting a circle
 through the OEM tick marks shows the real cluster is a **true circular
-arc** whose centre sits well **below** the module — the band is a shallow
-cap, not a parabola — and the hood crown is a second, slightly smaller
+arc** whose centre sits well **below** the module - the band is a shallow
+cap, not a parabola - and the hood crown is a second, slightly smaller
 circle. Everything below is derived from those two circles.
 
 ## Silhouette
@@ -39,7 +39,7 @@ circle. Everything below is derived from those two circles.
 | Bottom | flat |
 | Hood crown | circle, centre `(50 %, 119.3 % H)`, r = **50.35 % W**, printed lip **2 % W** outside it |
 | Crown top | y ≈ **0.9 %** (just clears the band apex) |
-| Spring line | y = **58 %** — crown meets the flat lower bezel; springs land at x ≈ 8 % / 92 % |
+| Spring line | y = **58 %** - crown meets the flat lower bezel; springs land at x ≈ 8 % / 92 % |
 | Lower bezel | full width below the spring; strip and buttons live here |
 
 ## Tach arc
@@ -61,7 +61,7 @@ The tach is a **bar graph**: amber cells light from 0 up to the current
 rpm in 100 rpm steps with a 0.22° gap between cells; the red hatch lights
 past 9. There is no needle.
 
-## Face layout — AP1
+## Face layout - AP1
 
 | Item | Placement |
 | --- | --- |
@@ -78,11 +78,11 @@ past 9. There is no needle.
 Temp blocks idle at 3–4 of 8 across the whole normal range and climb
 quickly toward H (`temp_segments_lit`, knee at 85 % of the window).
 
-## Face layout — AP2 (interpretive)
+## Face layout - AP2 (interpretive)
 
 Same housing and crown. Differences: shorter tach sweep ending at 2
-o'clock, **stacked arched TEMP / FUEL** on the right — TEMP (69 %, 31 %)
-15 × 17 %, FUEL (75.5 %, 54 %) 15 × 17 %, 10 blocks each — a **clock**
+o'clock, **stacked arched TEMP / FUEL** on the right - TEMP (69 %, 31 %)
+15 × 17 %, FUEL (75.5 %, 54 %) 15 × 17 %, 10 blocks each - a **clock**
 row at (39 %, 59 %), SRS in the well beside the left arrow, a wider
 telltale strip (22 % → 84.5 %) and SEL/TRIP pushed to the corners.
 `refs/oem/ap2/` is reference, not a plate.
@@ -102,15 +102,15 @@ harness.
 
 ## What not to regress
 
-- A **parabolic** or bezier tach — the OEM arc is circular
-- A needle — the OEM tach is a segmented bar graph
+- A **parabolic** or bezier tach - the OEM arc is circular
+- A needle - the OEM tach is a segmented bar graph
 - Vertical TEMP / FUEL stacks on AP1 (they flank the speedo horizontally)
 - AP2 arched gauges copied onto AP1
 - Neon cyan high beam (ISO blue) or a cyan sweep
 - Fake 3D cabin ellipses; module aspect drifting off 2.35:1
 - Numerals outside the band (they sit **inside**, along the inward normal)
 - Typing geometry into `gauge_ui.py`, `ClusterFace.tsx` or a `.scad` by
-  hand — change `face_spec.py` and re-export
+  hand - change `face_spec.py` and re-export
 
 ## Driver map
 

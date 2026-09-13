@@ -1,10 +1,10 @@
-# Iteration 0005 — housekeeping, dead tach circle removal
+# Iteration 0005 - housekeeping, dead tach circle removal
 
 ## Carryover
 
 DIMENSIONS.md (commit `123cb63`) flagged an entire chain of dead code
 that PR #50 (commit `e04e1a3`) had tried to "fix" by tweaking the dead
-constant. The whole chain produced a byte-identical composite — proof
+constant. The whole chain produced a byte-identical composite - proof
 nothing downstream consumed it.
 
 ## Capture
@@ -26,7 +26,7 @@ nothing downstream consumed it.
 | `apply_face_style` globals list | listed 6 dead globals | **now only `FACE`** |
 | `tach_angle(frac)` | defined, never called | **deleted** |
 | `tach_point(r, frac)` | defined, never called | **deleted** |
-| DIMENSIONS.md "Iter note — `TACH_END_Y_PCT` is dead code" | documented artefact waiting for housekeeping | **deleted (note obsolete)** |
+| DIMENSIONS.md "Iter note - `TACH_END_Y_PCT` is dead code" | documented artefact waiting for housekeeping | **deleted (note obsolete)** |
 | DIMENSIONS.md driver map | referenced dead `ARCH_RISE_PCT = 0.28` | updated to `0.60` (iter 0002 actual value) |
 
 The actual tach rendering path (`tach_arch_xy`, `tach_arch_normal`,
@@ -41,7 +41,7 @@ was untouched and still uses `lcd_peak_y` / `lcd_spring_y` /
 - Delete the obsolete iter note from `refs/flat/DIMENSIONS.md`
 - Update the driver map to the actual `ARCH_RISE_PCT = 0.60` value
   (was still showing the pre-iter-0002 `0.28`)
-- Rebake `tests/harness/goldens.json` — verified byte-identical
+- Rebake `tests/harness/goldens.json` - verified byte-identical
   (proves no behavioural change)
 
 ## Not in scope
@@ -57,7 +57,7 @@ was untouched and still uses `lcd_peak_y` / `lcd_spring_y` /
   --screenshot shots` → exits 0
 - `uv run python scripts/compare_oem.py` → all five PNGs rebaked
 - `compare_ap1_lit_live.png` byte-identical to iter 0004
-  (the dead chain had no visual effect — this is the entire point of
+  (the dead chain had no visual effect - this is the entire point of
   the housekeeping PR)
 - `git diff src/gauge_ui.py` removes 62 lines, adds 2
 
@@ -69,5 +69,5 @@ was untouched and still uses `lcd_peak_y` / `lcd_spring_y` /
 - [x] pytest 103 passed
 - [x] smoke exits 0
 - [x] composite pixel-identical to iter 0004 (dead code had no effect)
-- [x] ahash goldens identical to iter 0004 (re-baked — proves no
+- [x] ahash goldens identical to iter 0004 (re-baked - proves no
       behavioural change)
