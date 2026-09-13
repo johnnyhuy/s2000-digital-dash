@@ -1048,16 +1048,28 @@ def _seg_bar(
 
 
 def _thermometer_icon(pygame, surf, cx: int, cy: int, col) -> None:
-    """AP1 TEMP pictogram: stem, bulb, three right-hand ticks, two waves."""
-    pygame.draw.rect(surf, col, pygame.Rect(cx - 2, cy - 18, 4, 18), border_radius=2)
-    pygame.draw.circle(surf, col, (cx, cy + 4), 6)
-    pygame.draw.circle(surf, WELL, (cx, cy + 4), 2)
-    for dy in (-12, -7, -2):
+    """AP1 TEMP pictogram: stem, bulb, three right-hand ticks, two smooth waves.
+
+    OEM glyph plate (refs/oem/plates/oem_dash_glyphs_plate.png):
+    short stem above a larger round bulb, three short ticks spaced
+    evenly along the right side of the stem, two smooth (~≈) waves
+    below the bulb. Older UI used a zigzag for the waves; the smooth
+    sine-like curve is closer to the OEM plate.
+    """
+    # Stem (shorter, narrower)
+    pygame.draw.rect(surf, col, pygame.Rect(cx - 2, cy - 16, 4, 12), border_radius=2)
+    # Bulb (larger)
+    pygame.draw.circle(surf, col, (cx, cy + 4), 7)
+    pygame.draw.circle(surf, WELL, (cx, cy + 4), 3)
+    # Three ticks evenly spaced along the stem
+    for dy in (-12, -8, -4):
         pygame.draw.line(surf, col, (cx + 4, cy + dy), (cx + 11, cy + dy), 2)
-    for y in (cy + 13, cy + 18):
-        pts = [(cx - 8 + x, y + (2 if (x // 4) % 2 else -2)) for x in range(0, 20, 4)]
-        if len(pts) >= 2:
-            pygame.draw.lines(surf, col, False, pts, 2)
+    # Two smooth sine waves below the bulb
+    for baseline in (cy + 14, cy + 20):
+        pts = []
+        for x in range(0, 22):
+            pts.append((cx - 10 + x, baseline + round(math.sin(x * math.pi / 5) * 2)))
+        pygame.draw.lines(surf, col, False, pts, 2)
 
 
 def _pump_icon(pygame, surf, cx: int, cy: int, col) -> None:
