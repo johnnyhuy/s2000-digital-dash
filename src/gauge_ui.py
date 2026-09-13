@@ -80,8 +80,13 @@ BEZEL_BAND_EDGE = (36, 38, 40)
 # Printed band depth along the inward normal; ticks stay inside it.
 # OEM band fills ~10-12% of module height (~50-60 px on a 752 mh).
 TACH_BAND_OUTER = 56.0
-# Numerals sit in the dark well, below the printed band (OEM photo)
-TACH_NUM_INSET = 54.0
+# Numerals sit in the dark well, below the printed band (OEM photo).
+# Vertical drop varies with `1 − end²` — numerals 0/9 just clear the band
+# ends (~3% mh drop), middle numerals drop deep into the well (~25% mh drop).
+# Horizontal inset (along inward normal) is a separate constant.
+TACH_NUM_X_INSET = 50.0
+TACH_NUM_DROP_BASE = 15.0
+TACH_NUM_DROP_PEAK = 193.0
 TACH_TICK_MAJOR = (2.4, 22.0)
 TACH_TICK_MINOR = (1.4, 13.0)
 TACH_NEEDLE_TIP = -3.4
@@ -100,7 +105,7 @@ ARCH_RISE_PCT = 0.60        # OEM band ends ~56% of mh; rise = (spring - peak) *
 LAMP_Y_PCT = 0.805          # hardware strip centre-line
 BEZEL_H_PCT = 0.175
 LCD_INSET_X_PCT = 0.010
-LCD_TOP_PCT = 0.055
+LCD_TOP_PCT = 0.085         # OEM band peak ~10.4% mh (Car Spy, was 0.055 — too high)
 LCD_BOTTOM_PCT = 0.76       # LCD fills to the lamp strip
 ARCH_N = 2.0                # parabola (u²)
 # AP1: thin horizontal bars flanking the speed/odo (not vertical stacks, not AP2 arches).
@@ -446,14 +451,18 @@ def tach_arch_normal(frac: float, g: FaceGeom | None = None) -> tuple[float, flo
 def tach_num_xy(frac: float, g: FaceGeom | None = None) -> tuple[float, float]:
     """Tach numeral centre — inside the well, not on the printed band.
 
-    The parabola's inward normal is shallower at 0 and 9, so those two
-    digits get an extra drop into the well (OEM photo).
+    OEM Car Spy photo: numerals 0/9 sit just under the band ends
+    (~3% drop), middle numerals sit deep in the well (~25% drop). The
+    parabola's vertical drop therefore varies with `1 − end²` rather
+    than with the constant normal inset the previous formula used.
+    Horizontal inset is a separate constant (along the inward normal)
+    so numerals sit slightly inside the band's x range at the corners.
     """
     x, y = tach_arch_xy(frac, g)
-    nx, ny = tach_arch_normal(frac, g)
+    nx, _ny = tach_arch_normal(frac, g)
     end = abs(2.0 * clamp(frac, 0.0, 1.0) - 1.0)
-    extra = 14.0 * (end * end)
-    return x + nx * TACH_NUM_INSET, y + ny * TACH_NUM_INSET + extra
+    drop_v = TACH_NUM_DROP_BASE + TACH_NUM_DROP_PEAK * (1.0 - end * end)
+    return x + nx * TACH_NUM_X_INSET, y + drop_v
 
 
 def tach_tick_poly(

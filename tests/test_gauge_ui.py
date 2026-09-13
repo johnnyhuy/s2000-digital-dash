@@ -22,7 +22,9 @@ from gauge_ui import (  # noqa: E402
     REDLINE_BLOCKS,
     TACH_BAND_OUTER,
     TACH_NEEDLE_TAIL,
-    TACH_NUM_INSET,
+TACH_NUM_X_INSET,
+    TACH_NUM_DROP_BASE,
+    TACH_NUM_DROP_PEAK,
     TACH_TICK_MAJOR,
     TEMP_SEGS,
     TEMP_W_PCT,
@@ -191,18 +193,48 @@ class FaceGeomTests(unittest.TestCase):
         ax, ay = tach_arch_xy(0.5)
         px, py = tach_num_xy(0.5)
         self.assertGreater(py, ay)
-        self.assertLess(abs(px - ax), 8)
-        # Clear of the printed band and the major ticks that sit on it.
-        # Numerals sit at TACH_NUM_INSET + end² × 14 px below the curve.
-        self.assertGreater(TACH_NUM_INSET + 14, TACH_BAND_OUTER)
-        self.assertGreater(TACH_NUM_INSET, TACH_TICK_MAJOR[1] + 16)
+        # Horizontal inset is a constant along the inward normal — numerals
+        # sit slightly inside the band's x range at the corners.
+        self.assertLess(abs(px - ax), TACH_NUM_X_INSET + 4)
+        # Numerals sit at TACH_NUM_DROP_BASE + end² × (peak − base) below the band.
+        self.assertAlmostEqual(TACH_NUM_DROP_BASE, 15.0, delta=1.0)
+        self.assertGreater(TACH_NUM_DROP_BASE + TACH_NUM_DROP_PEAK, TACH_BAND_OUTER)
+        self.assertGreater(TACH_NUM_X_INSET, TACH_TICK_MAJOR[1] + 16)
         # Chevron sits on the printed band, not a dart hanging into the well
         self.assertLess(TACH_NEEDLE_TAIL, TACH_BAND_OUTER)
         left = tach_num_xy(0.0)
         left_arch = tach_arch_xy(0.0)
         self.assertGreater(left[1], left_arch[1])
-        self.assertGreater(left[1] - left_arch[1], TACH_NUM_INSET * 0.4)
         self.assertGreater(tach_num_xy(1.0)[1], tach_arch_xy(1.0)[1])
+
+    def test_tach_numeral_drop_matches_oem(self) -> None:
+        """OEM Car Spy: numerals 0/9 just clear the band ends, middle numerals
+        drop deep into the well. Vertical drop varies with `1 − end²`.
+        """
+        my, mh = FACE.module[1], FACE.module[3]
+        _, y_end = tach_arch_xy(0.0)
+        _, y_peak = tach_arch_xy(0.5)
+        # 0/9 drop ~15 px (UI scale, OEM ~3% mh)
+        drop_end = tach_num_xy(0.0)[1] - y_end
+        self.assertAlmostEqual(drop_end, TACH_NUM_DROP_BASE, delta=2.0)
+        drop_end_pct = drop_end / mh
+        self.assertLess(drop_end_pct, 0.04)
+        # Middle numerals drop ~200 px (UI scale, OEM ~28% mh)
+        drop_mid = tach_num_xy(0.5)[1] - y_peak
+        self.assertAlmostEqual(drop_mid, TACH_NUM_DROP_BASE + TACH_NUM_DROP_PEAK, delta=4.0)
+        drop_mid_pct = drop_mid / mh
+        self.assertGreater(drop_mid_pct, 0.20)
+        self.assertLess(drop_mid_pct, 0.32)
+        # And 0/9 always drop LESS than the middle numerals (formula inverted
+        # from the previous `end² × extra` shape).
+        self.assertLess(drop_end, drop_mid)
+
+    def test_band_peak_locks_to_oem(self) -> None:
+        """OEM Car Spy photo: band peak (printed amber arch top) at ~10.4% mh."""
+        my, mh = FACE.module[1], FACE.module[3]
+        _, y_peak = tach_arch_xy(0.5)
+        peak_pct = (y_peak - my) / mh
+        self.assertAlmostEqual(peak_pct, 0.104, delta=0.015)
 
     def test_visor_lip_hugs_the_printed_tach(self) -> None:
         ax, ay = tach_arch_xy(0.5)

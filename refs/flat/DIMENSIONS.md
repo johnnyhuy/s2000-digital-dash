@@ -63,7 +63,7 @@ thicker.
 | FUEL icon | pump above **F** |
 | Lamp / hardware strip | y ≈ **78 %** (OEM Car Spy, top of SEL/TRIP row) — note: flat lock draws the lamp band at 85 % to give the bezel room |
 | Printed tach band | peak ≈ **10 %**, ends (0 / 9) at **56 %** of module height; rise ≈ **46 %**; parabola passes through (peak, end_y) at u ∈ [−1, 1] |
-| Tach numerals | inside the well, **3–4 % below the band ends**; numerals **0** and **9** drop extra so they clear the curve |
+| Tach numerals | inside the well, **~3 % below the band ends** for 0/9, **~28 % below the band peak** for the middle (4/5/6); drop varies with `1 − end²` so the middle numerals sink into the well |
 | Redline | printed red zone **8–9** with five thick blocks |
 
 Hardware strip, left → right:
@@ -109,9 +109,11 @@ this revision:
 
 | Visual landmark | Driven by | Default value |
 | --- | --- | --- |
-| Printed band peak y | `LCD_TOP_PCT` + `TACH_ARCH_DROP` | `0.055 + 14 px` |
+| Printed band peak y | `LCD_TOP_PCT` + `TACH_ARCH_DROP` | `0.085 + 14 px` (band peak at 10.4 % mh, OEM match — iter 0007) |
 | Printed band end y | `(LCD_TOP_PCT … ARCH_RISE_PCT) × 0.92` | `ARCH_RISE_PCT = 0.60` (lands band ends at ~56 % of mh — iter 0002 position PR) |
-| Tach numerals 0 / 9 | `TACH_NUM_INSET` (54 px) + `end² × 14 px` extra drop | inline — **deferred**: OEM puts 0/9 just under band ends (~3 % drop), middle numerals well into the well (~25 % drop) — formula is currently flat (~7 % drop) |
+| Tach numerals 0 / 9 | vertical drop = `TACH_NUM_DROP_BASE` (15 px) + `TACH_NUM_DROP_PEAK × (1 − end²)`; horizontal inset `TACH_NUM_X_INSET` (50 px) along inward normal | OEM 0/9 just under band ends (~3 % drop), middle numerals deep in the well (~28 % drop) — iter 0007 |
+| Tach numerals 5 | same formula, peak at end² = 0 → drop = base + peak = 208 px (38.1 % mh, OEM match) | iter 0007 |
+| Band peak y | `LCD_TOP_PCT` + `TACH_ARCH_DROP` | `0.085 + 14 px` (band peak at 10.4 % mh, OEM match — iter 0007; was `0.055` which put the peak too high at 7.3 % mh) |
 | Speed centre y | `SPEED_Y_PCT` | `0.68` (iter 0006 — OEM Car Spy puts the speed BELOW the band ends) |
 | ODO row y | `ODO_Y_PCT` | `0.74` (iter 0006 — odo sits just under speed, just above the lamp strip top) |
 | TEMP / FUEL bar y | `TEMP_Y_PCT` / `FUEL_Y_PCT` | `0.68` (iter 0006 — bars flank the speedo at the speed y, not mid-arch) |
