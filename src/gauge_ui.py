@@ -631,24 +631,15 @@ _FONTS = Path(__file__).resolve().parents[1] / "assets" / "fonts"
 _FONT_FILES = {
     "round": "MPLUSRounded1c-Bold.ttf",       # OEM rounded numerals / labels
     "round_x": "MPLUSRounded1c-ExtraBold.ttf",
-    "cond": "BarlowCondensed-Bold.ttf",
-    "cond_i": "BarlowCondensed-SemiBoldItalic.ttf",
     "mono": "ShareTechMono-Regular.ttf",
     "ready": "Oxanium-Bold.ttf",
 }
 _FONT_CACHE: dict[tuple[str, int], object] = {}
 
 
-def _font(
-    pygame,
-    size: int,
-    bold: bool = False,
-    mono: bool = False,
-    italic: bool = False,
-    kind: str | None = None,
-):
+def _font(pygame, size: int, bold: bool = False, mono: bool = False, kind: str | None = None):
     if kind is None:
-        kind = "mono" if mono else "cond_i" if italic else "cond"
+        kind = "mono" if mono else "round_x" if bold else "round"
     key = (kind, int(size))
     cached = _FONT_CACHE.get(key)
     if cached is not None:
@@ -1436,7 +1427,7 @@ def draw_ready_card(fonts, surf, face: DisplayState, g: FaceGeom | None = None, 
         x = ox + int(ow * (left + share / 2.0))
         left += share
         blit_text(surf, fonts["micro"], name, DIM, (x, oy + int(oh * 0.30)), "center")
-        blit_text(surf, fonts["readout"], val, AMBER, (x, oy + int(oh * 0.68)), "center")
+        blit_text(surf, fonts["label"], val, AMBER, (x, oy + int(oh * 0.68)), "center")
 
 
 def draw_live_face(

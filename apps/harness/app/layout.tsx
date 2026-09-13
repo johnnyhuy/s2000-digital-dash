@@ -28,15 +28,6 @@ const oxanium = localFont({
   display: "swap",
 });
 
-const barlow = localFont({
-  src: [
-    { path: "./fonts/BarlowCondensed-Bold.ttf", weight: "700", style: "normal" },
-    { path: "./fonts/BarlowCondensed-SemiBoldItalic.ttf", weight: "600", style: "italic" },
-  ],
-  variable: "--font-barlow",
-  display: "swap",
-});
-
 /** OEM face numerals / labels — rounded sans (OFL subset, see fonts/OFL-MPLUSRounded1c.txt). */
 const mplus = localFont({
   src: [
@@ -58,7 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en-AU"
-      className={`${geistSans.variable} ${geistMono.variable} ${shareTech.variable} ${oxanium.variable} ${barlow.variable} ${mplus.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${shareTech.variable} ${oxanium.variable} ${mplus.variable} h-full antialiased`}
     >
       <body className="min-h-full">{children}</body>
     </html>

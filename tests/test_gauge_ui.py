@@ -427,7 +427,7 @@ class HeadlessDrawTests(unittest.TestCase):
         from gauge_ui import _FONTS
 
         self.assertTrue((_FONTS / "Oxanium-Bold.ttf").is_file())
-        self.assertTrue((_FONTS / "BarlowCondensed-SemiBoldItalic.ttf").is_file())
+        self.assertTrue((_FONTS / "MPLUSRounded1c-Bold.ttf").is_file())
         img = self.fonts["ready"].render("READY", True, (232, 148, 28))
         self.assertGreater(img.get_width(), 80)
 

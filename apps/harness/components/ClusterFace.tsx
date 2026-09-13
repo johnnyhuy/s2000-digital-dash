@@ -579,7 +579,7 @@ function ReadyCard({ g, face }: { g: FaceGeom; face: DisplayState }) {
             <text className="unit-label" x={x} y={ow.y + ow.h * 0.36} textAnchor="middle" fontSize={wpx(g, 0.0085)} fill={DIM}>
               {name}
             </text>
-            <text className="unit-label" x={x} y={ow.y + ow.h * 0.78} textAnchor="middle" fontSize={wpx(g, 0.015)} fill={AMBER}>
+            <text className="unit-label" x={x} y={ow.y + ow.h * 0.78} textAnchor="middle" fontSize={wpx(g, 0.0135)} fill={AMBER}>
               {val}
             </text>
           </g>
