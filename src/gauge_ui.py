@@ -1487,7 +1487,11 @@ def build_fonts(pygame) -> dict:
     return {
         "speed": _font(pygame, 132, bold=True, mono=True),
         "ready": _font(pygame, 92, bold=True),
-        "tick": _font(pygame, 42, italic=True),
+        # OEM Car Spy: tach numerals sit at ~38 px tall with a thin stroke;
+        # the SemiBoldItalic at 42 was rendering noticeably heavier than the
+        # OEM glyph plate. Sizing down + the natural pixel-thinness at this
+        # scale brings the stroke weight into OEM territory.
+        "tick": _font(pygame, 38, italic=True),
         "label": _font(pygame, 20, bold=True),
         "readout": _font(pygame, 26, bold=True, mono=True),
         "tiny": _font(pygame, 15, italic=True),
