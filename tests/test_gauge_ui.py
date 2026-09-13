@@ -197,7 +197,9 @@ class FaceGeomTests(unittest.TestCase):
         # sit slightly inside the band's x range at the corners.
         self.assertLess(abs(px - ax), TACH_NUM_X_INSET + 4)
         # Numerals sit at TACH_NUM_DROP_BASE + end² × (peak − base) below the band.
-        self.assertAlmostEqual(TACH_NUM_DROP_BASE, 15.0, delta=1.0)
+        # TACH_NUM_DROP_BASE = 22 px on the UI 752 mh module = ~2.9 % mh,
+        # matching the OEM Car Spy plate's 15 px / 480 mh = 3.13 % mh.
+        self.assertAlmostEqual(TACH_NUM_DROP_BASE, 22.0, delta=1.0)
         self.assertGreater(TACH_NUM_DROP_BASE + TACH_NUM_DROP_PEAK, TACH_BAND_OUTER)
         self.assertGreater(TACH_NUM_X_INSET, TACH_TICK_MAJOR[1] + 16)
         # Chevron sits on the printed band, not a dart hanging into the well
