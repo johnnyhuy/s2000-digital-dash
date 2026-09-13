@@ -11,7 +11,6 @@ import {
   lcdPath,
   radialTickPath,
   rectPx,
-  sideArchPoint,
   sideArchSector,
   tachAngleDeg,
   tachNumXY,
@@ -53,7 +52,6 @@ const HATCH_AMBER = "#d0761e";
 const HATCH_RED = "#9c2018";
 const HATCH_RED_LIT = "#ff3c28";
 const RED = "#e42820";
-const RED_DIM = "#6e1614";
 const RED_LCD = "#ff4228";
 const RED_LCD_GHOST = "#4a0c0e";
 const LABEL_OFF = "#3c0f0f";

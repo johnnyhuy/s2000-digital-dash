@@ -3,7 +3,6 @@ import { describe, it } from "node:test";
 import { RPM_REDLINE } from "./protocol.ts";
 import {
   PHASE_READY_S,
-  PHASE_REVEAL_S,
   PHASE_SWEEP_S,
   introDurationS,
   introPhaseAt,
