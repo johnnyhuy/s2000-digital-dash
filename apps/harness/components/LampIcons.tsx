@@ -2,21 +2,28 @@
 
 import type { ReactNode } from "react";
 
-type IconProps = { className?: string; width?: number };
+/** `x` / `y` are the plate centre when nested inside another SVG. */
+type IconProps = { className?: string; width?: number; x?: number; y?: number; fill?: string };
 
 function Plate({
   className,
   width,
+  x,
+  y,
+  fill = "currentColor",
   viewBox = "0 0 64 48",
   children,
 }: IconProps & { viewBox?: string; children: ReactNode }) {
+  const height = width ? width * 0.75 : undefined;
   return (
     <svg
       className={className}
       viewBox={viewBox}
       width={width}
-      height={width ? width * 0.75 : undefined}
-      fill="currentColor"
+      height={height}
+      x={x !== undefined && width ? x - width / 2 : undefined}
+      y={y !== undefined && height ? y - height / 2 : undefined}
+      fill={fill}
       aria-hidden
     >
       {children}
