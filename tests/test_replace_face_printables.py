@@ -139,7 +139,7 @@ class ReplaceFacePrintablesTest(unittest.TestCase):
         readme = README.read_text(encoding="utf-8")
         self.assertIn("face_spec.py", readme)
         self.assertIn("face_lock.scad", readme)
-        self.assertIn("not a verified AP1 drop-in", readme.lower())
+        self.assertIn("not a verified ap1 drop-in", readme.lower())
         self.assertNotIn("blender --background", readme.lower())
         self.assertIn("mesh_export.py", readme)
 
