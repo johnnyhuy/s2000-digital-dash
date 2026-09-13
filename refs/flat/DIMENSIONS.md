@@ -104,8 +104,9 @@ Protocol JSON fields stay `rpm`, `speed_kmh`, `fuel_pct`, `ect_c`, `batt_v`,
 
 The face geometry is built in `src/gauge_ui.py::build_face_geom`. The
 rendering path uses `g.lcd_peak_y` and `g.lcd_spring_y` for the printed
-band parabola via `tach_arch_xy` — not the global `TACH_END_Y_PCT`. As of
-this revision:
+band parabola via `tach_arch_xy`. (The legacy `TACH_END_Y_PCT` knob was
+deleted in iter 0005 housekeeping — it was set, but no draw function
+read it.)
 
 | Visual landmark | Driven by | Default value |
 | --- | --- | --- |
