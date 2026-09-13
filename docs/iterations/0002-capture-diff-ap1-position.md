@@ -1,10 +1,10 @@
-# Iteration 0002 — position track, amber band rise (real fix)
+# Iteration 0002 - position track, amber band rise (real fix)
 
 ## Carryover from 0001
 
 PR #50 (commit `e04e1a3`) adjusted `TACH_END_Y_PCT 0.64 → 0.54` as the
 position-track fix. DIMENSIONS.md (commit `123cb63`) flagged
-`TACH_END_Y_PCT` as **dead code** — the actual knob is `ARCH_RISE_PCT`.
+`TACH_END_Y_PCT` as **dead code** - the actual knob is `ARCH_RISE_PCT`.
 The byte-identical composite check held: the 0001 commit produced
 visually no change against the reference. The position diff therefore
 remained open.
@@ -52,15 +52,15 @@ and numerals at 62.6 % of mh (matches OEM photo, drop ~7 %).
 - Raise `ARCH_RISE_PCT` from `0.28` to `0.60` in `src/gauge_ui.py`
 - Update `tests/test_gauge_ui.py::FaceGeomTests::test_notch_and_arch_lock`
   to assert the new value (it was asserting the dead `0.28`)
-- Add `test_band_rise_lands_on_oem` — locks the band ends at 56 % ± 2 pp
-- Add `test_numeral_sits_below_band_end` — locks the well-drop direction
+- Add `test_band_rise_lands_on_oem` - locks the band ends at 56 % ± 2 pp
+- Add `test_numeral_sits_below_band_end` - locks the well-drop direction
 - Rebake `tests/harness/goldens.json` (band rise changes every hash)
 - Rebake `docs/assets/compare/*.png`
 
 ## Not in scope (deferred to later iterations)
 
 - **TEMP / FUEL y** (currently 50.5 % vs OEM ~53 %, separate position diff)
-- **Speed centre y** (40 % vs OEM 46 %, deferred — within ±6 pp)
+- **Speed centre y** (40 % vs OEM 46 %, deferred - within ±6 pp)
 - Amber band thickness / size (size track)
 - Amber orange tint (colour track)
 - Tach numeral typeface / weight (font track)
@@ -68,7 +68,7 @@ and numerals at 62.6 % of mh (matches OEM photo, drop ~7 %).
 - Telltale glyph art (graphics track)
 - Dead-code removal (`TACH_END_Y_PCT` + unused `TACH_R_*` /
   `TACH_START_DEG` / `TACH_SPAN_DEG` / `tach_angle` / `tach_point`
-  exports — DIMENSIONS.md flag — housekeeping track)
+  exports - DIMENSIONS.md flag - housekeeping track)
 
 ## Acceptance
 
@@ -77,11 +77,11 @@ and numerals at 62.6 % of mh (matches OEM photo, drop ~7 %).
   --screenshot shots` → exits 0
 - `uv run python scripts/compare_oem.py` → all five PNGs rebaked
 - `compare_ap1_lit_live.png`: amber band ends now sit at the speedo
-  centre line (was ~28 % of mh, now 55.7 %) — visually closes the
+  centre line (was ~28 % of mh, now 55.7 %) - visually closes the
   single biggest OEM-vs-UI gap
 - Numerals 0 / 9 follow the band ends down into the well, with the
   standard `TACH_NUM_INSET + end² × 14` extra drop
-- module aspect 2.35:1, side notches 58–72 % — `DIMENSIONS.md` locks
+- module aspect 2.35:1, side notches 58–72 % - `DIMENSIONS.md` locks
   hold within ±0.5 %
 
 ## Verify (objective)

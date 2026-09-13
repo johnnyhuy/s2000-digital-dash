@@ -1,4 +1,4 @@
-# Iteration 0010 — graphics track, refine FUEL pump icon
+# Iteration 0010 - graphics track, refine FUEL pump icon
 
 ## Carryover
 
@@ -49,7 +49,7 @@ base     = Rect(cx - 10, cy + 11, 20,  3)   # wider platform
 The new body is ~17 % wider than before; the window is now a clearly
 square readout in the upper third (matches the OEM glyph plate's
 screen placement), and the hose routes **off the right shoulder of
-the body** then arcs down and to the right to a short nozzle — the
+the body** then arcs down and to the right to a short nozzle - the
 OEM silhouette.
 
 ## Scope (single track, single intent)
@@ -65,13 +65,13 @@ OEM silhouette.
 
 ## Not in scope (deferred)
 
-- **Tach numerals stroke weight** — at 38 px the SemiBoldItalic still
+- **Tach numerals stroke weight** - at 38 px the SemiBoldItalic still
   reads slightly heavier than the OEM plate's thin/regular glyphs.
   Approximating the OEM weight exactly would require a new bundled
-  font (Barlow Condensed Regular/Light) — fonts-track housekeeping PR,
+  font (Barlow Condensed Regular/Light) - fonts-track housekeeping PR,
   explicitly out of scope here
-- **Speed centre y** (UI 68 % vs OEM 65 %) — within ±3 pp, bounded by
-  odo row + lamp strip top (position track, deferred — needs a
+- **Speed centre y** (UI 68 % vs OEM 65 %) - within ±3 pp, bounded by
+  odo row + lamp strip top (position track, deferred - needs a
   cabin-photo re-measure)
 - Boot motion timings (motion track)
 
@@ -85,7 +85,7 @@ OEM silhouette.
   closer to the OEM glyph plate
 - Module aspect 2.35:1, side notches 58–72 %, band peak 10.4 %, band
   ends 56 %, LCD cluster at 68 %/74 %, numerals drop formula at 15 px /
-  208 px — all `DIMENSIONS.md` locks hold within ±0.5 %
+  208 px - all `DIMENSIONS.md` locks hold within ±0.5 %
 
 ## Verify (objective)
 

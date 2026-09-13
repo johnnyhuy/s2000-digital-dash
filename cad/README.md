@@ -4,7 +4,7 @@ These parts are **dimensional guesses**. They are **not** AP1-accurate and
 must not go in the car until the bay and connectors are measured with
 callipers.
 
-Two tracks live here on purpose — do not mix them:
+Two tracks live here on purpose - do not mix them:
 
 | Track | Folder | What it is |
 | --- | --- | --- |
@@ -14,10 +14,10 @@ Two tracks live here on purpose — do not mix them:
 ## Overlay path
 
 The factory cluster stays plugged. This bezel is an overlay frame for a
-display that sits in (or in front of) the bay — not the arched
+display that sits in (or in front of) the bay - not the arched
 `replace_face/` stack. The legal odometer keeps counting on the OEM
 cluster. Phase 1 is wall power on the
-bench. Phase 2 will add high-Z taps later — these connector shells are
+bench. Phase 2 will add high-Z taps later - these connector shells are
 **not** those taps and are **not** Honda drop-ins.
 
 ## Callipers required before any cabin print
@@ -41,7 +41,7 @@ Panel / bay
 Connectors (both ends)
 
 - Pin count and row count
-- **Pitch** and row spacing (unknown until callipers — the SCAD default 2.54 mm is a hobby guess)
+- **Pitch** and row spacing (unknown until callipers - the SCAD default 2.54 mm is a hobby guess)
 - Pin / socket diameter and length
 - Housing envelope, keying, latch, and polarizer side
 - Wire gauge and strain-relief need
@@ -62,6 +62,6 @@ Connectors (both ends)
 | `bezel_7in_placeholder.scad` | Frame for a ~7" landscape AMOLED (~164×100 overall / ~154×87 active placeholders) |
 | `connector_male_placeholder.scad` | Generic multi-pin male shell |
 | `connector_female_placeholder.scad` | Generic multi-pin female shell |
-| `replace_face/` | Option 1 full-face replace stack — see that folder’s README |
+| `replace_face/` | Option 1 full-face replace stack - see that folder’s README |
 
 Open in [OpenSCAD](https://openscad.org/) and F6 to render after you edit the measured numbers.

@@ -1,4 +1,4 @@
-# Iteration 0006 — position track, seat the LCD cluster under the band
+# Iteration 0006 - position track, seat the LCD cluster under the band
 
 ## Carryover
 
@@ -7,14 +7,14 @@ and landed band ends at 55.7 % of mh (OEM 56.25 %). iter 0003 thickened the
 band to OEM depth. iter 0004 retinted the bloom orange. iter 0005 removed
 the dead tach-circle computation.
 
-The next biggest OEM-vs-UI gap was the **LCD cluster sitting high** — the
+The next biggest OEM-vs-UI gap was the **LCD cluster sitting high** - the
 speed / odo / TEMP / FUEL bars all floated in the middle of the module
 instead of sitting *under* the printed band, where the Car Spy photo
 clearly puts them. The ODO row locked at `0.50` of mh (mid-arch), speed at
 `0.40` (top quarter), bars at `0.505` (slightly above the band ends).
 
 The `DIMENSIONS.md` face layout table documented the buggy lock verbatim,
-so the doc and the code agreed — and both were wrong.
+so the doc and the code agreed - and both were wrong.
 
 ## Capture
 
@@ -24,7 +24,7 @@ so the doc and the code agreed — and both were wrong.
 
 Both sides are fit-height 520 px, side-by-side, captions in orange.
 
-## Pixel sampling — measured against the OEM photo
+## Pixel sampling - measured against the OEM photo
 
 | Element | OEM y (px) | OEM pct of mh | UI before | UI after | Delta (after) |
 | ------- | ---------: | ------------: | --------: | -------: | ------------: |
@@ -33,14 +33,14 @@ Both sides are fit-height 520 px, side-by-side, captions in orange.
 | Numeral 9 | 525 | 59.4 % | 62.6 % | 62.6 % | +3.2 pp (deferred) |
 | Speed digit centre ("0") | 580 | 70.8 % | 39.9 % | **68.0 %** | **−2.8 pp** |
 | TEMP / FUEL bar y | ~580 | ~70 % | 50.5 % | **68.0 %** | **−2.8 pp** |
-| ODO row y | ~680 | ~92 % | 50.1 % | **74.0 %** | **−18 pp** (close — bounded by lamp strip top) |
+| ODO row y | ~680 | ~92 % | 50.1 % | **74.0 %** | **−18 pp** (close - bounded by lamp strip top) |
 | Lamp strip top | 615 | 78.1 % | 80.5 % | 80.5 % | +2.4 pp (already low risk) |
 
 The pre-fix state had the speed **above** the band ends and the odo **above**
-the speed — exactly opposite of OEM. The fix moves them *below* the band
+the speed - exactly opposite of OEM. The fix moves them *below* the band
 ends, matching the Car Spy photo.
 
-The numeral drop (`TACH_NUM_INSET = 54 + end² × 14`) is still flat — OEM
+The numeral drop (`TACH_NUM_INSET = 54 + end² × 14`) is still flat - OEM
 shows 0/9 just under the band ends but middle numerals deep in the well.
 That is a **separate** issue (formula change, not constant tweak) and is
 explicitly deferred to a later iteration.
@@ -65,10 +65,10 @@ DIMENSIONS.md suggested the LCD cluster sits under the printed band. Sweeping
 `SPEED_Y_PCT` and `ODO_Y_PCT` against the OEM photo:
 
 ```
-SPEED_Y_PCT=0.65  ODO_Y_PCT=0.71: speed y=627, odo y=672 — speed just touches band end y=556 (gap 71 px)
-SPEED_Y_PCT=0.68  ODO_Y_PCT=0.74: speed y=649, odo y=694 — speed clears band end y=556 (gap 93 px), odo clears lamp strip top y=743 (gap 49 px)
-SPEED_Y_PCT=0.70  ODO_Y_PCT=0.76: speed y=664, odo y=709 — speed tight against band end (gap 108 px), odo tight against lamp strip (gap 34 px)
-SPEED_Y_PCT=0.72  ODO_Y_PCT=0.78: speed y=679, odo y=723 — band end → 123 px, lamp strip → 20 px (would clip lamp)
+SPEED_Y_PCT=0.65  ODO_Y_PCT=0.71: speed y=627, odo y=672 - speed just touches band end y=556 (gap 71 px)
+SPEED_Y_PCT=0.68  ODO_Y_PCT=0.74: speed y=649, odo y=694 - speed clears band end y=556 (gap 93 px), odo clears lamp strip top y=743 (gap 49 px)
+SPEED_Y_PCT=0.70  ODO_Y_PCT=0.76: speed y=664, odo y=709 - speed tight against band end (gap 108 px), odo tight against lamp strip (gap 34 px)
+SPEED_Y_PCT=0.72  ODO_Y_PCT=0.78: speed y=679, odo y=723 - band end → 123 px, lamp strip → 20 px (would clip lamp)
 ```
 
 `0.68` / `0.74` lands the speed just below the band ends (within ±0.5 pp of
@@ -84,11 +84,11 @@ speedo at speed-y, matching the Car Spy framing.
 - Raise `FUEL_Y_PCT` from `0.505` to `0.68` in `src/gauge_ui.py`
 - Update `tests/test_gauge_ui.py::FaceGeomTests::test_locked_flanking_gauges_and_speed_percentages`
   to assert the new values
-- Update `test_temp_and_fuel_are_horizontal_flanking_bars` — bars now flank
+- Update `test_temp_and_fuel_are_horizontal_flanking_bars` - bars now flank
   the **speedo**, not the odo (OEM puts bars at speed-y)
-- Add `test_lcd_cluster_locks_to_oem_below_band` — locks speed 68 %, odo 74 %,
+- Add `test_lcd_cluster_locks_to_oem_below_band` - locks speed 68 %, odo 74 %,
   bars 68 %, all under the band ends
-- Add `test_speed_sits_below_tach_numerals` — speed/odo sit *below* the 0/9
+- Add `test_speed_sits_below_tach_numerals` - speed/odo sit *below* the 0/9
   numerals, matching OEM (was an inverted layout before this fix)
 - Rebake `tests/harness/goldens.json`
 - Rebake `docs/assets/compare/*.png` and `shots/*.png`
@@ -97,14 +97,14 @@ speedo at speed-y, matching the Car Spy framing.
 
 ## Not in scope (deferred to later iterations)
 
-- **Tach numeral drop formula** — OEM puts 0/9 just under the band ends
+- **Tach numeral drop formula** - OEM puts 0/9 just under the band ends
   (~3 % drop) but middle numerals deep in the well (~25 % drop). Current
   formula is flat (~7 % drop everywhere). This is a **separate** position
-  diff — formula change, not constant tweak. Defer.
+  diff - formula change, not constant tweak. Defer.
 - Tach numeral typeface / weight (font track)
 - Boot motion timings (motion track)
 - Telltale glyph art / TEMP / FUEL pictogram refinement (graphics track)
-- Dead-code removal (housekeeping — already done in iter 0005)
+- Dead-code removal (housekeeping - already done in iter 0005)
 
 ## Acceptance
 
@@ -113,9 +113,9 @@ speedo at speed-y, matching the Car Spy framing.
 - `uv run python scripts/compare_oem.py` → all five PNGs rebaked
 - `compare_ap1_lit_live.png`: speed "98" now sits BELOW the band ends,
   odo "142857" sits directly below the speed, TEMP / FUEL bars flank the
-  speedo at the speed-y — visually closes the largest single OEM-vs-UI
+  speedo at the speed-y - visually closes the largest single OEM-vs-UI
   position gap
-- Module aspect 2.35:1, side notches 58–72 %, lamp strip top ~80 % —
+- Module aspect 2.35:1, side notches 58–72 %, lamp strip top ~80 % -
   `DIMENSIONS.md` locks hold within ±0.5 pp
 
 ## Verify (objective)

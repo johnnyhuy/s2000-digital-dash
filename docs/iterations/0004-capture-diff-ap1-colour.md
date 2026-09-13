@@ -1,4 +1,4 @@
-# Iteration 0004 — colour track, amber tint
+# Iteration 0004 - colour track, amber tint
 
 ## Carryover
 
@@ -23,7 +23,7 @@ Bright amber pixels in the OEM photo (cluster band area):
 (255, 157, 76), (255, 137, 77), (189, 110, 71), (181, 103, 18)
 ```
 
-`AMBER_HOT` was `(255, 194, 74)` — too yellow (`R:G = 1.31`). OEM
+`AMBER_HOT` was `(255, 194, 74)` - too yellow (`R:G = 1.31`). OEM
 brightest amber sits at `R:G ≈ 1.86`, e.g. `(255, 137, 77)`.
 
 ## Diff (colour track only)
@@ -36,7 +36,7 @@ brightest amber sits at `R:G ≈ 1.86`, e.g. `(255, 137, 77)`.
 | TEMP/FUEL gradient hot | orange-amber | yellow lerp | orange lerp | match |
 | READY text | orange-amber | yellow | orange-amber | match |
 
-`AMBER_BAND_LO` / `AMBER_BAND_HI` (band base gradient) are unchanged —
+`AMBER_BAND_LO` / `AMBER_BAND_HI` (band base gradient) are unchanged -
 they already sit in the right orange space (R:G 1.42 → 2.93). The
 yellow tint came from the bloom / hot layer using `AMBER_HOT`.
 
@@ -50,13 +50,13 @@ yellow tint came from the bloom / hot layer using `AMBER_HOT`.
 
 ## Not in scope (deferred)
 
-- TEMP / FUEL y position (50.5 % vs OEM ~53 %) — position track
-- Speed centre y (40 % vs OEM 46 %) — position track (deferred)
-- Tach numeral typeface / weight — font track
-- Boot motion timings — motion track
-- Telltale glyph art — graphics track
-- Dead-code removal — housekeeping track
-- LCD / cowl / bezel palette (already match OEM) — colour track (done)
+- TEMP / FUEL y position (50.5 % vs OEM ~53 %) - position track
+- Speed centre y (40 % vs OEM 46 %) - position track (deferred)
+- Tach numeral typeface / weight - font track
+- Boot motion timings - motion track
+- Telltale glyph art - graphics track
+- Dead-code removal - housekeeping track
+- LCD / cowl / bezel palette (already match OEM) - colour track (done)
 
 ## Acceptance
 
@@ -65,7 +65,7 @@ yellow tint came from the bloom / hot layer using `AMBER_HOT`.
   --screenshot shots` → exits 0
 - `uv run python scripts/compare_oem.py` → all five PNGs rebaked
 - `compare_ap1_lit_live.png`: lit amber bloom now leans orange, not
-  yellow — matches OEM
+  yellow - matches OEM
 - `compare_ap1_selftest.png`: minor ticks and pointer glow now lean
   orange, not yellow
 - TEMP / FUEL hot gradient end now leans orange (warm end of the

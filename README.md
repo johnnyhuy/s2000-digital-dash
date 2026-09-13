@@ -9,10 +9,10 @@
   <img src="https://img.shields.io/badge/pkg-uv-DE5FE9?style=flat" alt="uv" />
   <img src="https://img.shields.io/badge/phase-1%20bench%20mock-ECA824?style=flat" alt="Phase 1 bench mock" />
   <img src="https://img.shields.io/badge/protocol-frozen%20JSON-222222?style=flat" alt="Frozen JSON protocol" />
-  <img src="https://img.shields.io/badge/Honda-unofficial%20DIY-black?style=flat" alt="Unofficial DIY — not affiliated with Honda" />
+  <img src="https://img.shields.io/badge/Honda-unofficial%20DIY-black?style=flat" alt="Unofficial DIY - not affiliated with Honda" />
 </p>
 
-> **Unofficial enthusiast / DIY project.** This repository is **not affiliated with, endorsed by, or associated with Honda Motor Co., Ltd.** Honda, S2000, AP1, AP2, and related marks are trademarks of their respective owners. For **personal and educational use** on the bench. The on-screen odometer is **display-only** — the **OEM cluster must stay plugged** so the factory odometer remains the legal one.
+> **Unofficial enthusiast / DIY project.** This repository is **not affiliated with, endorsed by, or associated with Honda Motor Co., Ltd.** Honda, S2000, AP1, AP2, and related marks are trademarks of their respective owners. For **personal and educational use** on the bench. The on-screen odometer is **display-only** - the **OEM cluster must stay plugged** so the factory odometer remains the legal one.
 
 <p align="center">
   <strong>Newline JSON in. Selectable AP1 / AP2 face styles out.</strong><br/>
@@ -43,10 +43,10 @@
 
 ### Face styles (AP1 default, AP2 selectable)
 
-Red 7-seg speed/odo on an **amber tach** in a hooded arched cowl. Flat 2.35:1 elevation — no fake 3D skew.
+Red 7-seg speed/odo on an **amber tach** in a hooded arched cowl. Flat 2.35:1 elevation - no fake 3D skew.
 
-- **AP1** (default): **horizontal TEMP left / FUEL right** block bars flanking the speed/odo. Tach is the OEM **amber bar graph on a true circular arc** — cells light in 100 rpm steps, red hatch past 9, no needle. Every anchor comes from one measured lock, [`src/face_spec.py`](src/face_spec.py), explained in [`refs/flat/DIMENSIONS.md`](refs/flat/DIMENSIONS.md) and shared with the web harness and the CAD.
-- **AP2**: interpretive stacked arched TEMP / FUEL on the right, plus a clock row. Uses [`refs/oem/ap2/`](refs/oem/ap2/) as reference — **not** a pixel-perfect plate.
+- **AP1** (default): **horizontal TEMP left / FUEL right** block bars flanking the speed/odo. Tach is the OEM **amber bar graph on a true circular arc** - cells light in 100 rpm steps, red hatch past 9, no needle. Every anchor comes from one measured lock, [`src/face_spec.py`](src/face_spec.py), explained in [`refs/flat/DIMENSIONS.md`](refs/flat/DIMENSIONS.md) and shared with the web harness and the CAD.
+- **AP2**: interpretive stacked arched TEMP / FUEL on the right, plus a clock row. Uses [`refs/oem/ap2/`](refs/oem/ap2/) as reference - **not** a pixel-perfect plate.
 
 Toggle in the [web harness](apps/harness/) or `python src/gauge_ui.py --style ap2` (keys `1` / `2` live). Protocol fields stay frozen.
 
@@ -95,7 +95,7 @@ Phase 1: `mock_telemetry.py` at 20 Hz. Phase 2: the same schema over UART (`--se
 
 The factory cluster stays powered. This UI is an overlay so the **legal odometer** keeps counting on the OEM unit.
 
-Phase 1 is **wall power** on the bench — no ESP32, no car taps. Phase 2 will add high-Z taps later.
+Phase 1 is **wall power** on the bench - no ESP32, no car taps. Phase 2 will add high-Z taps later.
 
 </td>
 <td width="50%">
@@ -107,7 +107,7 @@ Phase 1 is **wall power** on the bench — no ESP32, no car taps. Phase 2 will a
 
 ### Placeholder CAD
 
-OpenSCAD in [`cad/`](cad/): overlay 7" bezel + generic connector shells, and an Option 1 **replace-face** stack in [`cad/replace_face/`](cad/replace_face/) whose mask windows and hood crown are generated from the same `face_spec.py` lock as the UI, over a 7" panel pocket. Millimetres are still estimates — bay **callipers required** before any cabin print. **PETG or ASA — not PLA.**
+OpenSCAD in [`cad/`](cad/): overlay 7" bezel + generic connector shells, and an Option 1 **replace-face** stack in [`cad/replace_face/`](cad/replace_face/) whose mask windows and hood crown are generated from the same `face_spec.py` lock as the UI, over a 7" panel pocket. Millimetres are still estimates - bay **callipers required** before any cabin print. **PETG or ASA - not PLA.**
 
 </td>
 <td width="50%">
@@ -138,7 +138,7 @@ uv sync --extra dev
 
 ## Web cluster harness (no Pi)
 
-Shareable Next.js demo of the same face, drawn as one SVG straight from the exported lock (`apps/harness/lib/faceSpec.json`) — red mitred 7-seg, amber bar-graph tach, side block bars, telltale strip and buttons all share pygame's numbers. Client-side mock loop (play/pause, **AP1 / AP2** face, idle / cruise / VTEC / warn) and the same sweep → READY → reveal boot as the Pi UI. Cluster type is self-hosted M PLUS Rounded 1c; telltales are inline ISO pictograms.
+Shareable Next.js demo of the same face, drawn as one SVG straight from the exported lock (`apps/harness/lib/faceSpec.json`) - red mitred 7-seg, amber bar-graph tach, side block bars, telltale strip and buttons all share pygame's numbers. Client-side mock loop (play/pause, **AP1 / AP2** face, idle / cruise / VTEC / warn) and the same sweep → READY → reveal boot as the Pi UI. Cluster type is self-hosted M PLUS Rounded 1c; telltales are inline ISO pictograms.
 
 <p align="center">
   <img src="docs/assets/web-ap1-cruise.png" alt="Web AP1 cruise: 80 km/h, amber bar graph, coolant waves, ISO high beam" width="960" />
@@ -204,7 +204,7 @@ Stdin is newline JSON. Phase 2 UART is the same schema on `--serial`.
 Pi UI and a future ESP32 source can be exercised in isolation. Field names stay frozen.
 
 ```bash
-# Headless Pi cluster (dummy SDL — CI / no display)
+# Headless Pi cluster (dummy SDL - CI / no display)
 SDL_VIDEODRIVER=dummy uv run python src/gauge_ui.py --smoke --screenshot /tmp/shots
 
 # Existing bench pipe (mock drive loop → UI)
@@ -234,28 +234,28 @@ Optional: `lamps` object (`oil`, `cel`, `abs`, `turn_l`, `turn_r`, `high_beam`, 
 
 ## Layout
 
-- `src/protocol.py` — shared schema + parse/validate
-- `src/mock_telemetry.py` — 20 Hz fake drive loop → stdout (Pi bench pipe)
-- `src/face_style.py` — `ap1` / `ap2` face enum (layout only)
-- `src/face_spec.py` — **the face lock**: AP1/AP2 arc geometry, windows, lamps, buttons; exports `faceSpec.json` + `face_lock.scad`
-- `src/gauge_ui.py` — pygame 1920×1080 cluster + intro + `--style`, drawn from the lock
-- `src/lcd_digits.py` — OEM mitred 7-segment speed / odo with ghost + bloom
-- `scripts/measure_oem_ui.py` — perspective-corrected landmark / circle-fit measurement of the OEM photo
-- `src/serial_reader.py` — Phase 2 UART stub + `SerialLineReader` (pyserial optional)
-- `mocks/` — mock ESP32 UART emitter + in-memory / PTY serial (no firmware)
-- `tests/` — pytest (unittest + harness ahash + e2e pipe)
-- `refs/flat/` — `DIMENSIONS.md` (arc lock explained) + historic flat SVG
-- `refs/oem/` — curated AP1 photos + labelled AP2 reference (caution: not a plate) + `SOURCES.md`
-- `assets/icons/` — OEM telltale SVG/PNG atlas (tinted at draw time)
-- `cad/` — OpenSCAD placeholders (overlay bezel + connectors + `replace_face/`). PETG/ASA notes stay here.
-- `shots/` — sweep / ready / reveal / live / cruise stills
-- `docs/assets/` — unofficial geometric H, intro GIF, VP9 hero, OEM|UI compares
-- `scripts/bake_showcase.py` — regenerate stills + 30 fps hero
-- `scripts/ui_harness.py` — screenshot / ahash harness
-- `scripts/compare_oem.py` — OEM photo | UI composites
-- `pyproject.toml` + `uv.lock` — uv project
-- `apps/harness/` — Next.js App Router web cluster (Vercel; Root Directory `apps/harness`)
-- `.github/workflows/ci.yml` — uv pytest + pygame smoke/e2e + web harness build on push/PR to `main`
+- `src/protocol.py` - shared schema + parse/validate
+- `src/mock_telemetry.py` - 20 Hz fake drive loop → stdout (Pi bench pipe)
+- `src/face_style.py` - `ap1` / `ap2` face enum (layout only)
+- `src/face_spec.py` - **the face lock**: AP1/AP2 arc geometry, windows, lamps, buttons; exports `faceSpec.json` + `face_lock.scad`
+- `src/gauge_ui.py` - pygame 1920×1080 cluster + intro + `--style`, drawn from the lock
+- `src/lcd_digits.py` - OEM mitred 7-segment speed / odo with ghost + bloom
+- `scripts/measure_oem_ui.py` - perspective-corrected landmark / circle-fit measurement of the OEM photo
+- `src/serial_reader.py` - Phase 2 UART stub + `SerialLineReader` (pyserial optional)
+- `mocks/` - mock ESP32 UART emitter + in-memory / PTY serial (no firmware)
+- `tests/` - pytest (unittest + harness ahash + e2e pipe)
+- `refs/flat/` - `DIMENSIONS.md` (arc lock explained) + historic flat SVG
+- `refs/oem/` - curated AP1 photos + labelled AP2 reference (caution: not a plate) + `SOURCES.md`
+- `assets/icons/` - OEM telltale SVG/PNG atlas (tinted at draw time)
+- `cad/` - OpenSCAD placeholders (overlay bezel + connectors + `replace_face/`). PETG/ASA notes stay here.
+- `shots/` - sweep / ready / reveal / live / cruise stills
+- `docs/assets/` - unofficial geometric H, intro GIF, VP9 hero, OEM|UI compares
+- `scripts/bake_showcase.py` - regenerate stills + 30 fps hero
+- `scripts/ui_harness.py` - screenshot / ahash harness
+- `scripts/compare_oem.py` - OEM photo | UI composites
+- `pyproject.toml` + `uv.lock` - uv project
+- `apps/harness/` - Next.js App Router web cluster (Vercel; Root Directory `apps/harness`)
+- `.github/workflows/ci.yml` - uv pytest + pygame smoke/e2e + web harness build on push/PR to `main`
 
 ## CAD placeholders
 

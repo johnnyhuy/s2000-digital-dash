@@ -1,4 +1,4 @@
-# Iteration 0003 — size track, amber band thickness
+# Iteration 0003 - size track, amber band thickness
 
 ## Carryover
 
@@ -31,7 +31,7 @@ Chevron needle (`TACH_NEEDLE_TIP` / `TACH_NEEDLE_TAIL`) is independent
 
 Visual calliper on the OEM photo: the band's outer edge lands just above
 the 0 / 9 numerals, ~50–60 px below the curve. `TACH_NUM_INSET + 14`
-(54 + 14 = 68 px) is the numeral drop — the band outer edge must sit
+(54 + 14 = 68 px) is the numeral drop - the band outer edge must sit
 inside that. Picking 56 leaves a 12 px gap from band edge to numeral,
 mirroring the OEM photo.
 
@@ -39,21 +39,21 @@ mirroring the OEM photo.
 
 - Raise `TACH_BAND_OUTER` from `32.0` to `56.0` in `src/gauge_ui.py`
 - Update `tests/test_gauge_ui.py::FaceGeomTests::test_tach_numerals_sit_inside_the_well`
-  — assert numerals + extra end² drop clear the band edge (was asserting
+  - assert numerals + extra end² drop clear the band edge (was asserting
   raw `TACH_NUM_INSET > TACH_BAND_OUTER`)
 - Rebake `tests/harness/goldens.json`
 - Rebake `docs/assets/compare/*.png` and `shots/*.png`
 
 ## Not in scope (deferred)
 
-- Amber orange tint — colour track
-- TEMP / FUEL y position (50.5 % vs OEM ~53 %) — position track
-- Speed centre y (40 % vs OEM 46 %) — position track (deferred)
-- Tach numeral typeface / weight — font track
-- Boot motion timings — motion track
-- Telltale glyph art — graphics track
+- Amber orange tint - colour track
+- TEMP / FUEL y position (50.5 % vs OEM ~53 %) - position track
+- Speed centre y (40 % vs OEM 46 %) - position track (deferred)
+- Tach numeral typeface / weight - font track
+- Boot motion timings - motion track
+- Telltale glyph art - graphics track
 - Dead-code removal (`TACH_END_Y_PCT`, `TACH_R_*`, `TACH_START_DEG`,
-  `TACH_SPAN_DEG`, `tach_angle`, `tach_point` exports) — housekeeping
+  `TACH_SPAN_DEG`, `tach_angle`, `tach_point` exports) - housekeeping
 
 ## Acceptance
 
@@ -62,7 +62,7 @@ mirroring the OEM photo.
   --screenshot shots` → exits 0
 - `uv run python scripts/compare_oem.py` → all five PNGs rebaked
 - `compare_ap1_lit_live.png`: amber band now fills ~10 % of module
-  height (was ~4 %), redline blocks now fill the band depth — visually
+  height (was ~4 %), redline blocks now fill the band depth - visually
   matches OEM
 - Numerals 0 / 9 still sit 12 px below the band outer edge in the well
 - `DIMENSIONS.md` module lock (aspect 2.35:1, side notches 58–72 %)

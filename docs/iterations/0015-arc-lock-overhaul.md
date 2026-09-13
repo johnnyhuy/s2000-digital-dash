@@ -1,4 +1,4 @@
-# Iteration 0015 — arc lock: one measured geometry for pygame, web and CAD
+# Iteration 0015 - arc lock: one measured geometry for pygame, web and CAD
 
 ## Why this breaks the one-track rule
 
@@ -8,7 +8,7 @@ photo the face still did not read as an S2000 cluster: the band was the
 wrong curve, numerals floated, the tach was a needle over a printed scale
 (the OEM is a segmented bar graph), the digits were rounded not mitred,
 and the web harness and the CAD each carried their own copy of the
-geometry. No single track could fix that — the *lock itself* was wrong.
+geometry. No single track could fix that - the *lock itself* was wrong.
 This iteration replaces the lock and re-derives every renderer from it.
 After it, the six-track loop resumes on top of `face_spec.py`.
 
@@ -20,7 +20,7 @@ After it, the six-track loop resumes on top of `face_spec.py`.
   `shots/harness/*.png`, web `docs/assets/web-*.png`
 - CAD: `cad/replace_face/preview/acrylic_face.png`, `assembly.png`
 
-## Diff (all tracks — this is a relock, not a polish)
+## Diff (all tracks - this is a relock, not a polish)
 
 | Element | OEM | Before | After |
 | --- | --- | --- | --- |
@@ -32,18 +32,18 @@ After it, the six-track loop resumes on top of `face_spec.py`.
 | Numerals | rounded gothic, inside the well | Barlow Condensed italic | M PLUS Rounded 1c Bold, on `r_num` along the inward normal |
 | TEMP / FUEL | 8 / 16 block bars with icon + letters | 6 thin ticks | `SegBar`, idle knee at 3–4 blocks (`temp_segments_lit`) |
 | Telltales | ←/→/high beam in the well; strip of nine | all in the strip | `arc_lamps` wells + `strip_lamps` |
-| Web harness | — | HTML bezel + CSS masks | one SVG from `faceSpec.json` |
+| Web harness | - | HTML bezel + CSS masks | one SVG from `faceSpec.json` |
 | CAD mask | windows over the panel | parabola + ten tach slots | sector + LCD + bar + lamp windows from `face_lock.scad`, `min_rim` clip |
-| CAD tray | — | LCD guess | parametric 7" AMOLED pocket, switch wells skipped where they collide |
+| CAD tray | - | LCD guess | parametric 7" AMOLED pocket, switch wells skipped where they collide |
 
 ## Fix
 
-- `src/face_spec.py` — `ArcSpec` / `FaceSpec` for AP1 and AP2; `export_json`,
+- `src/face_spec.py` - `ArcSpec` / `FaceSpec` for AP1 and AP2; `export_json`,
   `export_scad`, `spec_to_scad`
-- `src/gauge_ui.py`, `src/lcd_digits.py` — redrawn on the lock; static-layer
+- `src/gauge_ui.py`, `src/lcd_digits.py` - redrawn on the lock; static-layer
   cache; `reset_render_caches()` after `pygame.quit()`
 - `apps/harness/lib/geometry.ts`, `components/ClusterFace.tsx`,
-  `SevenSeg.tsx`, `LampIcons.tsx` — SVG face from the JSON lock;
+  `SevenSeg.tsx`, `LampIcons.tsx` - SVG face from the JSON lock;
   `Telltales.tsx` removed
 - `cad/replace_face/*.scad`, `mesh_export.py` (trimesh replaces Blender),
   `export.sh`
@@ -68,4 +68,4 @@ After it, the six-track loop resumes on top of `face_spec.py`.
 - size: speed digit height on AP2; strip lamp glyph heights
 - motion: bar-graph cell fill lag vs. the OEM LCD refresh
 - position: SEL / TRIP outboard once the bay is measured
-- CAD: panel drawing, switch locations, callipers — see the measure list
+- CAD: panel drawing, switch locations, callipers - see the measure list
