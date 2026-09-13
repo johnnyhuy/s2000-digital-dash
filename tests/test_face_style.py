@@ -40,7 +40,11 @@ class GeomTests(unittest.TestCase):
 
     def test_default_face_is_ap1_lock(self) -> None:
         self.assertEqual(FACE.style, "ap1")
-        self.assertEqual(FACE.temp[1], FACE.fuel[1])
+        # AP1: TEMP bar left of the speedo, FUEL bar right, both horizontal
+        self.assertLess(FACE.temp[0], FACE.speed_c[0])
+        self.assertLess(FACE.speed_c[0], FACE.fuel[0])
+        self.assertGreater(FACE.temp[2], FACE.temp[3])
+        self.assertGreater(FACE.fuel[2], FACE.fuel[3])
         self.assertLess(FACE.minus_btn[0] + FACE.minus_btn[2], FACE.plus_btn[0])
 
     def test_ap2_stacks_side_gauges_on_the_right(self) -> None:

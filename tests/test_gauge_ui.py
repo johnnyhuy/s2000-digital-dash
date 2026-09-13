@@ -12,26 +12,16 @@ sys.path.insert(0, str(_ROOT))
 sys.path.insert(0, str(_ROOT / "src"))
 sys.path.insert(0, str(_ROOT / "tests"))
 
+from face_spec import AP1, AP2, RPM_MAX  # noqa: E402
 from gauge_ui import (  # noqa: E402
-    ARCH_RISE_PCT,
-    BAR_H_PCT,
     FACE,
     MODULE_ASPECT,
-    NOTCH_BOT_PCT,
-    NOTCH_TOP_PCT,
-    REDLINE_BLOCKS,
-    TACH_BAND_OUTER,
-    TACH_NEEDLE_TAIL,
-TACH_NUM_X_INSET,
-    TACH_NUM_DROP_BASE,
-    TACH_NUM_DROP_PEAK,
-    TACH_TICK_MAJOR,
-    TEMP_SEGS,
-    TEMP_W_PCT,
+    build_face_geom,
     tach_arch_normal,
     tach_arch_xy,
     tach_band_poly,
     tach_num_xy,
+    temp_segments_lit,
     visor_lip_points,
     DisplayState,
     PHASE_READY_S,
@@ -174,78 +164,137 @@ class SmokeTests(unittest.TestCase):
 
 
 class FaceGeomTests(unittest.TestCase):
-    def test_temp_and_fuel_are_horizontal_flanking_bars(self) -> None:
-        tx, ty, tw, th = FACE.temp
-        fx, fy, fw, fh = FACE.fuel
-        self.assertEqual(ty, fy)
-        self.assertEqual(th, fh)
-        self.assertGreater(tw, th * 6)
-        self.assertGreater(fw, fh * 6)
-        self.assertLess(tx + tw, FACE.speed_c[0])
-        self.assertGreater(fx, FACE.speed_c[0])
-        # Flank the speedo at speed-y (OEM puts the bars level with the speed digits).
-        self.assertLess(abs(ty - FACE.speed_c[1]), 4)
-        self.assertLess(th, 16)
+    """Lock the face to the OEM AP1 plate (refs/oem/lit/lit_ap1_carspy_cluster.jpg).
 
-    def test_tach_numerals_sit_inside_the_well(self) -> None:
-        nx, ny = tach_arch_normal(0.5)
-        self.assertGreater(ny, 0.5)
-        ax, ay = tach_arch_xy(0.5)
-        px, py = tach_num_xy(0.5)
-        self.assertGreater(py, ay)
-        # Horizontal inset is a constant along the inward normal — numerals
-        # sit slightly inside the band's x range at the corners.
-        self.assertLess(abs(px - ax), TACH_NUM_X_INSET + 4)
-        # Numerals sit at TACH_NUM_DROP_BASE + end² × (peak − base) below the band.
-        # TACH_NUM_DROP_BASE = 22 px on the UI 752 mh module = ~2.9 % mh,
-        # matching the OEM Car Spy plate's 15 px / 480 mh = 3.13 % mh.
-        self.assertAlmostEqual(TACH_NUM_DROP_BASE, 22.0, delta=1.0)
-        self.assertGreater(TACH_NUM_DROP_BASE + TACH_NUM_DROP_PEAK, TACH_BAND_OUTER)
-        self.assertGreater(TACH_NUM_X_INSET, TACH_TICK_MAJOR[1] + 16)
-        # Chevron sits on the printed band, not a dart hanging into the well
-        self.assertLess(TACH_NEEDLE_TAIL, TACH_BAND_OUTER)
-        left = tach_num_xy(0.0)
-        left_arch = tach_arch_xy(0.0)
-        self.assertGreater(left[1], left_arch[1])
-        self.assertGreater(tach_num_xy(1.0)[1], tach_arch_xy(1.0)[1])
+    All numbers are fractions of the module box (x/W, y/H). The photo is
+    squashed by the camera, but a uniform squash keeps y-fractions, so the
+    measurements below are read straight off the plate.
+    """
 
-    def test_tach_numeral_drop_matches_oem(self) -> None:
-        """OEM Car Spy: numerals 0/9 just clear the band ends, middle numerals
-        drop deep into the well. Vertical drop varies with `1 − end²`.
-        """
-        my, mh = FACE.module[1], FACE.module[3]
-        _, y_end = tach_arch_xy(0.0)
-        _, y_peak = tach_arch_xy(0.5)
-        # 0/9 drop ~15 px (UI scale, OEM ~3% mh)
-        drop_end = tach_num_xy(0.0)[1] - y_end
-        self.assertAlmostEqual(drop_end, TACH_NUM_DROP_BASE, delta=2.0)
-        drop_end_pct = drop_end / mh
-        self.assertLess(drop_end_pct, 0.04)
-        # Middle numerals drop ~200 px (UI scale, OEM ~28% mh)
-        drop_mid = tach_num_xy(0.5)[1] - y_peak
-        self.assertAlmostEqual(drop_mid, TACH_NUM_DROP_BASE + TACH_NUM_DROP_PEAK, delta=4.0)
-        drop_mid_pct = drop_mid / mh
-        self.assertGreater(drop_mid_pct, 0.20)
-        self.assertLess(drop_mid_pct, 0.32)
-        # And 0/9 always drop LESS than the middle numerals (formula inverted
-        # from the previous `end² × extra` shape).
-        self.assertLess(drop_end, drop_mid)
+    def _pct(self, x: float, y: float) -> tuple[float, float]:
+        mx, my, mw, mh = FACE.module
+        return (x - mx) / mw, (y - my) / mh
 
-    def test_band_peak_locks_to_oem(self) -> None:
-        """OEM Car Spy photo: band peak (printed amber arch top) at ~10.4% mh."""
-        my, mh = FACE.module[1], FACE.module[3]
-        _, y_peak = tach_arch_xy(0.5)
-        peak_pct = (y_peak - my) / mh
-        self.assertAlmostEqual(peak_pct, 0.104, delta=0.015)
+    def _assert_pct(self, px: tuple[float, float], want: tuple[float, float], delta: float = 0.02) -> None:
+        got = self._pct(*px)
+        self.assertAlmostEqual(got[0], want[0], delta=delta)
+        self.assertAlmostEqual(got[1], want[1], delta=delta)
 
-    def test_visor_lip_hugs_the_printed_tach(self) -> None:
-        ax, ay = tach_arch_xy(0.5)
+    def test_module_aspect_is_locked(self) -> None:
+        self.assertAlmostEqual(MODULE_ASPECT, 2.35, places=2)
+        mw, mh = FACE.module[2], FACE.module[3]
+        self.assertAlmostEqual(mw / mh, 2.35, delta=0.05)
+
+    def test_tach_is_a_true_circular_arc(self) -> None:
+        t = AP1.tach
+        cx, cy = FACE.px(t.cx, t.cy / MODULE_ASPECT)
+        for frac in (0.0, 0.25, 0.5, 0.75, 1.0):
+            x, y = tach_arch_xy(frac)
+            r = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
+            self.assertAlmostEqual(r / FACE.module[2], t.r_line, delta=0.002)
+
+    def test_band_peak_and_ends_land_on_oem(self) -> None:
+        """Band outer edge peaks at ~2.3 % H; 0 / 9 ticks at x ≈ 0.19 / 0.81, y ≈ 0.36 H."""
+        t = AP1.tach
+        _, peak_y = FACE.arc_px(t.r_out, -90.0)
+        self.assertAlmostEqual(self._pct(0, peak_y)[1], 0.023, delta=0.01)
+        x0, y0 = self._pct(*tach_arch_xy(0.0))
+        x9, y9 = self._pct(*tach_arch_xy(1.0))
+        self.assertAlmostEqual(x0, 0.19, delta=0.02)
+        self.assertAlmostEqual(x9, 0.81, delta=0.02)
+        self.assertAlmostEqual(y0, 0.36, delta=0.03)
+        self.assertAlmostEqual(y0, y9, delta=0.002)
+
+    def test_zero_to_one_is_squeezed(self) -> None:
+        t = AP1.tach
+        first = t.angle_deg(1000) - t.angle_deg(0)
+        rest = (t.angle_deg(9000) - t.angle_deg(1000)) / 8.0
+        self.assertAlmostEqual(first / rest, 0.60, delta=0.02)
+        self.assertAlmostEqual(t.angle_deg(9000) - t.angle_deg(0), 75.6, delta=0.5)
+        self.assertEqual(t.angle_deg(RPM_MAX), t.a9_deg)
+
+    def test_numerals_sit_just_inside_the_baseline(self) -> None:
+        for frac in (0.0, 0.5, 1.0):
+            ax, ay = tach_arch_xy(frac)
+            nx, ny = tach_arch_normal(frac)
+            px, py = tach_num_xy(frac)
+            inset = ((px - ax) ** 2 + (py - ay) ** 2) ** 0.5 / FACE.module[2]
+            self.assertAlmostEqual(inset, AP1.tach.num_inset, delta=0.001)
+            # numerals are displaced along the inward normal, i.e. below the arc
+            self.assertGreater((px - ax) * nx + (py - ay) * ny, 0)
+            self.assertGreater(py, ay)
+        # "5" sits at ~19 % H on the plate, "0" at ~43 % H
+        self.assertAlmostEqual(self._pct(*tach_num_xy(5 / 9))[1], 0.19, delta=0.03)
+        self.assertAlmostEqual(self._pct(*tach_num_xy(0.0))[1], 0.43, delta=0.03)
+
+    def test_visor_lip_clears_the_band(self) -> None:
+        _, peak_y = FACE.arc_px(AP1.tach.r_out, -90.0)
         pts = visor_lip_points()
         self.assertGreater(len(pts), 20)
         mid = pts[len(pts) // 2]
-        self.assertLess(mid[1], ay)
-        self.assertLess(abs(mid[0] - ax), 24)
-        self.assertLess(ay - mid[1], 10)
+        self.assertLess(mid[1], peak_y)
+        self.assertLess(peak_y - mid[1], FACE.module[2] * 0.012)
+        # springs meet the bezel at ~8 % / 92 % W
+        self.assertAlmostEqual(self._pct(*pts[0])[0], 0.08, delta=0.02)
+        self.assertAlmostEqual(self._pct(*pts[-1])[0], 0.92, delta=0.02)
+
+    def test_band_runs_under_the_hood_lip_not_past_it(self) -> None:
+        """OEM: the band ends tuck under the hood edge. The printed band may
+        run a hair under the lip but never out past the cowl, and the apex
+        clears the crown with a visible gap."""
+        t = AP1.tach
+        lip_px = AP1.crown_lip * FACE.module[2]
+
+        def crown_y_at(bx: float) -> float:
+            dx = (bx - FACE.px(AP1.tach.cx, 0)[0]) / FACE.module[2]
+            dy = (AP1.crown_r ** 2 - dx ** 2) ** 0.5
+            return FACE.px(0, AP1.crown_cy / MODULE_ASPECT - dy)[1]
+
+        _, apex_y = FACE.arc_px(t.r_out, -90.0)
+        self.assertGreater(apex_y - crown_y_at(FACE.px(0.5, 0)[0]), lip_px * 0.25)
+        for deg in (t.band_start_deg(), -110.0, -70.0, t.band_end_deg()):
+            bx, by = FACE.arc_px(t.r_out, deg)
+            self.assertGreater(by, crown_y_at(bx) - lip_px, f"band escapes the cowl at {deg}°")
+
+    def test_temp_and_fuel_are_horizontal_flanking_bars(self) -> None:
+        tx, ty, tw, th = FACE.temp
+        fx, fy, fw, fh = FACE.fuel
+        self.assertGreater(tw, th * 2.5)
+        self.assertGreater(fw, fh * 2.2)
+        self.assertLess(tx + tw, FACE.speed_win[0])
+        self.assertGreater(fx, FACE.speed_win[0] + FACE.speed_win[2])
+        # OEM plate: TEMP window x 0.13–0.29 at 52–57.5 % H; FUEL 0.815–0.925 at 46.5–51 % H
+        self._assert_pct((tx, ty), (0.13, 0.52))
+        self._assert_pct((fx, fy), (0.815, 0.465))
+        self.assertEqual(AP1.temp_segs, 8)
+        self.assertEqual(AP1.fuel_segs, 16)
+
+    def test_temp_blocks_idle_low(self) -> None:
+        # 89 °C → 3–4 of 8 blocks like the real cluster; H → all 8
+        from gauge_ui import ect_frac
+
+        self.assertIn(temp_segments_lit(ect_frac(89.0), 8), (3, 4))
+        self.assertEqual(temp_segments_lit(0.0, 8), 0)
+        self.assertEqual(temp_segments_lit(1.0, 8), 8)
+
+    def test_lcd_windows_lock_to_oem(self) -> None:
+        sx, sy, sw, sh = FACE.speed_win
+        ox, oy, ow, oh = FACE.odo_win
+        self._assert_pct((sx, sy), (0.39, 0.30))
+        self.assertAlmostEqual(sw / FACE.module[2], 0.22, delta=0.02)
+        self._assert_pct((ox, oy), (0.39, 0.57))
+        self.assertGreater(oy, sy + sh)
+        self.assertAlmostEqual(self._pct(*FACE.speed_c)[0], 0.50, delta=0.01)
+        self.assertAlmostEqual(sh / FACE.module[3], 0.24, delta=0.03)
+
+    def test_strip_and_hardware_lock(self) -> None:
+        lx, ly, lw, lh = FACE.lamp_band
+        self._assert_pct((lx, ly), (0.155, 0.745))
+        self.assertGreater(ly, FACE.spring_y)
+        self.assertLess(FACE.minus_btn[0] + FACE.minus_btn[2], FACE.plus_btn[0])
+        self.assertLess(FACE.plus_btn[0] + FACE.plus_btn[2], lx)
+        self.assertGreater(FACE.trip[0], lx + lw)
+        self.assertGreaterEqual(FACE.bezel[1], FACE.spring_y)
 
     def test_module_is_flat_bottom_and_stepped(self) -> None:
         bl, br = hood_bottom_corners(FACE)
@@ -253,110 +302,26 @@ class FaceGeomTests(unittest.TestCase):
         self.assertGreater(FACE.step, 0)
         self.assertGreater(FACE.lcd[0], FACE.module[0])
         self.assertLess(FACE.lcd[0] + FACE.lcd[2], FACE.module[0] + FACE.module[2])
+        self.assertLessEqual(FACE.hood_peak_y, FACE.module[1] + 2)
 
-    def test_bezel_sits_below_lcd(self) -> None:
-        lcd_bottom = FACE.lcd[1] + FACE.lcd[3]
-        self.assertGreaterEqual(FACE.bezel[1], lcd_bottom)
+    def test_car_mode_fills_the_panel(self) -> None:
+        g = build_face_geom(1280, 720, car=True)
+        self.assertEqual(g.module[0], 0)
+        self.assertEqual(g.module[2], 1280)
+        self.assertTrue(g.car)
 
-    def test_module_aspect_is_locked(self) -> None:
-        self.assertAlmostEqual(MODULE_ASPECT, 2.35, places=2)
-        mw, mh = FACE.module[2], FACE.module[3]
-        self.assertAlmostEqual(mw / mh, 2.35, delta=0.05)
-
-    def test_lcd_is_wide_and_short(self) -> None:
-        aspect = FACE.lcd[2] / FACE.lcd[3]
-        self.assertGreater(aspect, 2.8)
-        self.assertLess(aspect, 4.2)
-
-    def test_locked_flanking_gauges_and_speed_percentages(self) -> None:
-        mx, my, mw, mh = FACE.module
-        self.assertAlmostEqual((FACE.temp[0] - mx) / mw, 0.080, delta=0.015)
-        # OEM puts the speed/odo LCD cluster *under* the printed band, so the
-        # TEMP / FUEL bars sit at the same y as the speedo centre (~68% mh).
-        self.assertAlmostEqual((FACE.temp[1] - my) / mh, 0.680, delta=0.02)
-        self.assertAlmostEqual(FACE.temp[3] / mh, BAR_H_PCT, delta=0.01)
-        self.assertAlmostEqual(FACE.temp[2] / mw, TEMP_W_PCT, delta=0.015)
-        self.assertAlmostEqual((FACE.fuel[0] - mx) / mw, 0.760, delta=0.015)
-        self.assertAlmostEqual((FACE.fuel[1] - my) / mh, 0.680, delta=0.02)
-        self.assertAlmostEqual((FACE.speed_c[0] - mx) / mw, 0.50, delta=0.01)
-        self.assertAlmostEqual((FACE.speed_c[1] - my) / mh, 0.680, delta=0.02)
-        # ODO row sits just under the speedo, just above the lamp strip top.
-        self.assertAlmostEqual((FACE.odo_c[1] - my) / mh, 0.74, delta=0.02)
-        self.assertAlmostEqual((FACE.bezel[1] - my) / mh, 0.805, delta=0.02)
-
-    def test_five_redline_blocks(self) -> None:
-        self.assertEqual(REDLINE_BLOCKS, 5)
-
-    def test_six_oem_temp_bars(self) -> None:
-        self.assertEqual(TEMP_SEGS, 6)
+    def test_ap2_is_the_same_housing(self) -> None:
+        g = build_face_geom(style="ap2")
+        self.assertEqual(g.lcd, FACE.lcd)
+        self.assertEqual(AP2.crown_r, AP1.crown_r)
+        self.assertTrue(AP2.side_gauges_arched)
+        self.assertLess(AP2.tach.a9_deg, -60.0)  # 9 sits near the apex, not the right spring
 
     def test_tach_band_is_a_closed_polygon(self) -> None:
         pts = tach_band_poly(0.0, 0.5, 1.0, 16)
         self.assertGreater(len(pts), 16)
         xs = [p[0] for p in pts]
         self.assertLess(min(xs), max(xs))
-
-    def test_tach_arch_is_parabola_not_a_drop(self) -> None:
-        x0, y0 = tach_arch_xy(0.0)
-        x1, y1 = tach_arch_xy(0.5)
-        x2, y2 = tach_arch_xy(1.0)
-        self.assertLess(x0, x1)
-        self.assertLess(x1, x2)
-        self.assertLess(y1, y0)
-        self.assertLess(y1, y2)
-
-    def test_notch_and_arch_lock(self) -> None:
-        mx, my, mw, mh = FACE.module
-        self.assertAlmostEqual(NOTCH_TOP_PCT, 0.58)
-        self.assertAlmostEqual(NOTCH_BOT_PCT, 0.72)
-        self.assertAlmostEqual(ARCH_RISE_PCT, 0.60, delta=0.005)
-        self.assertAlmostEqual((FACE.notch_top_y - my) / mh, 0.58, delta=0.015)
-        self.assertAlmostEqual((FACE.notch_bot_y - my) / mh, 0.72, delta=0.015)
-        self.assertAlmostEqual((FACE.spring_y - my) / mh, 0.60, delta=0.02)
-        self.assertEqual(FACE.hood_peak_y, my)
-
-    def test_band_rise_lands_on_oem(self) -> None:
-        """OEM band ends sit at ~56% of module height (DIMENSIONS.md lock)."""
-        my, mh = FACE.module[1], FACE.module[3]
-        x0, y0 = tach_arch_xy(0.0)
-        x1, y1 = tach_arch_xy(1.0)
-        ends_pct = (y0 - my) / mh
-        self.assertAlmostEqual(ends_pct, 0.56, delta=0.02)
-
-    def test_numeral_sits_below_band_end(self) -> None:
-        """Numerals 0/9 drop below the band ends into the well (OEM lock)."""
-        my, mh = FACE.module[1], FACE.module[3]
-        _, y_band = tach_arch_xy(0.0)
-        _, y_num = tach_num_xy(0.0)
-        # Numerals always sit below the band (inset along inward normal plus extra end² drop).
-        self.assertGreater(y_num, y_band)
-        # And the drop stays bounded — well clear of the speedo centre at 68%.
-        drop_pct = (y_num - my) / mh
-        self.assertLess(drop_pct, 0.70)
-
-    def test_lcd_cluster_locks_to_oem_below_band(self) -> None:
-        """OEM Car Spy photo: speed/odo sit BELOW the band ends (~56% mh).
-
-        The speed centre should be ~68% of mh, the odo row just under it at
-        ~74%, and the TEMP/FUEL bars at the same y as the speedo centre.
-        """
-        my, mh = FACE.module[1], FACE.module[3]
-        self.assertAlmostEqual((FACE.speed_c[1] - my) / mh, 0.68, delta=0.02)
-        self.assertAlmostEqual((FACE.odo_c[1] - my) / mh, 0.74, delta=0.02)
-        self.assertAlmostEqual((FACE.temp[1] - my) / mh, 0.68, delta=0.02)
-        self.assertAlmostEqual((FACE.fuel[1] - my) / mh, 0.68, delta=0.02)
-        # Odo row sits BELOW the speedo (no overlap with the speed window).
-        self.assertGreater(FACE.odo_c[1], FACE.speed_c[1])
-        # Speedo sits BELOW the band ends (OEM puts speed under the printed band).
-        x_end, y_end = tach_arch_xy(0.0)
-        self.assertGreater(FACE.speed_c[1], y_end)
-
-    def test_speed_sits_below_tach_numerals(self) -> None:
-        """OEM photo: speed/odo sit below the 0/9 numerals, not above them."""
-        my, mh = FACE.module[1], FACE.module[3]
-        _, y_num = tach_num_xy(0.0)
-        # Numeral 0 sits at ~59% mh in OEM; speed sits at ~68% mh — clearly below.
-        self.assertGreater(FACE.speed_c[1], y_num)
 
 
 class HeadlessDrawTests(unittest.TestCase):
@@ -413,9 +378,12 @@ class HeadlessDrawTests(unittest.TestCase):
         strip = region(frame, FACE.lamp_band)
         self.assertGreater(self.sample_near(strip, LAMP_RED, step=2, tol=40), 0)
         self.assertGreater(self.sample_near(strip, LAMP_AMBER, step=2, tol=40), 0)
-        self.assertGreater(self.sample_near(strip, LAMP_GREEN, step=2, tol=40), 0)
-        self.assertGreater(self.sample_near(strip, LAMP_BLUE, step=2, tol=40), 0)
         self.assertEqual(self.sample_near(strip, NEON_CYAN, step=2, tol=20), 0)
+        # turn arrows / high beam live inside the tach arc on the OEM plate
+        well = region(frame, FACE.lcd)
+        self.assertGreater(self.sample_near(well, LAMP_GREEN, step=2, tol=40), 0)
+        self.assertGreater(self.sample_near(well, LAMP_BLUE, step=2, tol=40), 0)
+        self.assertEqual(self.sample_near(well, NEON_CYAN, step=2, tol=20), 0)
 
     def test_reveal_bulb_check_lights_the_strip(self) -> None:
         from gauge_ui import draw_hardware_strip

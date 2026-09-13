@@ -156,7 +156,8 @@ class E2EPipelineTests(unittest.TestCase):
                 written = write_screenshots(pygame, fonts, face, Path(tmp))
                 self.assertEqual([p.name for p in written], SHOT_NAMES)
                 live = pygame.image.load(str(Path(tmp) / "04_live.png"))
-                self.assertGreater(sample_near(live.subsurface(FACE.lamp_band), LAMP_BLUE, step=2, tol=40), 0)
+                # high beam is one of the round windows inside the tach arc
+                self.assertGreater(sample_near(live.subsurface(FACE.lcd), LAMP_BLUE, step=2, tol=40), 0)
                 self.assertEqual(sample_near(live, NEON_CYAN, step=10, tol=18), 0)
         finally:
             pygame.quit()
