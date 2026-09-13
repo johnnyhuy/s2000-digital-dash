@@ -57,12 +57,17 @@ export function HarnessApp() {
   const rawRef = useRef(raw);
 
   useEffect(() => {
-    setFaceStyle(styleFromSearch());
-    if (prefersReducedMotion()) {
-      skippedRef.current = true;
-      setPhase("live");
-      setPhaseT(1);
-    }
+    // Client-only inputs (URL, media query) — applied after hydration on the
+    // next frame so the SSR markup and first client render match.
+    const frame = requestAnimationFrame(() => {
+      setFaceStyle(styleFromSearch());
+      if (prefersReducedMotion()) {
+        skippedRef.current = true;
+        setPhase("live");
+        setPhaseT(1);
+      }
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {

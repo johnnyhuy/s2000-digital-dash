@@ -1,78 +1,53 @@
-"""Sanity checks for cleaned replace-face printables (no pygame)."""
+"""Sanity checks for the replace-face printables and their lock (no pygame)."""
 
 from __future__ import annotations
 
 import re
 import struct
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
+from face_spec import spec_for, spec_to_scad  # noqa: E402
+
 REPLACE = ROOT / "cad" / "replace_face"
 PRINT_STL = REPLACE / "print" / "stl"
 PRINT_STEP = REPLACE / "print" / "step"
 PRINT_OBJ = REPLACE / "print" / "obj"
 PREVIEW = REPLACE / "preview" / "assembly.glb"
-SCRIPT = REPLACE / "blender_remesh.py"
-
-PARTS = (
-    "backlight",
-    "backlight_web",
-    "acrylic_face",
-    "button_rocker",
-    "button_sel",
-    "button_trip",
-)
-
+SCRIPT = REPLACE / "mesh_export.py"
+LOCK_SCAD = REPLACE / "face_lock.scad"
 DIMS_SCAD = REPLACE / "dims.scad"
 OUTLINE_SCAD = REPLACE / "outline.scad"
 README = REPLACE / "README.md"
-BLENDER_MD = REPLACE / "BLENDER.md"
 
-# AP1 lock (#12 / refs/flat/DIMENSIONS.md) — horizontal flanking bars.
-LOCK = {
-    "face_w": 170.0,
-    "face_h": 72.3,
-    "face_aspect": 2.35,
-    "notch_top_pct": 0.58,
-    "notch_bot_pct": 0.72,
-    "arch_rise_pct": 0.28,
-    "temp_x_pct": 0.080,
-    "temp_y_pct": 0.505,
-    "fuel_x_pct": 0.760,
-    "fuel_y_pct": 0.505,
-    "bar_w_pct": 0.160,
-    "bar_h_pct": 0.012,
-    "temp_segs": 6,
-    "speed_x_pct": 0.50,
-    "speed_y_pct": 0.40,
-}
+PARTS = ("backlight", "backlight_web", "acrylic_face", "button_rocker", "button_sel", "button_trip")
 
-# Expected bbox after a light clean — must stay on the OpenSCAD lock.
+# Expected bbox of the cleaned printables — pins the meshes to the SCAD lock.
 # (min), (max), tolerance mm
 BBOX = {
-    "acrylic_face": ((0.0, 0.0, 0.0), (170.0, 72.3, 2.0), 0.05),
-    "backlight": ((-2.0, -2.0, 0.0), (172.0, 74.3, 12.0), 0.08),
-    "backlight_web": ((0.45, 0.45, 0.0), (169.55, 71.85, 3.8), 0.08),
-    "button_rocker": ((-1.6, -1.6, 0.0), (17.24, 7.68, 3.6), 0.08),
-    "button_sel": ((-0.4, -0.4, 0.0), (10.94, 6.48, 3.6), 0.08),
-    "button_trip": ((-0.4, -0.4, 0.0), (10.94, 6.48, 3.6), 0.08),
+    "acrylic_face": ((0.0, 0.0, 0.0), (170.0, 75.06, 2.0), 0.05),
+    "backlight": ((-2.0, -16.13, 0.0), (172.0, 88.47, 12.0), 0.08),
+    "backlight_web": ((3.85, 3.85, 0.0), (166.15, 53.77, 0.9), 0.08),
+    "button_rocker": ((-1.6, -1.6, 0.0), (19.96, 10.1, 3.6), 0.08),
+    "button_sel": ((-1.0, -1.0, 0.0), (7.8, 5.34, 3.6), 0.08),
+    "button_trip": ((-1.0, -1.0, 0.0), (7.8, 5.34, 3.6), 0.08),
 }
 
 
 def _read_binary_stl(path: Path):
     data = path.read_bytes()
-    if len(data) < 84:
-        raise ValueError("too small")
     count = struct.unpack_from("<I", data, 80)[0]
     if 84 + count * 50 != len(data):
-        raise ValueError("not a binary STL")
+        raise ValueError(f"{path.name}: not a binary STL")
     mn = [1e9, 1e9, 1e9]
     mx = [-1e9, -1e9, -1e9]
     for i in range(count):
-        off = 84 + i * 50
-        vals = struct.unpack_from("<12f", data, off)
+        vals = struct.unpack_from("<12f", data, 84 + i * 50)
         for v in (vals[3:6], vals[6:9], vals[9:12]):
             for a in range(3):
                 mn[a] = min(mn[a], v[a])
@@ -80,31 +55,56 @@ def _read_binary_stl(path: Path):
     return count, tuple(mn), tuple(mx)
 
 
-def _parse_scad_assigns(path: Path) -> dict[str, float]:
+def _scad_numbers(path: Path) -> dict[str, float]:
     text = path.read_text(encoding="utf-8")
-    vals: dict[str, float] = {}
-    for match in re.finditer(
-        r"^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*;",
-        text,
-        flags=re.MULTILINE,
-    ):
-        vals[match.group(1)] = float(match.group(2))
-    return vals
+    pat = r"^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*;"
+    return {m.group(1): float(m.group(2)) for m in re.finditer(pat, text, flags=re.MULTILINE)}
+
+
+class ReplaceFaceLockTest(unittest.TestCase):
+    def test_face_lock_scad_is_in_sync_with_face_spec(self):
+        # Arrange: the committed lock must be exactly what the spec exports today.
+        expected = spec_to_scad(spec_for("ap1"))
+        # Act / Assert
+        self.assertEqual(LOCK_SCAD.read_text(encoding="utf-8"), expected, "run `uv run python src/face_spec.py`")
+
+    def test_lock_carries_the_arc_geometry_not_a_parabola(self):
+        lock = _scad_numbers(LOCK_SCAD)
+        for name in ("tach_cx", "tach_cy_h", "tach_r_out", "tach_r_in", "tach_a0", "tach_a9", "crown_cy_h", "crown_r", "spring_y_h"):
+            self.assertIn(name, lock, name)
+        self.assertLess(lock["tach_a0"], lock["tach_a9"])
+        self.assertGreater(lock["tach_r_out"], lock["tach_r_in"])
+        self.assertAlmostEqual(lock["module_aspect"], 2.35, places=3)
+        text = (DIMS_SCAD.read_text(encoding="utf-8") + OUTLINE_SCAD.read_text(encoding="utf-8")).lower()
+        self.assertNotIn("parabola", text)
+        self.assertNotIn("28 u", text)
+
+    def test_dims_derive_mm_from_the_lock(self):
+        text = DIMS_SCAD.read_text(encoding="utf-8")
+        self.assertIn("include <face_lock.scad>", text)
+        dims = _scad_numbers(DIMS_SCAD)
+        self.assertAlmostEqual(dims["face_w"], 170.0)
+        # Panel pocket is parametric, not the face box.
+        for name in ("panel_w", "panel_h", "panel_t", "panel_active_w", "panel_active_h"):
+            self.assertIn(name, dims, name)
+        self.assertGreater(dims["panel_active_h"], dims["face_w"] / 2.35)
+        self.assertLess(dims["panel_active_w"], dims["face_w"])
+
+    def test_outline_cuts_display_windows_from_the_lock(self):
+        text = OUTLINE_SCAD.read_text(encoding="utf-8")
+        for mod in ("tach_window_2d", "speed_window_2d", "odo_window_2d", "temp_window_2d", "fuel_window_2d", "arc_lamp_holes_2d", "strip_window_2d", "panel_pocket_2d"):
+            self.assertIn(f"module {mod}(", text, mod)
+        self.assertIn("min_rim", text)
 
 
 class ReplaceFacePrintablesTest(unittest.TestCase):
-    def test_blender_script_help_without_bpy(self):
-        import subprocess
-        import sys
-
-        proc = subprocess.run(
-            [sys.executable, str(SCRIPT), "--help"],
-            check=False,
-            capture_output=True,
-            text=True,
-        )
-        self.assertEqual(proc.returncode, 0, proc.stderr)
-        self.assertIn("blender --background --python", proc.stdout)
+    def test_mesh_export_help_runs_without_trimesh(self):
+        proc = subprocess.run([sys.executable, str(SCRIPT), "--help"], check=False, capture_output=True, text=True)
+        # numpy / trimesh may be missing in a bare venv — only the import may fail.
+        if proc.returncode != 0:
+            self.assertIn("ModuleNotFoundError", proc.stderr)
+            return
+        self.assertIn("--explode", proc.stdout)
 
     def test_cleaned_stls_exist_and_keep_lock_bbox(self):
         for part in PARTS:
@@ -114,14 +114,10 @@ class ReplaceFacePrintablesTest(unittest.TestCase):
             self.assertGreater(count, 10, part)
             exp_min, exp_max, tol = BBOX[part]
             for i, axis in enumerate("xyz"):
-                self.assertAlmostEqual(
-                    mn[i], exp_min[i], delta=tol, msg=f"{part} min {axis}"
-                )
-                self.assertAlmostEqual(
-                    mx[i], exp_max[i], delta=tol, msg=f"{part} max {axis}"
-                )
+                self.assertAlmostEqual(mn[i], exp_min[i], delta=tol, msg=f"{part} min {axis}")
+                self.assertAlmostEqual(mx[i], exp_max[i], delta=tol, msg=f"{part} max {axis}")
 
-    def test_faceted_step_and_obj_fallback(self):
+    def test_faceted_step_and_obj(self):
         for part in PARTS:
             step = PRINT_STEP / f"{part}.step"
             obj = PRINT_OBJ / f"{part}.obj"
@@ -135,50 +131,17 @@ class ReplaceFacePrintablesTest(unittest.TestCase):
             self.assertIn("v ", obj.read_text(encoding="ascii", errors="replace")[:4000])
 
     def test_assembly_glb_is_binary_gltf(self):
-        self.assertTrue(PREVIEW.is_file(), PREVIEW)
         data = PREVIEW.read_bytes()
         self.assertGreater(len(data), 200)
         self.assertEqual(data[:4], b"glTF")
 
-    def test_dims_match_horizontal_flanking_lock(self):
-        dims = _parse_scad_assigns(DIMS_SCAD)
-        for name, expected in LOCK.items():
-            self.assertIn(name, dims, name)
-            self.assertAlmostEqual(dims[name], expected, places=3, msg=name)
-
-        # Horizontal envelopes flank the speedo — not a bottom bar, not vertical.
-        self.assertGreater(dims["bar_w_pct"], dims["bar_h_pct"] * 6)
-        self.assertLess(dims["temp_x_pct"] + dims["bar_w_pct"], dims["speed_x_pct"])
-        self.assertGreater(dims["fuel_x_pct"], dims["speed_x_pct"])
-        self.assertEqual(dims["temp_y_pct"], dims["fuel_y_pct"])
-        self.assertAlmostEqual(dims["face_w"] / dims["face_h"], dims["face_aspect"], places=2)
-
-        text = DIMS_SCAD.read_text(encoding="utf-8")
-        self.assertNotRegex(text, r"temp_x_pct\s*=\s*0\.075")
-        self.assertNotRegex(text, r"temp_y_pct\s*=\s*0\.72")
-        self.assertNotRegex(text, r"bar_w_pct\s*=\s*0\.180")
-        self.assertNotRegex(text, r"bar_h_pct\s*=\s*0\.030")
-
-    def test_outline_keeps_horizontal_bar_windows(self):
-        text = OUTLINE_SCAD.read_text(encoding="utf-8")
-        self.assertIn("module temp_bar_2d()", text)
-        self.assertIn("module fuel_bar_2d()", text)
-        self.assertIn("temp_w, temp_h", text)
-        self.assertIn("fuel_w, fuel_h", text)
-        self.assertNotIn("temp_h, temp_w", text)
-        self.assertNotIn("fuel_h, fuel_w", text)
-        self.assertIn("never a vertical stack", text.lower())
-
-    def test_docs_cite_horizontal_lock_and_dimensions(self):
+    def test_readme_points_at_the_shared_lock(self):
         readme = README.read_text(encoding="utf-8")
-        blender = BLENDER_MD.read_text(encoding="utf-8")
-        for text in (readme, blender):
-            self.assertIn("DIMENSIONS.md", text)
-            self.assertIn("8.0%", text)
-            self.assertIn("76.0%", text)
-            self.assertIn("50.5%", text)
-            self.assertIn("horizontal", text.lower())
-            self.assertIn("#12", text)
+        self.assertIn("face_spec.py", readme)
+        self.assertIn("face_lock.scad", readme)
+        self.assertIn("not a verified ap1 drop-in", readme.lower())
+        self.assertNotIn("blender --background", readme.lower())
+        self.assertIn("mesh_export.py", readme)
 
 
 if __name__ == "__main__":

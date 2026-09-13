@@ -14,8 +14,9 @@
   --lamp-ghost: #1a1816;
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-share-tech), var(--font-geist-mono), ui-monospace, monospace;
-  --font-cluster: var(--font-barlow), var(--font-oxanium), var(--font-geist-sans), ui-sans-serif, sans-serif;
-  --font-tach: var(--font-barlow), var(--font-cluster);
+  --font-cluster: var(--font-mplus), var(--font-geist-sans), ui-sans-serif, sans-serif;
+  --font-tach: var(--font-mplus), var(--font-cluster);
+  --font-ready: var(--font-oxanium), var(--font-cluster);
 }
 
 @theme inline {
@@ -135,13 +136,10 @@ body {
 
 .cluster-stage > svg text.tach-num {
   font-family: var(--font-tach);
-  font-style: italic;
-  font-weight: 600;
-  letter-spacing: -0.045em;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   font-synthesis: none;
-  paint-order: stroke fill;
-  stroke: #050302;
-  stroke-width: 0.42px;
 }
 
 .cluster-stage > svg text.lcd-label,
@@ -154,7 +152,7 @@ body {
 }
 
 .ready-word {
-  font-family: var(--font-cluster);
+  font-family: var(--font-ready);
   letter-spacing: 0.08em;
 }
 
@@ -171,29 +169,8 @@ body {
   transition: fill 200ms ease-out;
 }
 
-.needle {
-  filter: drop-shadow(0 0 1.8px rgba(255, 226, 150, 0.72));
-  transition: filter 120ms ease-out;
-}
-
-.needle-hot {
-  filter: drop-shadow(0 0 3.6px rgba(255, 48, 32, 0.86));
-}
-
-.cluster-live .needle-hot {
-  animation: redline-pulse 0.92s ease-in-out infinite;
-}
-
 .cluster-live .seven-seg {
   animation: lcd-idle 3.4s ease-in-out infinite;
-}
-
-.cluster-reveal .needle {
-  animation: needle-settle 1.55s cubic-bezier(0.18, 0.9, 0.22, 1);
-}
-
-.cluster-sweep .needle {
-  animation: sweep-needle 1.35s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .sweep-bead {
@@ -275,34 +252,6 @@ body {
   }
 }
 
-@keyframes needle-settle {
-  from {
-    filter: drop-shadow(0 0 10px rgba(255, 208, 112, 0.9));
-  }
-  to {
-    filter: drop-shadow(0 0 2.8px rgba(255, 208, 112, 0.62));
-  }
-}
-
-@keyframes sweep-needle {
-  from {
-    filter: drop-shadow(0 0 12px rgba(255, 224, 150, 0.95));
-  }
-  to {
-    filter: drop-shadow(0 0 2.8px rgba(255, 208, 112, 0.62));
-  }
-}
-
-@keyframes redline-pulse {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 3.4px rgba(255, 48, 32, 0.82));
-  }
-  50% {
-    filter: drop-shadow(0 0 5.2px rgba(255, 72, 40, 0.94));
-  }
-}
-
 @keyframes lcd-idle {
   0%,
   100% {
@@ -313,135 +262,13 @@ body {
   }
 }
 
-.bezel {
-  position: absolute;
-  left: 1.2%;
-  right: 1.2%;
-  top: 80.2%;
-  height: 18.2%;
-  display: grid;
-  grid-template-columns: 7.6rem minmax(0, 1fr) 6.8rem;
-  gap: 0.5rem;
-  align-items: center;
-  padding: 0.15rem 0.4rem 0.05rem;
-}
-
-.bezel-left {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 0.28rem;
-  min-width: 0;
-  height: 100%;
-  padding-top: 0.35rem;
-}
-
-.round-pair {
-  display: flex;
-  gap: 0.45rem;
-  flex-shrink: 0;
-}
-
-.round-btn {
-  display: grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 24%, #ecece8, #9a9a96 42%, #5c5c5a 78%);
-  color: #f4f0e8;
-  font-weight: 700;
-  font-size: 0.72rem;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    inset 0 -2px 3px rgba(0, 0, 0, 0.35),
-    0 2px 3px rgba(0, 0, 0, 0.55);
-}
-
-.round-btn.minus {
-  color: #b01818;
-}
-
-.cancel {
-  display: flex;
-  align-items: center;
-  gap: 0.28rem;
-  margin: 0;
-  color: #ddd8cc;
-  font-size: 0.5rem;
-  letter-spacing: 0.12em;
-  white-space: nowrap;
-  font-family: var(--font-cluster);
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.cancel-mark {
-  width: 28px;
-  height: 16px;
-  flex: 0 0 28px;
-  overflow: visible;
-}
-
-.lamp-strip {
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  gap: 0.14rem;
-  height: 70%;
-  min-height: 0;
-  padding: 0 0.55rem;
-  background: linear-gradient(#020304, #08090b 58%, #0c0e10);
-  border: 1px solid #101214;
-  border-radius: 2px;
-  overflow: visible;
-  box-shadow:
-    inset 0 8px 16px rgba(0, 0, 0, 0.94),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.03);
-}
-
+/* Telltales are SVG groups now; --lamp is the lit colour, --i the strike order. */
 .telltale {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  opacity: 1;
-  flex: 0 0 auto;
-  color: var(--lamp-ghost);
-  transition: filter 120ms ease-out, color 120ms ease-out, opacity 120ms ease-out;
-}
-
-.telltale-icon {
-  height: 24px;
-  width: auto;
-  display: block;
-  overflow: visible;
-  shape-rendering: geometricPrecision;
-}
-
-.telltale-word {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-cluster);
-  font-size: 0.86rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  line-height: 0.82;
-  color: currentColor;
-  font-synthesis: none;
-}
-
-.telltale-word-line {
-  display: block;
-  font-size: 0.54rem;
-  letter-spacing: 0.05em;
+  transition: filter 120ms ease-out, opacity 120ms ease-out;
 }
 
 .telltale-on {
-  filter: drop-shadow(0 0 5.2px var(--lamp)) drop-shadow(0 0 1.1px var(--lamp));
+  filter: drop-shadow(0 0 2.4px var(--lamp)) drop-shadow(0 0 0.6px var(--lamp));
   animation: lamp-strike 0.14s ease-out both;
   animation-delay: calc(var(--i, 0) * 10ms);
 }
@@ -454,52 +281,35 @@ body {
 }
 
 .telltale-on.telltale-blue {
-  filter: drop-shadow(0 0 7.2px var(--lamp)) drop-shadow(0 0 1.6px #6a98ff);
+  filter: drop-shadow(0 0 3.2px var(--lamp)) drop-shadow(0 0 0.8px #6a98ff);
+}
+
+.lamp-word {
+  font-family: var(--font-cluster);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-synthesis: none;
 }
 
 @keyframes lamp-strike {
   from {
-    filter: drop-shadow(0 0 12px var(--lamp)) brightness(1.22);
+    filter: drop-shadow(0 0 6px var(--lamp)) brightness(1.22);
   }
   to {
-    filter: drop-shadow(0 0 5.2px var(--lamp)) drop-shadow(0 0 1.1px var(--lamp));
+    filter: drop-shadow(0 0 2.4px var(--lamp)) drop-shadow(0 0 0.6px var(--lamp));
   }
 }
 
 @keyframes lamp-pulse {
   0%,
   100% {
-    filter: drop-shadow(0 0 5.2px var(--lamp)) drop-shadow(0 0 1.1px var(--lamp));
+    filter: drop-shadow(0 0 2.4px var(--lamp)) drop-shadow(0 0 0.6px var(--lamp));
     opacity: 1;
   }
   50% {
-    filter: drop-shadow(0 0 7.4px var(--lamp)) drop-shadow(0 0 1.6px var(--lamp));
+    filter: drop-shadow(0 0 3.6px var(--lamp)) drop-shadow(0 0 0.8px var(--lamp));
     opacity: 0.82;
   }
-}
-
-.oval {
-  display: inline-grid;
-  place-items: center;
-  min-width: 48px;
-  height: 22px;
-  padding: 0 0.55rem;
-  border-radius: 999px;
-  background: radial-gradient(circle at 28% 24%, #e8e8e4, #9c9c98 46%, #5e5e5c 78%);
-  color: #f4f0e8;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  font-family: var(--font-cluster);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -2px 3px rgba(0, 0, 0, 0.32),
-    0 2px 3px rgba(0, 0, 0, 0.5);
-}
-
-.bezel-right {
-  display: flex;
-  gap: 0.4rem;
 }
 
 .cluster-caption {
@@ -621,65 +431,17 @@ body {
   color: var(--amber);
 }
 
-@media (max-width: 720px) {
-  .bezel {
-    top: 80.6%;
-    gap: 0.1rem;
-    height: 17%;
-    grid-template-columns: 3.4rem minmax(0, 1fr) 3.6rem;
-    padding: 0 0.08rem;
-  }
-
-  .lamp-strip {
-    padding: 0 0.22rem;
-    height: 68%;
-    overflow: hidden;
-  }
-
-  .telltale-icon {
-    height: 15px;
-  }
-
-  .telltale-word {
-    font-size: 0.48rem;
-  }
-
-  .telltale-word-line {
-    font-size: 0.36rem;
-  }
-
-  .cancel {
-    font-size: 0.34rem;
-    letter-spacing: 0.06em;
-  }
-
-  .oval {
-    min-width: 30px;
-    height: 18px;
-    padding: 0 0.22rem;
-    font-size: 0.48rem;
-  }
-
-  .round-btn {
-    width: 16px;
-    height: 16px;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .seg-lit,
   .telltale-on,
   .sweep-bead,
-  .needle,
-  .needle-hot,
   .ready-word {
     filter: none;
   }
 
   .seg-lit,
   .seg-ghost,
-  .telltale,
-  .needle {
+  .telltale {
     transition: none;
   }
 
@@ -690,10 +452,7 @@ body {
   .cluster-reveal .seven-seg,
   .cluster-reveal .lcd-window,
   .cluster-reveal .telltale,
-  .cluster-reveal .needle,
-  .cluster-sweep .needle,
   .cluster-reveal .tach-num,
-  .cluster-live .needle-hot,
   .cluster-live .seven-seg {
     animation: none;
   }

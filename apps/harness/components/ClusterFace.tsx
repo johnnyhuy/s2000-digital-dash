@@ -1,474 +1,585 @@
 import {
-  AP2_FUEL_SEGS,
-  AP2_TEMP_SEGS,
-  FUEL_SEGS,
-  REDLINE_BLOCKS,
-  TACH_BAND_OUTER,
-  TACH_TICK_MAJOR,
-  TACH_TICK_MINOR,
-  TEMP_SEGS,
   MODULE_H,
+  RPM_MAX,
   VIEW_W,
+  anchorPx,
+  arcPath,
+  arcPx,
   faceGeom,
+  hatchAngles,
   hoodPath,
   lcdPath,
-  sideArchPoint,
-  tachArchNormal,
-  tachArchXY,
-  tachBandPath,
-  tachTickPath,
+  radialTickPath,
+  rectPx,
+  sideArchSector,
+  tachAngleDeg,
   tachNumXY,
+  tempSegmentsLit,
+  tickRpms,
   visorLipPoly,
+  wpx,
+  hpx,
   type FaceGeom,
+  type LampSpot,
+  type Rect,
+  type Tone,
 } from "@/lib/geometry";
+import type { CSSProperties } from "react";
 import { SevenSeg } from "./SevenSeg";
+import { PICTOGRAMS } from "./LampIcons";
 import { DEFAULT_FACE_STYLE, type FaceStyle } from "@/lib/faceStyle";
 import { type IntroPhase, revealRpm, smoothstep } from "@/lib/intro";
-import { BATT_LOW_V, ECT_HOT_C, FUEL_LOW_PCT, RPM_REDLINE } from "@/lib/protocol";
+import { BATT_LOW_V, ECT_HOT_C, FUEL_LOW_PCT } from "@/lib/protocol";
 import type { DisplayState } from "@/lib/mockDrive";
 import { ectFrac, fuelFrac } from "@/lib/mockDrive";
-import { HardwareBezel } from "./Telltales";
 
+// --- palette (matches src/gauge_ui.py) -----------------------------------------------
+const COWL = "#1e1e20";
+const COWL_EDGE = "#3e3e40";
+const FACE_BLACK = "#070708";
+const PANEL = "#181a1c";
+const PANEL_EDGE = "#282a2c";
+const STRIP = "#121214";
+const STRIP_HI = "#2c2c30";
+const LCD = "#42090b";
+const LCD_OFF = "#160607";
 const AMBER = "#f49420";
-const AMBER_HOT = "#ffc24a";
-const AMBER_GHOST = "#1c1208";
-const AMBER_BAND_LO = "#f2aa32";
-const AMBER_BAND_HI = "#b03c12";
+const AMBER_HOT = "#ffb03c";
+const BAND_UNLIT_END = "#ac5c18";
+const BAND_UNLIT_MID = "#6c380e";
+const BAND_SEG_LINE = "#5c2e0c";
+const HATCH_AMBER = "#d0761e";
+const HATCH_RED = "#9c2018";
+const HATCH_RED_LIT = "#ff3c28";
 const RED = "#e42820";
-const RED_LCD = "#ff3a22";
-const RED_LCD_GHOST = "#1a0606";
-const WHITE = "#f6f0e4";
-const DIM = "#7a7264";
-const TICK_MINOR_DIM = "#c88838";
-const REDLINE_PRINT = "#b4241c";
-const COWL = "#0e0c0b";
-const WELL = "#040201";
-const TACH_NEEDLE_TIP = -2.6;
-const TACH_NEEDLE_TAIL = 10.4;
+const RED_LCD = "#ff4228";
+const RED_LCD_GHOST = "#4a0c0e";
+const LABEL_OFF = "#3c0f0f";
+const SEG_YELLOW = "#ffb22e";
+const SEG_RED = "#ee2c22";
+const SEG_GHOST = "#2a1408";
+const GAUGE_WINDOW = "#380a0a";
+const WHITE = "#f6f4ee";
+const DIM = "#767064";
+const BTN = "#969694";
+const BTN_HI = "#c4c4c0";
+const BTN_RING = "#3a3a3a";
+const BTN_TEXT = "#282828";
+const LAMP_GHOST = "#1c1a18";
+const TONE: Record<Tone, string> = { red: "#e22820", amber: "#ec941c", green: "#22b84c", blue: "#1c54d8" };
+
+const TACH_CELL_RPM = 100;
+const TACH_CELL_GAP_DEG = 0.22;
 
 function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
 
 function lerpHex(a: string, b: string, t: number): string {
-  const parse = (hex: string) => [
-    parseInt(hex.slice(1, 3), 16),
-    parseInt(hex.slice(3, 5), 16),
-    parseInt(hex.slice(5, 7), 16),
-  ];
+  const parse = (hex: string) => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
   const [ar, ag, ab] = parse(a);
   const [br, bg, bb] = parse(b);
   return `rgb(${Math.round(lerp(ar, br, t))},${Math.round(lerp(ag, bg, t))},${Math.round(lerp(ab, bb, t))})`;
 }
 
-function LcdWindow({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
-  return (
-    <g className="lcd-window">
-      <rect x={x} y={y} width={w} height={h} rx={1.4} fill="#080201" stroke="#2a0c08" strokeWidth={0.28} />
-      <rect
-        x={x + 0.55}
-        y={y + 0.55}
-        width={w - 1.1}
-        height={h - 1.1}
-        rx={0.9}
-        fill="none"
-        stroke="#140604"
-        strokeWidth={0.18}
-      />
-      <rect x={x} y={y} width={w} height={h} rx={1.4} fill="url(#lcd-door)" />
-    </g>
-  );
-}
+const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
-function CoolantIcon({
-  x,
-  y,
-  scale,
-  fill,
-}: {
-  x: number;
-  y: number;
-  scale: number;
-  fill: string;
-}) {
-  return (
-    <g transform={`translate(${x} ${y}) scale(${scale})`} fill={fill} stroke={fill}>
-      <rect x="-1.45" y="-15.2" width="2.9" height="16.4" rx="1.45" fill={fill} stroke="none" />
-      <circle cx="0" cy="4.7" r="4.35" fill={fill} stroke="none" />
-      <circle cx="0" cy="4.7" r="1.45" fill="#060402" stroke="none" />
-      <path d="M2.2 -11.6h5.1M2.2 -7.1h5.1M2.2 -2.6h5.1" strokeWidth="1.35" fill="none" strokeLinecap="round" />
-      <path
-        d="M-8.1 11.4c2.15-2.35 4.3-2.35 6.45 0s4.3 2.35 6.45 0 4.3-2.35 6.45 0"
-        fill="none"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-      <path
-        d="M-7 14.9c1.95-2.05 3.9-2.05 5.85 0s3.9 2.05 5.85 0 3.9-2.05 5.85 0"
-        fill="none"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-      />
-    </g>
-  );
-}
-
-function PumpIcon({
-  x,
-  y,
-  scale,
-  fill,
-}: {
-  x: number;
-  y: number;
-  scale: number;
-  fill: string;
-}) {
-  return (
-    <g transform={`translate(${x} ${y}) scale(${scale})`} fill={fill} stroke={fill}>
-      <rect x="-7.4" y="-3.4" width="11.4" height="15.8" rx="1.05" stroke="none" />
-      <rect x="-5.6" y="-8.8" width="7.8" height="5.6" rx="0.7" stroke="none" />
-      <rect x="-4.6" y="0.2" width="5.6" height="3.3" fill="#060402" stroke="none" />
-      <path d="M3.6 1.1c6.6-5.6 12.4-0.4 11.8 7.4" fill="none" strokeWidth="1.7" strokeLinecap="round" />
-      <rect x="12.6" y="3.8" width="3.05" height="8.2" rx="0.7" stroke="none" />
-      <rect x="-7.4" y="12.2" width="11.4" height="1.7" rx="0.35" stroke="none" />
-    </g>
-  );
-}
-
-function TachPointer({ frac, geom }: { frac: number; geom: FaceGeom }) {
-  const p = tachArchXY(frac, geom);
-  const n = tachArchNormal(frac, geom);
-  const px = -n.y;
-  const py = n.x;
-  const tipX = p.x + n.x * TACH_NEEDLE_TIP;
-  const tipY = p.y + n.y * TACH_NEEDLE_TIP;
-  const baseX = p.x + n.x * TACH_NEEDLE_TAIL;
-  const baseY = p.y + n.y * TACH_NEEDLE_TAIL;
-  const hot = frac >= 8 / 9;
-  const col = hot ? RED : WHITE;
-  const glow = hot ? RED : AMBER_HOT;
-  const chevron = (half: number) =>
-    [
-      `${tipX},${tipY}`,
-      `${baseX + px * half},${baseY + py * half}`,
-      `${baseX - px * half},${baseY - py * half}`,
-    ].join(" ");
-  return (
-    <g className={hot ? "needle needle-hot" : "needle"}>
-      <polygon points={chevron(3.05)} fill="#1a120c" />
-      <polygon points={chevron(2.28)} fill={glow} />
-      <polygon points={chevron(1.42)} fill={col} />
-    </g>
-  );
-}
-
-function TachSegments({
-  litFrac,
-  geom,
-  sweepT,
-}: {
-  litFrac: number;
-  geom: FaceGeom;
-  sweepT?: number;
-}) {
-  const redFrom = 8 / 9;
-  const needleFrac = sweepT ?? litFrac;
-  const segs = [];
-  for (let i = 0; i <= 36; i += 1) {
-    const frac = i / 36;
-    if (frac >= redFrom - 1e-6) continue;
-    const major = i % 4 === 0;
-    const tick = major ? TACH_TICK_MAJOR : TACH_TICK_MINOR;
-    const dist = sweepT === undefined ? 1 : Math.max(0, 1 - Math.abs(sweepT - frac) / 0.09);
-    const fill = major ? WHITE : lerpHex(TICK_MINOR_DIM, AMBER_HOT, dist);
-    segs.push(
-      <path
-        key={`s${i}`}
-        className={major ? "seg-lit" : "seg-ghost"}
-        d={tachTickPath(frac, tick.w, tick.len, geom, 1.1)}
-        fill={fill}
-        stroke="none"
-      />,
-    );
-  }
-  const reds = [];
-  for (let i = 0; i < REDLINE_BLOCKS; i += 1) {
-    const t0 = redFrom + (1 - redFrom) * (i / REDLINE_BLOCKS);
-    const t1 = redFrom + (1 - redFrom) * ((i + 1) / REDLINE_BLOCKS);
-    const mid = (t0 + t1) * 0.5;
-    const reached = sweepT === undefined && mid <= needleFrac + 1e-6;
-    reds.push(
-      <path
-        key={`r${i}`}
-        className={reached ? "seg-lit seg-red" : "seg-ghost"}
-        d={tachTickPath(mid, 2.8, TACH_BAND_OUTER - 1.4, geom, 0.7)}
-        fill={reached ? RED : REDLINE_PRINT}
-        stroke="none"
-      />,
-    );
-  }
-  const liveWash = sweepT === undefined;
-  const washTo = Math.min(needleFrac, redFrom);
-  const wash = liveWash && needleFrac > 0.012 ? tachBandPath(0, washTo, 0.25, TACH_BAND_OUTER, geom) : "";
-  const washRed = liveWash && needleFrac > redFrom ? tachBandPath(redFrom, needleFrac, 0.25, TACH_BAND_OUTER + 1, geom) : "";
-  const trail =
-    sweepT !== undefined
-      ? tachBandPath(Math.max(0, sweepT - 0.11), Math.max(sweepT, 0.012), 0.25, TACH_BAND_OUTER, geom)
-      : "";
-  const tip = needleFrac > 0.002 ? needleFrac : null;
-  const printed = [];
-  const slices = 48;
-  for (let i = 0; i < slices; i += 1) {
-    const t0 = (i / slices) * redFrom;
-    const t1 = ((i + 1) / slices) * redFrom;
-    printed.push(
-      <path
-        key={`band${i}`}
-        d={tachBandPath(t0, t1, 0.25, TACH_BAND_OUTER, geom, 10)}
-        fill={lerpHex(AMBER_BAND_LO, AMBER_BAND_HI, i / (slices - 1))}
-        stroke="none"
-      />,
-    );
-  }
+// --- housing -------------------------------------------------------------------------
+function Housing({ g }: { g: FaceGeom }) {
+  const m = g.module;
+  const bezel = { x: m.x, y: g.springY, w: m.w, h: m.y + m.h - g.springY };
   return (
     <g aria-hidden>
-      {printed}
-      <path d={tachBandPath(redFrom, 1, 0.25, TACH_BAND_OUTER + 1, geom)} fill="#941c18" stroke="none" />
-      {wash ? <path d={wash} fill={AMBER_HOT} opacity={0.12} stroke="none" /> : null}
-      {washRed ? <path className="seg-lit seg-red" d={washRed} fill={RED} opacity={0.34} stroke="none" /> : null}
-      {trail ? <path className="sweep-bead" d={trail} fill={AMBER_HOT} opacity={0.62} stroke="none" /> : null}
-      {segs}
-      {reds}
-      {tip !== null ? <TachPointer frac={tip} geom={geom} /> : null}
+      <path d={hoodPath(g)} fill={COWL} stroke={COWL_EDGE} strokeWidth={1} strokeLinejoin="round" />
+      <rect x={bezel.x} y={bezel.y} width={bezel.w} height={bezel.h} rx={wpx(g, 0.008)} fill={PANEL} stroke={PANEL_EDGE} strokeWidth={0.8} />
+      <path d={lcdPath(g)} fill={FACE_BLACK} />
+      <path d={lcdPath(g)} fill="url(#well-vignette)" />
+      <polyline points={visorLipPoly(g)} fill="none" stroke="#403c38" strokeWidth={0.9} />
     </g>
   );
 }
 
-function TachNumbers({ geom, dim }: { geom: FaceGeom; dim?: boolean }) {
-  const zero = tachNumXY(0, geom);
-  const size = 18.8;
+// --- printed tach (static) ---------------------------------------------------------------
+function TachPrint({ g, dim }: { g: FaceGeom; dim?: boolean }) {
+  const t = g.spec.tach;
+  const a0 = t.a0_deg - t.hatch_deg;
+  const a1 = t.a9_deg + t.hatch_deg;
+  const slices = 60;
+  const band = [];
+  for (let i = 0; i < slices; i += 1) {
+    const d0 = a0 + ((a1 - a0) * i) / slices;
+    const d1 = a0 + ((a1 - a0) * (i + 1)) / slices + 0.05;
+    const u = Math.abs(((i + 0.5) / slices) * 2 - 1);
+    band.push(<path key={`b${i}`} d={arcPath(g, t.r_out, t.r_in, d0, d1, 2)} fill={lerpHex(BAND_UNLIT_MID, BAND_UNLIT_END, u * u)} />);
+  }
+  const lines = [];
+  for (let rpm = TACH_CELL_RPM; rpm < RPM_MAX; rpm += TACH_CELL_RPM) {
+    const d = tachAngleDeg(rpm, g);
+    lines.push(<path key={`l${rpm}`} d={radialTickPath(g, t.r_out, t.band, 0.0007, d)} fill={BAND_SEG_LINE} />);
+  }
+  const hatch = (["left", "right"] as const).flatMap((side) =>
+    hatchAngles(t, side).map((a) => (
+      <path
+        key={`${side}${a.toFixed(1)}`}
+        d={arcPath(g, t.r_out, t.r_in - t.hatch_inner_over, a - t.hatch_w_deg / 2, a + t.hatch_w_deg / 2, 1)}
+        fill={side === "left" ? HATCH_AMBER : HATCH_RED}
+      />
+    )),
+  );
+  const ticks = tickRpms(t).map(({ rpm, major }) => {
+    const [w, len] = major ? t.tick_major : t.tick_minor;
+    return <path key={`t${rpm}`} d={radialTickPath(g, t.r_line + t.line_w / 2, len, w, tachAngleDeg(rpm, g))} fill={dim ? DIM : WHITE} />;
+  });
+  const zero = tachNumXY(0, g);
+  const numSize = wpx(g, t.num_size);
   return (
-    <g className="tach-nums">
+    <g aria-hidden className="tach-print">
+      {band}
+      {lines}
+      {hatch}
+      <path d={arcPath(g, t.r_line + t.line_w / 2, t.r_line - t.line_w / 2, t.a0_deg, t.a9_deg)} fill={dim ? DIM : WHITE} />
+      {ticks}
       {Array.from({ length: 10 }, (_, i) => {
-        const frac = i / 9;
-        const p = tachNumXY(frac, geom);
+        const p = tachNumXY(i / 9, g);
         return (
-          <text
-            key={i}
-            className="tach-num"
-            x={p.x}
-            y={p.y + size * 0.34}
-            fontSize={size}
-            fontWeight={600}
-            fontStyle="italic"
-            fill={dim ? DIM : WHITE}
-            textAnchor="middle"
-          >
+          <text key={i} className="tach-num" x={p.x} y={p.y + numSize * 0.36} fontSize={numSize} fill={dim ? DIM : WHITE} textAnchor="middle">
             {i}
           </text>
         );
       })}
-      <text
-        className="unit-label"
-        x={zero.x + 30}
-        y={zero.y + 15}
-        fontSize={5.4}
-        fontWeight={700}
-        fill={dim ? DIM : WHITE}
-        textAnchor="middle"
-      >
-        x1000 r/min
+      <text className="unit-label" x={zero.x + wpx(g, 0.024)} y={zero.y + wpx(g, 0.034)} fontSize={wpx(g, 0.0105)} fill={dim ? DIM : WHITE}>
+        x1000r/min
       </text>
     </g>
   );
 }
 
-function SegBar({
-  x,
-  y,
-  w,
-  h,
-  frac,
-  segs,
-  warnLow,
-  hotEnd,
-}: {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  frac: number;
-  segs: number;
-  warnLow: boolean;
-  hotEnd: boolean;
-}) {
-  const gap = Math.max(2, w * 0.028);
-  const tickW = Math.max(6, ((w - gap * (segs - 1)) / segs) * 0.9);
-  const tickH = Math.max(5, h * 0.82);
-  const stride = segs > 1 ? (w - tickW) / (segs - 1) : 0;
-  const lit = Math.round(frac * segs);
+// --- lit bar graph -------------------------------------------------------------------------
+function TachFill({ g, rpm }: { g: FaceGeom; rpm: number }) {
+  const t = g.spec.tach;
+  const r = Math.max(0, Math.min(RPM_MAX * 1.06, rpm));
+  if (r < TACH_CELL_RPM * 0.5) return null;
+  const aLit = tachAngleDeg(r, g);
+  const cells = [];
+  for (let i = 0; i <= Math.floor(r / TACH_CELL_RPM); i += 1) {
+    const r0 = i * TACH_CELL_RPM;
+    const r1 = Math.min(r, r0 + TACH_CELL_RPM);
+    if (r1 - r0 < 1) continue;
+    const d0 = tachAngleDeg(r0, g) + TACH_CELL_GAP_DEG / 2;
+    const d1 = tachAngleDeg(r1, g) - (r1 >= r0 + TACH_CELL_RPM ? TACH_CELL_GAP_DEG / 2 : 0);
+    if (d1 <= d0) continue;
+    cells.push(<path key={r0} d={arcPath(g, t.r_out, t.r_in, d0, d1, 2)} fill={r0 >= RPM_MAX ? HATCH_RED_LIT : AMBER} />);
+  }
+  const over =
+    r > RPM_MAX
+      ? hatchAngles(t, "right")
+          .filter((a) => a <= aLit)
+          .map((a) => <path key={`h${a.toFixed(1)}`} d={arcPath(g, t.r_out, t.r_in - t.hatch_inner_over, a - t.hatch_w_deg / 2, a + t.hatch_w_deg / 2, 1)} fill={HATCH_RED_LIT} />)
+      : null;
+  return (
+    <g aria-hidden className="tach-fill">
+      <path d={arcPath(g, t.r_out + 0.004, t.r_in - 0.004, t.a0_deg, aLit)} fill={AMBER_HOT} opacity={0.28} filter="url(#amber-bloom)" />
+      {cells}
+      {over}
+    </g>
+  );
+}
+
+/** ID.4-style light comet running the bar graph 0 → 9 during boot. */
+function WelcomeSweep({ g, t }: { g: FaceGeom; t: number }) {
+  const a = g.spec.tach;
+  const start = a.a0_deg - a.hatch_deg;
+  const end = a.a9_deg + a.hatch_deg;
+  const head = start + (end - start) * smoothstep(clamp01(t));
+  const tail = 16;
+  const slices = 20;
+  const bits = [];
+  for (let i = 0; i < slices; i += 1) {
+    const d1 = head - (tail * i) / slices + 0.1;
+    const d0 = Math.max(start, head - (tail * (i + 1)) / slices);
+    if (d1 < start || d1 <= d0) continue;
+    const k = 1 - i / slices;
+    bits.push(<path key={i} d={arcPath(g, a.r_out, a.r_in, d0, d1, 2)} fill={lerpHex(AMBER, "#ffe08a", k * k)} opacity={0.25 + 0.75 * k} />);
+  }
+  const tip = arcPx(g, (a.r_out + a.r_in) / 2, head);
+  return (
+    <g aria-hidden className="sweep-bead">
+      {bits}
+      <circle cx={tip.x} cy={tip.y} r={wpx(g, 0.006)} fill="#fff2c8" filter="url(#amber-bloom)" />
+    </g>
+  );
+}
+
+// --- LCD windows -------------------------------------------------------------------------
+function LcdWindow({ r, on, rx }: { r: Rect; on: boolean; rx: number }) {
+  return (
+    <g className="lcd-window">
+      <rect x={r.x} y={r.y} width={r.w} height={r.h} rx={rx} fill={on ? LCD : LCD_OFF} stroke="#240909" strokeWidth={0.6} />
+      <rect x={r.x} y={r.y} width={r.w} height={r.h * 0.45} rx={rx} fill="url(#lcd-glass)" />
+    </g>
+  );
+}
+
+function SpeedWindow({ g, speed, on, bulbCheck }: { g: FaceGeom; speed: number; on: boolean; bulbCheck: boolean }) {
+  const s = g.spec;
+  const win = g.speedWin;
+  const rx = wpx(g, 0.004);
+  const text = bulbCheck ? "188" : String(speed).padStart(3, " ");
   return (
     <g>
-      <line x1={x} y1={y + tickH + 3} x2={x + w} y2={y + tickH + 3} stroke="#4a3418" strokeWidth="0.8" />
-      {Array.from({ length: segs }, (_, i) => {
-        const on = i < lit;
-        const last = i >= segs - 1;
-        let fill = AMBER_GHOST;
-        if (on && ((warnLow && i === 0) || (hotEnd && last && frac > 0.92))) fill = RED;
-        else if (on) fill = AMBER;
-        else if (warnLow && i === 0) fill = "#4e1010";
+      <LcdWindow r={win} on={on} rx={rx} />
+      {on ? (
+        <>
+          <g filter="url(#lcd-bloom)">
+            <SevenSeg text={text} ghost="888" digitH={hpx(g, s.speed_digit_h)} color={RED_LCD} ghostColor={RED_LCD_GHOST} x={wpx(g, s.speed_right)} y={g.speed.y} align="right" />
+          </g>
+          <text className="lcd-label" x={wpx(g, s.unit_x)} y={hpx(g, s.unit_y_top) + wpx(g, 0.006)} fontSize={wpx(g, 0.017)} fill={LABEL_OFF}>
+            mph
+          </text>
+          <text className="lcd-label" x={wpx(g, s.unit_x)} y={hpx(g, s.unit_y_bot) + wpx(g, 0.006)} fontSize={wpx(g, 0.017)} fill={RED_LCD} filter="url(#lcd-bloom)">
+            km/h
+          </text>
+        </>
+      ) : null}
+    </g>
+  );
+}
+
+function OdoWindow({ g, face, on, battWarn, clock }: { g: FaceGeom; face: DisplayState; on: boolean; battWarn: boolean; clock: string }) {
+  const s = g.spec;
+  const win = g.odoWin;
+  const rx = wpx(g, 0.004);
+  const odo = String(Math.round(face.odo_km) % 1_000_000).padStart(6, "0");
+  const trip = Math.max(0, Math.min(999.9, face.trip_km)).toFixed(1).padStart(5, "0");
+  const tripLabel = anchorPx(g, s.trip_label);
+  return (
+    <g>
+      <LcdWindow r={win} on={on} rx={rx} />
+      {on ? (
+        <g filter="url(#lcd-bloom)">
+          <SevenSeg text={odo} ghost="888888" digitH={hpx(g, s.odo_digit_h)} color={RED_LCD} ghostColor={RED_LCD_GHOST} x={wpx(g, s.odo_left)} y={hpx(g, s.odo_cy)} align="left" />
+          <text className="lcd-label" x={tripLabel.x} y={tripLabel.y + wpx(g, 0.004)} fontSize={wpx(g, 0.0105)} fill={RED_LCD} textAnchor="middle">
+            TRIP A
+          </text>
+          <SevenSeg text={trip} ghost="888.8" digitH={hpx(g, s.trip_digit_h)} color={RED_LCD} ghostColor={RED_LCD_GHOST} x={wpx(g, s.trip_right)} y={hpx(g, s.trip_cy)} align="right" />
+          {s.clock ? <SevenSeg text={clock} ghost="88:88" digitH={hpx(g, s.trip_digit_h)} color={RED_LCD} ghostColor={RED_LCD_GHOST} x={g.clock.x} y={g.clock.y} align="left" /> : null}
+          {battWarn ? (
+            <text x={win.x + win.w + wpx(g, 0.012)} y={win.y + wpx(g, 0.012)} fontSize={wpx(g, 0.01)} fontWeight={700} fill={RED} className="lcd-label">
+              {`${face.batt_v.toFixed(1)}V`}
+            </text>
+          ) : null}
+        </g>
+      ) : null}
+    </g>
+  );
+}
+
+// --- side gauges ------------------------------------------------------------------------------
+function CoolantIcon({ x, y, h, fill }: { x: number; y: number; h: number; fill: string }) {
+  const s = h / 30;
+  return (
+    <g transform={`translate(${x} ${y}) scale(${s})`} fill={fill} stroke={fill} aria-hidden>
+      <rect x="-1.45" y="-15.2" width="2.9" height="16.4" rx="1.45" stroke="none" />
+      <circle cx="0" cy="4.7" r="4.35" stroke="none" />
+      <circle cx="0" cy="4.7" r="1.45" fill={FACE_BLACK} stroke="none" />
+      <path d="M2.2 -11.6h5.1M2.2 -7.1h5.1M2.2 -2.6h5.1" strokeWidth="1.35" fill="none" strokeLinecap="round" />
+      <path d="M-8.1 11.4c2.15-2.35 4.3-2.35 6.45 0s4.3 2.35 6.45 0 4.3-2.35 6.45 0" fill="none" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M-7 14.9c1.95-2.05 3.9-2.05 5.85 0s3.9 2.05 5.85 0 3.9-2.05 5.85 0" fill="none" strokeWidth="1.3" strokeLinecap="round" />
+    </g>
+  );
+}
+
+function PumpIcon({ x, y, h, fill }: { x: number; y: number; h: number; fill: string }) {
+  const s = h / 22;
+  return (
+    <g transform={`translate(${x} ${y}) scale(${s})`} fill={fill} stroke={fill} aria-hidden>
+      <rect x="-7.4" y="-8.4" width="11.4" height="15.8" rx="1.05" stroke="none" />
+      <rect x="-5.6" y="-13.8" width="7.8" height="5.6" rx="0.7" stroke="none" />
+      <rect x="-4.6" y="-4.8" width="5.6" height="3.3" fill={FACE_BLACK} stroke="none" />
+      <path d="M3.6 -3.9c6.6-5.6 12.4-0.4 11.8 7.4" fill="none" strokeWidth="1.7" strokeLinecap="round" />
+      <rect x="12.6" y="-1.2" width="3.05" height="8.2" rx="0.7" stroke="none" />
+      <rect x="-7.4" y="7.2" width="11.4" height="1.7" rx="0.35" stroke="none" />
+    </g>
+  );
+}
+
+/** AP1 horizontal block gauge inside a red-backlit window. */
+function SegBar({ r, segs, lit, colour, on }: { r: Rect; segs: number; lit: number; colour: (i: number) => string; on: boolean }) {
+  const pad = r.h * 0.16;
+  const gap = Math.max(0.6, r.w * 0.012);
+  const bw = (r.w - 2 * pad - gap * (segs - 1)) / segs;
+  return (
+    <g>
+      <rect x={r.x} y={r.y} width={r.w} height={r.h} rx={r.h * 0.12} fill={on ? GAUGE_WINDOW : LCD_OFF} stroke="#1e0808" strokeWidth={0.5} />
+      {on
+        ? Array.from({ length: segs }, (_, i) => (
+            <rect
+              key={i}
+              className={i < lit ? "seg-lit" : "seg-ghost"}
+              x={r.x + pad + i * (bw + gap)}
+              y={r.y + pad}
+              width={bw}
+              height={r.h - 2 * pad}
+              fill={i < lit ? colour(i) : SEG_GHOST}
+            />
+          ))
+        : null}
+    </g>
+  );
+}
+
+/** AP2 interpretive half-ring gauge. */
+function ArchedGauge({ box, segs, lit, colour, on }: { box: Rect; segs: number; lit: number; colour: (i: number) => string; on: boolean }) {
+  return (
+    <g>
+      <path d={sideArchSector(box, 0, 1, 1, 0.7, 36)} fill={on ? GAUGE_WINDOW : LCD_OFF} />
+      {on
+        ? Array.from({ length: segs }, (_, i) => (
+            <path key={i} className={i < lit ? "seg-lit" : "seg-ghost"} d={sideArchSector(box, (i + 0.1) / segs, (i + 0.9) / segs, 0.95, 0.75, 3)} fill={i < lit ? colour(i) : SEG_GHOST} />
+          ))
+        : null}
+    </g>
+  );
+}
+
+function SideGauges({ g, face, on, bulbCheck }: { g: FaceGeom; face: DisplayState; on: boolean; bulbCheck: boolean }) {
+  const s = g.spec;
+  const hot = face.ect_c >= ECT_HOT_C;
+  const low = face.fuel_pct < FUEL_LOW_PCT;
+  const tempLit = bulbCheck ? s.temp_segs : hot ? s.temp_segs : tempSegmentsLit(ectFrac(face.ect_c), s.temp_segs);
+  const fuelLit = bulbCheck ? s.fuel_segs : Math.round(fuelFrac(face.fuel_pct) * s.fuel_segs);
+  const tempColour = (i: number) => (hot && i >= s.temp_segs - 2 ? SEG_RED : SEG_YELLOW);
+  const fuelColour = (i: number) => (i === 0 ? SEG_RED : SEG_YELLOW);
+  const tIcon = anchorPx(g, s.temp_icon);
+  const fIcon = anchorPx(g, s.fuel_icon);
+  const label = (a: { x: number; y: number }, text: string, fill: string) => {
+    const p = anchorPx(g, a);
+    return (
+      <text className="unit-label" x={p.x} y={p.y + wpx(g, 0.006)} fontSize={wpx(g, 0.017)} fill={fill} textAnchor="middle">
+        {text}
+      </text>
+    );
+  };
+  const litW = on ? WHITE : DIM;
+  return (
+    <g aria-hidden>
+      <CoolantIcon x={tIcon.x} y={tIcon.y} h={wpx(g, 0.026)} fill={hot && on ? RED : litW} />
+      {label(s.temp_c, "C", litW)}
+      {label(s.temp_h, "H", hot && on ? RED : litW)}
+      <PumpIcon x={fIcon.x} y={fIcon.y} h={wpx(g, 0.024)} fill={low && on ? AMBER_HOT : litW} />
+      {label(s.fuel_e, "E", low && on ? RED : litW)}
+      {label(s.fuel_f, "F", litW)}
+      {s.side_gauges_arched ? (
+        <>
+          <ArchedGauge box={g.temp} segs={s.temp_segs} lit={tempLit} colour={tempColour} on={on} />
+          <ArchedGauge box={g.fuel} segs={s.fuel_segs} lit={fuelLit} colour={fuelColour} on={on} />
+        </>
+      ) : (
+        <>
+          <SegBar r={g.temp} segs={s.temp_segs} lit={tempLit} colour={tempColour} on={on} />
+          <line x1={g.temp.x - wpx(g, 0.012)} x2={g.temp.x + g.temp.w + wpx(g, 0.012)} y1={hpx(g, s.temp_underline_y)} y2={hpx(g, s.temp_underline_y)} stroke={litW} strokeWidth={0.9} />
+          <SegBar r={g.fuel} segs={s.fuel_segs} lit={fuelLit} colour={fuelColour} on={on} />
+          <line x1={g.fuel.x - wpx(g, 0.012)} x2={g.fuel.x + g.fuel.w + wpx(g, 0.012)} y1={hpx(g, s.fuel_underline_y)} y2={hpx(g, s.fuel_underline_y)} stroke={litW} strokeWidth={0.9} />
+          {on ? <rect x={g.fuel.x + g.fuel.w * 0.42} y={hpx(g, s.fuel_underline_y) - 3} width={0.9} height={3} fill={litW} /> : null}
+        </>
+      )}
+    </g>
+  );
+}
+
+// --- telltales ----------------------------------------------------------------------------------
+function BrakeGlyph({ x, y, h, fill }: { x: number; y: number; h: number; fill: string }) {
+  const r = h / 2;
+  return (
+    <g fill="none" stroke={fill} strokeWidth={h * 0.09} aria-hidden>
+      <path d={`M ${x - r * 1.15} ${y - r * 0.7} A ${r * 1.35} ${r * 1.35} 0 0 0 ${x - r * 1.15} ${y + r * 0.7}`} />
+      <path d={`M ${x + r * 1.15} ${y - r * 0.7} A ${r * 1.35} ${r * 1.35} 0 0 1 ${x + r * 1.15} ${y + r * 0.7}`} />
+      <circle cx={x} cy={y} r={r * 0.78} />
+      <line x1={x} x2={x} y1={y - r * 0.42} y2={y + r * 0.1} strokeLinecap="round" strokeWidth={h * 0.13} />
+      <circle cx={x} cy={y + r * 0.38} r={h * 0.07} fill={fill} stroke="none" />
+    </g>
+  );
+}
+
+function Lamp({ g, spot, lit, index }: { g: FaceGeom; spot: LampSpot; lit: boolean; index: number }) {
+  const p = anchorPx(g, spot);
+  const colour = lit ? TONE[spot.tone] : LAMP_GHOST;
+  const h = wpx(g, spot.size);
+  const icon = spot.kind || spot.key;
+  const cls = `telltale telltale-${spot.tone}${lit ? " telltale-on" : ""}`;
+  const style = { ["--i" as string]: index, ["--lamp" as string]: colour } as CSSProperties;
+  if (spot.word) {
+    const lines = spot.word.split(" ");
+    const two = lines.length > 1 && spot.word.length > 6;
+    const size = wpx(g, two ? 0.0095 : 0.0125);
+    return (
+      <g className={cls} style={style} aria-label={spot.word}>
+        {two ? (
+          <>
+            <text className="lamp-word" x={p.x} y={p.y - size * 0.15} fontSize={size} fill={colour} textAnchor="middle">
+              {lines[0]}
+            </text>
+            <text className="lamp-word" x={p.x} y={p.y + size * 0.95} fontSize={size} fill={colour} textAnchor="middle">
+              {lines.slice(1).join(" ")}
+            </text>
+          </>
+        ) : (
+          <text className="lamp-word" x={p.x} y={p.y + size * 0.36} fontSize={size} fill={colour} textAnchor="middle">
+            {spot.word}
+          </text>
+        )}
+      </g>
+    );
+  }
+  if (icon === "brake") {
+    return (
+      <g className={cls} style={style} aria-label="Brake">
+        <BrakeGlyph x={p.x} y={p.y} h={h} fill={colour} />
+      </g>
+    );
+  }
+  const Pictogram = icon in PICTOGRAMS ? PICTOGRAMS[icon as keyof typeof PICTOGRAMS] : null;
+  if (!Pictogram) return null;
+  return (
+    <g className={cls} style={style} aria-label={spot.key}>
+      <Pictogram x={p.x} y={p.y} width={h / 0.75} fill={colour} />
+    </g>
+  );
+}
+
+function ArcLamps({ g, lamps, bulbCheck }: { g: FaceGeom; lamps: Record<string, boolean | undefined>; bulbCheck: boolean }) {
+  const r = wpx(g, g.spec.arc_lamp_r);
+  return (
+    <g aria-hidden>
+      {g.spec.arc_lamps.map((spot, i) => {
+        const p = anchorPx(g, spot);
+        const lit = bulbCheck || Boolean(lamps[spot.key]);
         return (
-          <rect
-            key={i}
-            x={x + i * stride}
-            y={y}
-            width={tickW}
-            height={tickH}
-            rx={1}
-            fill={fill}
-            className={on ? "seg-lit" : "seg-ghost"}
-          />
+          <g key={spot.key}>
+            <circle cx={p.x} cy={p.y} r={r} fill="#101012" stroke="#2a2a2e" strokeWidth={0.7} />
+            <g filter={lit ? "url(#lamp-bloom)" : undefined}>
+              <Lamp g={g} spot={spot} lit={lit} index={i} />
+            </g>
+          </g>
         );
       })}
     </g>
   );
 }
 
-function ArchedSideGauge({
-  box,
-  frac,
-  segs,
-  left,
-  right,
-  warnLow,
-  hotEnd,
-}: {
-  box: { x: number; y: number; w: number; h: number };
-  frac: number;
-  segs: number;
-  left: { text: string; fill: string };
-  right: { text: string; fill: string };
-  warnLow: boolean;
-  hotEnd: boolean;
-}) {
-  const lit = Math.round(frac * segs);
-  const tCount = 18;
-  const band = [];
-  const depth = 12;
-  for (let i = 0; i <= tCount; i += 1) {
-    const t = i / tCount;
-    const a = sideArchPoint(box, t);
-    const b = sideArchPoint(box, Math.min(1, t + 1 / tCount));
-    const nx = b.y - a.y;
-    const ny = a.x - b.x;
-    const len = Math.hypot(nx, ny) || 1;
-    band.push({ a, n: { x: (nx / len) * depth, y: (ny / len) * depth } });
-  }
-  const outer = band.map((p) => `${p.a.x},${p.a.y}`);
-  const inner = band.map((p) => `${p.a.x + p.n.x},${p.a.y + p.n.y}`).reverse();
-  const ghostPath = `M ${outer.join(" L ")} L ${inner.join(" L ")} Z`;
-  const litCount = Math.max(2, Math.round(frac * tCount));
-  const litOuter = band.slice(0, litCount + 1).map((p) => `${p.a.x},${p.a.y}`);
-  const litInner = band
-    .slice(0, litCount + 1)
-    .map((p) => `${p.a.x + p.n.x},${p.a.y + p.n.y}`)
-    .reverse();
-  const litPath = frac > 0.02 ? `M ${litOuter.join(" L ")} L ${litInner.join(" L ")} Z` : "";
-  const ticks = [];
-  for (let i = 0; i < segs; i += 1) {
-    const t0 = (i + 0.16) / segs;
-    const t1 = (i + 0.84) / segs;
-    const a = sideArchPoint(box, t0);
-    const b = sideArchPoint(box, t1);
-    const on = i < lit;
-    const last = i >= segs - 1;
-    let fill = AMBER_GHOST;
-    if (on && ((warnLow && i === 0) || (hotEnd && last && frac > 0.92))) fill = RED;
-    else if (on) fill = lerpHex(AMBER, AMBER_HOT, i / segs);
-    else if (warnLow && i === 0) fill = "#4e1010";
-    const nx = (b.y - a.y) * 0.34;
-    const ny = (a.x - b.x) * 0.34;
-    ticks.push(
-      <path
-        key={i}
-        className={on ? "seg-lit" : "seg-ghost"}
-        d={`M ${a.x} ${a.y} L ${b.x} ${b.y} L ${b.x + nx} ${b.y + ny} L ${a.x + nx} ${a.y + ny} Z`}
-        fill={fill}
-        stroke="none"
-      />,
-    );
-  }
-  const l = sideArchPoint(box, 0);
-  const r = sideArchPoint(box, 1);
+function RoundButton({ g, c, label }: { g: FaceGeom; c: { x: number; y: number }; label: "−" | "+" }) {
+  const p = anchorPx(g, c);
+  const d = wpx(g, g.spec.btn_d);
   return (
-    <g>
-      <path d={ghostPath} fill={AMBER_GHOST} stroke="none" />
-      {litPath ? <path className="seg-lit" d={litPath} fill={AMBER} stroke="none" opacity={0.9} /> : null}
-      {ticks}
-      <text className="tach-num" x={l.x - 10} y={l.y + 4} fontSize={11} fontWeight={600} fill={left.fill} textAnchor="middle">
-        {left.text}
-      </text>
-      <text className="tach-num" x={r.x + 10} y={r.y + 4} fontSize={11} fontWeight={600} fill={right.fill} textAnchor="middle">
-        {right.text}
+    <g aria-hidden>
+      <circle cx={p.x} cy={p.y} r={d / 2} fill={BTN_RING} />
+      <circle cx={p.x} cy={p.y - d * 0.02} r={d * 0.44} fill="url(#btn-dome)" />
+      <text x={p.x} y={p.y + d * 0.16} fontSize={d * 0.5} fontWeight={700} fill={BTN_TEXT} textAnchor="middle" className="unit-label">
+        {label}
       </text>
     </g>
   );
 }
 
-function ReadyCard({ face, geom }: { face: DisplayState; geom: FaceGeom }) {
-  const cx = geom.speed.x;
-  const chips = [
-    ["BATT", `${face.batt_v.toFixed(1)} V`],
-    ["FUEL", `${face.fuel_pct.toFixed(0)} %`],
-    ["TEMP", `${face.ect_c.toFixed(0)} °C`],
-    ["ODO", `${Math.round(face.odo_km).toLocaleString("en-AU")} km`],
+function OvalButton({ g, c, label }: { g: FaceGeom; c: { x: number; y: number }; label: string }) {
+  const p = anchorPx(g, c);
+  const w = wpx(g, g.spec.oval_w);
+  const h = hpx(g, g.spec.oval_h);
+  return (
+    <g aria-hidden>
+      <rect x={p.x - w / 2} y={p.y - h / 2} width={w} height={h} rx={h / 2} fill={BTN_RING} />
+      <rect x={p.x - w / 2 + 1} y={p.y - h / 2 + 1} width={w - 2} height={h - 2} rx={h / 2} fill="url(#btn-dome)" />
+      <text x={p.x} y={p.y + h * 0.16} fontSize={Math.min(h * 0.42, (w / Math.max(3, label.length)) * 1.5)} fontWeight={700} fill={BTN_TEXT} textAnchor="middle" className="unit-label">
+        {label}
+      </text>
+    </g>
+  );
+}
+
+function CancelMark({ g }: { g: FaceGeom }) {
+  const s = g.spec;
+  const icon = anchorPx(g, s.cancel_icon);
+  const text = anchorPx(g, s.cancel_text);
+  const r = wpx(g, 0.006);
+  return (
+    <g aria-hidden>
+      <circle cx={icon.x} cy={icon.y} r={r} fill="none" stroke={WHITE} strokeWidth={r * 0.28} />
+      <circle cx={icon.x} cy={icon.y} r={r * 0.2} fill={WHITE} />
+      <line x1={icon.x} y1={icon.y} x2={icon.x + r * 0.7} y2={icon.y - r * 0.7} stroke={WHITE} strokeWidth={r * 0.25} strokeLinecap="round" />
+      <text className="unit-label" x={text.x} y={text.y + wpx(g, 0.0045)} fontSize={wpx(g, 0.0125)} fill={WHITE}>
+        PUSH CANCEL
+      </text>
+    </g>
+  );
+}
+
+function Hardware({ g, lamps, bulbCheck }: { g: FaceGeom; lamps: Record<string, boolean | undefined>; bulbCheck: boolean }) {
+  const s = g.spec;
+  const strip = g.strip;
+  const units = anchorPx(g, s.units_label);
+  const panel = (r: Rect | null) =>
+    r ? <rect x={rectPx(g, r).x} y={rectPx(g, r).y} width={rectPx(g, r).w} height={rectPx(g, r).h} rx={wpx(g, 0.004)} fill={STRIP} stroke={STRIP_HI} strokeWidth={0.6} /> : null;
+  return (
+    <g>
+      <rect x={strip.x} y={strip.y} width={strip.w} height={strip.h} rx={strip.h * 0.18} fill={STRIP} stroke={STRIP_HI} strokeWidth={0.8} />
+      {panel(s.panel_left)}
+      {panel(s.panel_right)}
+      <g className="lamp-strip" role="group" aria-label="OEM telltales">
+        {s.strip_lamps.map((spot, i) => (
+          <g key={spot.key} filter={bulbCheck || lamps[spot.key] ? "url(#lamp-bloom)" : undefined}>
+            <Lamp g={g} spot={spot} lit={bulbCheck || Boolean(lamps[spot.key])} index={i} />
+          </g>
+        ))}
+        {s.panel_lamps.map((spot, i) => (
+          <g key={spot.key} filter={bulbCheck || lamps[spot.key] ? "url(#lamp-bloom)" : undefined}>
+            <Lamp g={g} spot={spot} lit={bulbCheck || Boolean(lamps[spot.key])} index={s.strip_lamps.length + i} />
+          </g>
+        ))}
+      </g>
+      <RoundButton g={g} c={s.btn_minus} label="−" />
+      <RoundButton g={g} c={s.btn_plus} label="+" />
+      <OvalButton g={g} c={s.btn_sel} label={s.sel_label} />
+      <OvalButton g={g} c={s.btn_trip} label="TRIP" />
+      <CancelMark g={g} />
+      <text className="unit-label" x={units.x} y={units.y + wpx(g, 0.004)} fontSize={wpx(g, 0.0105)} fill={WHITE} textAnchor="middle">
+        mph·km/h
+      </text>
+    </g>
+  );
+}
+
+// --- boot card --------------------------------------------------------------------------------------
+function ReadyCard({ g, face }: { g: FaceGeom; face: DisplayState }) {
+  const sw = g.speedWin;
+  const ow = g.odoWin;
+  const cx = sw.x + sw.w / 2;
+  const chips: Array<[string, string, number]> = [
+    ["BATT", `${face.batt_v.toFixed(1)}V`, 0.2],
+    ["FUEL", `${face.fuel_pct.toFixed(0)}%`, 0.18],
+    ["TEMP", `${face.ect_c.toFixed(0)}°C`, 0.2],
+    ["ODO", `${Math.round(face.odo_km).toLocaleString("en-AU")}km`, 0.42],
   ];
+  let left = 0;
   return (
     <g className="ready-card">
-      <text
-        className="unit-label"
-        x={cx}
-        y={geom.lcd.y + 48}
-        textAnchor="middle"
-        fontSize={11}
-        fill={DIM}
-        letterSpacing="0.22em"
-      >
+      <text className="unit-label" x={cx} y={sw.y + sw.h * 0.2} textAnchor="middle" fontSize={wpx(g, 0.0095)} fill={DIM} letterSpacing="0.22em">
         S2000  DIGITAL  DASH
       </text>
-      <text
-        x={cx}
-        y={geom.speed.y + 8}
-        textAnchor="middle"
-        fontSize={50}
-        fontWeight={700}
-        fill={AMBER_HOT}
-        className="ready-word"
-        letterSpacing="0.08em"
-      >
+      <text x={cx} y={sw.y + sw.h * 0.62} textAnchor="middle" fontSize={wpx(g, 0.05)} fontWeight={700} fill={AMBER_HOT} className="ready-word" letterSpacing="0.06em">
         READY
       </text>
-      <text
-        className="unit-label"
-        x={cx}
-        y={geom.speed.y + 38}
-        textAnchor="middle"
-        fontSize={10}
-        fill={DIM}
-        letterSpacing="0.12em"
-      >
+      <text className="unit-label" x={cx} y={sw.y + sw.h * 0.9} textAnchor="middle" fontSize={wpx(g, 0.0085)} fill={DIM} letterSpacing="0.12em">
         IGNITION ON   SYSTEMS OK
       </text>
-      {chips.map(([name, val], i) => {
-        const x = cx - 210 + i * 140;
-        const y = geom.odo.y + 8;
+      {chips.map(([name, val, share]) => {
+        const x = ow.x + ow.w * (left + share / 2);
+        left += share;
         return (
           <g key={name}>
-            <text x={x} y={y} textAnchor="middle" fontSize={9} fill={DIM}>
+            <text className="unit-label" x={x} y={ow.y + ow.h * 0.36} textAnchor="middle" fontSize={wpx(g, 0.0085)} fill={DIM}>
               {name}
             </text>
-            <text x={x} y={y + 18} textAnchor="middle" fontSize={14} fontWeight={700} fill={AMBER}>
+            <text className="unit-label" x={x} y={ow.y + ow.h * 0.78} textAnchor="middle" fontSize={wpx(g, 0.0135)} fill={AMBER}>
               {val}
             </text>
           </g>
@@ -478,6 +589,7 @@ function ReadyCard({ face, geom }: { face: DisplayState; geom: FaceGeom }) {
   );
 }
 
+// --- face -----------------------------------------------------------------------------------------------
 const FACE_CLOCK = "11:03";
 
 export function ClusterFace({
@@ -491,234 +603,71 @@ export function ClusterFace({
   phase?: IntroPhase;
   phaseT?: number;
 }) {
-  const geom = faceGeom(style);
+  const g = faceGeom(style);
   const liveLike = phase === "live" || phase === "reveal";
   const rpm = phase === "reveal" ? revealRpm(phaseT, face.rpm) : liveLike ? face.rpm : 0;
-  const litFrac = Math.max(0, Math.min(1, rpm / RPM_REDLINE));
-  const hot = face.ect_c >= ECT_HOT_C;
-  const lowFuel = face.fuel_pct < FUEL_LOW_PCT;
-  const battWarn = face.batt_v < BATT_LOW_V || Boolean(face.lamps.batt_warn);
-  const speed = Math.round(Math.max(0, Math.min(399, face.speed_kmh)));
-  const { temp, fuel, speed: sc, odo, clock } = geom;
-  const ap2 = style === "ap2";
-  const styleName = ap2 ? "AP2" : "AP1";
   const bulbCheck = phase === "reveal" && phaseT < 0.55;
-  const sweepT = phase === "sweep" ? smoothstep(phaseT) : undefined;
-  const sweep = sweepT !== undefined ? tachArchXY(sweepT, geom) : null;
-  const barFracEct = liveLike ? ectFrac(face.ect_c) : 0;
-  const barFracFuel = liveLike ? fuelFrac(face.fuel_pct) : 0;
-
-  const odoKm = String(Math.round(face.odo_km) % 1_000_000).padStart(6, "0");
-  const trip = face.trip_km.toFixed(1).padStart(5, "0");
+  const battWarn = liveLike && (face.batt_v < BATT_LOW_V || Boolean(face.lamps.batt_warn));
+  const speed = Math.round(Math.max(0, Math.min(399, face.speed_kmh)));
+  const lamps = liveLike ? face.lamps : {};
+  const styleName = style === "ap2" ? "AP2" : "AP1";
+  const rx = wpx(g, 0.012);
 
   return (
     <figure className={`cluster cluster-${style} cluster-${phase}`}>
       <div className="cluster-stage">
-        <svg
-          viewBox={`0 0 ${VIEW_W} ${MODULE_H}`}
-          role="img"
-          aria-label={`${styleName} cluster, ${speed} kilometres per hour, ${Math.round(rpm)} rpm`}
-        >
+        <svg viewBox={`0 0 ${VIEW_W} ${MODULE_H}`} role="img" aria-label={`${styleName} cluster, ${speed} kilometres per hour, ${Math.round(rpm)} rpm`}>
           <defs>
-            <filter id="amber-bloom" x="-40%" y="-40%" width="180%" height="180%">
-              <feGaussianBlur stdDeviation="1.35" result="blur" />
+            <filter id="amber-bloom" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="2.2" />
+            </filter>
+            <filter id="lcd-bloom" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="1.4" result="blur" />
+              <feComponentTransfer in="blur" result="soft">
+                <feFuncA type="linear" slope="0.55" />
+              </feComponentTransfer>
+              <feMerge>
+                <feMergeNode in="soft" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <filter id="lamp-bloom" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="1.6" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-            <filter id="lcd-bloom" x="-28%" y="-28%" width="156%" height="156%">
-              <feGaussianBlur stdDeviation="1.15" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <radialGradient id="well-vignette" cx="50%" cy="42%" r="62%">
-              <stop offset="0%" stopColor="#120806" stopOpacity="0" />
-              <stop offset="100%" stopColor="#000" stopOpacity="0.38" />
+            <radialGradient id="well-vignette" cx="50%" cy="30%" r="70%">
+              <stop offset="0%" stopColor="#141012" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#000" stopOpacity="0" />
             </radialGradient>
-            <pattern id="lcd-door" width="3" height="8" patternUnits="userSpaceOnUse">
-              <rect width="1" height="8" fill="rgba(255,58,34,0.05)" />
-            </pattern>
+            <linearGradient id="lcd-glass" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.07" />
+              <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+            </linearGradient>
+            <radialGradient id="btn-dome" cx="40%" cy="32%" r="70%">
+              <stop offset="0%" stopColor={BTN_HI} />
+              <stop offset="100%" stopColor={BTN} />
+            </radialGradient>
+            <clipPath id={`face-clip-${style}`}>
+              <rect x={g.module.x} y={g.module.y} width={g.module.w} height={g.module.h} rx={rx} />
+            </clipPath>
           </defs>
-          <path d={hoodPath(geom)} fill={COWL} stroke="#2e2a26" strokeWidth="1" />
-          <path d={lcdPath(geom)} fill={WELL} stroke="none" />
-          <path d={lcdPath(geom)} fill="url(#well-vignette)" />
-          <polyline
-            points={visorLipPoly(geom)}
-            fill="none"
-            stroke="#f2eadc"
-            strokeWidth="0.95"
-            strokeLinecap="round"
-          />
 
-          {phase !== "ready" ? (
-            <>
-              <TachSegments litFrac={litFrac} geom={geom} sweepT={sweepT} />
-              <TachNumbers geom={geom} dim={phase === "sweep"} />
-            </>
-          ) : null}
-
-          {sweep ? (
-            <circle
-              className="sweep-bead"
-              cx={sweep.x}
-              cy={sweep.y}
-              r={2.6}
-              fill="#ffe08a"
-              filter="url(#amber-bloom)"
-            />
-          ) : null}
-
-          {phase === "ready" ? <ReadyCard face={face} geom={geom} /> : null}
-
-          {liveLike ? (
-            <>
-              <LcdWindow x={sc.x - 72} y={sc.y - 30} w={154} h={48} />
-              <g filter="url(#lcd-bloom)">
-                <SevenSeg
-                  x={sc.x - 54}
-                  y={sc.y - 26}
-                  text={String(speed).padStart(3, " ")}
-                  ghost="188"
-                  digitH={44}
-                  color={RED_LCD}
-                  ghostColor={RED_LCD_GHOST}
-                  italic={0.06}
-                />
-              </g>
-              <text x={sc.x + 56} y={sc.y + 6} fontSize={8} fontWeight={700} fill={RED_LCD} className="lcd-label">
-                km/h
-              </text>
-              {ap2 ? (
-                <text x={clock.x} y={clock.y} textAnchor="middle" fontSize={13} fontWeight={700} fill={DIM} className="lcd-label">
-                  {FACE_CLOCK}
-                </text>
-              ) : null}
-              <LcdWindow x={odo.x - 148} y={odo.y - 14} w={296} h={30} />
-              <g filter="url(#lcd-bloom)">
-                <SevenSeg
-                  x={odo.x - 118}
-                  y={odo.y - 8}
-                  text={odoKm}
-                  ghost="888888"
-                  digitH={18}
-                  color={RED_LCD}
-                  ghostColor={RED_LCD_GHOST}
-                  italic={0.035}
-                />
-              </g>
-              <text
-                x={odo.x + 100}
-                y={odo.y - 8}
-                textAnchor="middle"
-                fontSize={6.6}
-                fontWeight={700}
-                fill={RED_LCD}
-                className="lcd-label"
-              >
-                TRIP A
-              </text>
-              <g filter="url(#lcd-bloom)">
-                <SevenSeg
-                  x={odo.x + 74}
-                  y={odo.y + 1}
-                  text={trip}
-                  ghost="888.8"
-                  digitH={14}
-                  color={RED_LCD}
-                  ghostColor={RED_LCD_GHOST}
-                  italic={0.035}
-                />
-              </g>
-              {battWarn ? (
-                <text x={odo.x} y={odo.y + 24} textAnchor="middle" fontSize={11} fontWeight={700} fill={RED}>
-                  {`${face.batt_v.toFixed(1)}V`}
-                </text>
-              ) : null}
-            </>
-          ) : null}
-
-          {phase !== "ready" ? (
-            ap2 ? (
-              <>
-                <CoolantIcon
-                  x={sideArchPoint(temp, 0).x}
-                  y={sideArchPoint(temp, 0).y - 16}
-                  scale={0.52}
-                  fill={hot ? RED : AMBER}
-                />
-                <ArchedSideGauge
-                  box={temp}
-                  frac={barFracEct}
-                  segs={AP2_TEMP_SEGS}
-                  left={{ text: "C", fill: AMBER }}
-                  right={{ text: "H", fill: hot ? RED : AMBER }}
-                  warnLow={false}
-                  hotEnd={hot}
-                />
-                <PumpIcon
-                  x={sideArchPoint(fuel, 1).x}
-                  y={sideArchPoint(fuel, 1).y - 14}
-                  scale={0.52}
-                  fill={lowFuel ? "#e68424" : AMBER}
-                />
-                <ArchedSideGauge
-                  box={fuel}
-                  frac={barFracFuel}
-                  segs={AP2_FUEL_SEGS}
-                  left={{ text: "E", fill: lowFuel ? RED : AMBER }}
-                  right={{ text: "F", fill: AMBER }}
-                  warnLow={lowFuel}
-                  hotEnd={false}
-                />
-              </>
-            ) : (
-              <>
-                <text className="unit-label" x={temp.x - 14} y={temp.y + temp.h * 0.72} fontSize={11} fontWeight={700} fill={AMBER} textAnchor="middle">
-                  C
-                </text>
-                <text
-                  className="unit-label"
-                  x={temp.x + temp.w + 14}
-                  y={temp.y + temp.h * 0.72}
-                  fontSize={11}
-                  fontWeight={700}
-                  fill={hot ? RED : AMBER}
-                  textAnchor="middle"
-                >
-                  H
-                </text>
-                <CoolantIcon x={temp.x + 10} y={temp.y - 16} scale={0.62} fill={hot ? RED : AMBER} />
-                <SegBar {...temp} frac={barFracEct} segs={TEMP_SEGS} warnLow={false} hotEnd={hot} />
-
-                <text
-                  className="unit-label"
-                  x={fuel.x - 14}
-                  y={fuel.y + fuel.h * 0.72}
-                  fontSize={11}
-                  fontWeight={700}
-                  fill={lowFuel ? RED : AMBER}
-                  textAnchor="middle"
-                >
-                  E
-                </text>
-                <text className="unit-label" x={fuel.x + fuel.w + 14} y={fuel.y + fuel.h * 0.72} fontSize={11} fontWeight={700} fill={AMBER} textAnchor="middle">
-                  F
-                </text>
-                <PumpIcon x={fuel.x + fuel.w - 8} y={fuel.y - 16} scale={0.62} fill={lowFuel ? "#e68424" : AMBER} />
-                <SegBar {...fuel} frac={barFracFuel} segs={FUEL_SEGS} warnLow={lowFuel} hotEnd={false} />
-              </>
-            )
-          ) : null}
+          <g clipPath={`url(#face-clip-${style})`}>
+            <Housing g={g} />
+            <TachPrint g={g} dim={phase === "sweep" || phase === "ready"} />
+            {phase === "sweep" ? <WelcomeSweep g={g} t={phaseT} /> : null}
+            {liveLike ? <TachFill g={g} rpm={rpm} /> : null}
+            <SideGauges g={g} face={face} on={liveLike} bulbCheck={bulbCheck} />
+            <SpeedWindow g={g} speed={speed} on={liveLike} bulbCheck={bulbCheck} />
+            <OdoWindow g={g} face={face} on={liveLike} battWarn={battWarn} clock={FACE_CLOCK} />
+            {phase === "ready" ? <ReadyCard g={g} face={face} /> : null}
+            <ArcLamps g={g} lamps={lamps} bulbCheck={bulbCheck} />
+            <Hardware g={g} lamps={lamps} bulbCheck={bulbCheck} />
+          </g>
         </svg>
-        <HardwareBezel
-          lamps={phase === "sweep" || phase === "ready" ? {} : face.lamps}
-          battV={phase === "sweep" || phase === "ready" ? 14 : face.batt_v}
-          selLabel={ap2 ? "CLOCK" : "SEL"}
-          bulbCheck={bulbCheck}
-        />
       </div>
       <figcaption className="cluster-caption">{styleName}</figcaption>
     </figure>
