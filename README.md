@@ -45,7 +45,7 @@
 
 Red 7-seg speed/odo on an **amber tach** in a hooded arched cowl. Flat 2.35:1 elevation — no fake 3D skew.
 
-- **AP1** (default): locked **horizontal TEMP left / FUEL right** flanking the speed/odo. Proportions in [`refs/flat/DIMENSIONS.md`](refs/flat/DIMENSIONS.md). Tach is a **printed amber band** with ticks **normal to the arch** and a white chevron needle.
+- **AP1** (default): **horizontal TEMP left / FUEL right** block bars flanking the speed/odo. Tach is the OEM **amber bar graph on a true circular arc** — cells light in 100 rpm steps, red hatch past 9, no needle. Every anchor comes from one measured lock, [`src/face_spec.py`](src/face_spec.py), explained in [`refs/flat/DIMENSIONS.md`](refs/flat/DIMENSIONS.md) and shared with the web harness and the CAD.
 - **AP2**: interpretive stacked arched TEMP / FUEL on the right, plus a clock row. Uses [`refs/oem/ap2/`](refs/oem/ap2/) as reference — **not** a pixel-perfect plate.
 
 Toggle in the [web harness](apps/harness/) or `python src/gauge_ui.py --style ap2` (keys `1` / `2` live). Protocol fields stay frozen.
@@ -138,10 +138,10 @@ uv sync --extra dev
 
 ## Web cluster harness (no Pi)
 
-Shareable Next.js demo of the OEM-geometry face (red 7-seg, printed amber tach, white chevron needle), driven by the same frozen JSON fields. Client-side mock loop (play/pause, **AP1 / AP2** face, idle / cruise / VTEC / warn) and the same sweep → READY → reveal boot as the Pi UI. Approximate CSS/SVG cluster — pixel-perfect pygame parity is a separate track. Tach numerals sit in the well; off lamps stay just above black. Cluster type is self-hosted Barlow Condensed; telltales are inline ISO pictograms.
+Shareable Next.js demo of the same face, drawn as one SVG straight from the exported lock (`apps/harness/lib/faceSpec.json`) — red mitred 7-seg, amber bar-graph tach, side block bars, telltale strip and buttons all share pygame's numbers. Client-side mock loop (play/pause, **AP1 / AP2** face, idle / cruise / VTEC / warn) and the same sweep → READY → reveal boot as the Pi UI. Cluster type is self-hosted M PLUS Rounded 1c; telltales are inline ISO pictograms.
 
 <p align="center">
-  <img src="docs/assets/web-ap1-cruise.png" alt="Web AP1 cruise: 80 km/h, white needle, coolant waves, ISO high beam" width="960" />
+  <img src="docs/assets/web-ap1-cruise.png" alt="Web AP1 cruise: 80 km/h, amber bar graph, coolant waves, ISO high beam" width="960" />
 </p>
 <p align="center">
   <sub>Web AP1 cruise. Warn and AP2 stills: <a href="docs/assets/web-ap1-warn.png"><code>web-ap1-warn.png</code></a>, <a href="docs/assets/web-ap2-warn.png"><code>web-ap2-warn.png</code></a>.</sub>
@@ -237,12 +237,14 @@ Optional: `lamps` object (`oil`, `cel`, `abs`, `turn_l`, `turn_r`, `high_beam`, 
 - `src/protocol.py` — shared schema + parse/validate
 - `src/mock_telemetry.py` — 20 Hz fake drive loop → stdout (Pi bench pipe)
 - `src/face_style.py` — `ap1` / `ap2` face enum (layout only)
-- `src/gauge_ui.py` — pygame 1920×1080 cluster + intro + `--style`
-- `src/lcd_digits.py` — rounded 7-segment speed / odo with ghost + bloom
+- `src/face_spec.py` — **the face lock**: AP1/AP2 arc geometry, windows, lamps, buttons; exports `faceSpec.json` + `face_lock.scad`
+- `src/gauge_ui.py` — pygame 1920×1080 cluster + intro + `--style`, drawn from the lock
+- `src/lcd_digits.py` — OEM mitred 7-segment speed / odo with ghost + bloom
+- `scripts/measure_oem_ui.py` — perspective-corrected landmark / circle-fit measurement of the OEM photo
 - `src/serial_reader.py` — Phase 2 UART stub + `SerialLineReader` (pyserial optional)
 - `mocks/` — mock ESP32 UART emitter + in-memory / PTY serial (no firmware)
 - `tests/` — pytest (unittest + harness ahash + e2e pipe)
-- `refs/flat/` — SVG + `DIMENSIONS.md` lock for the OEM face
+- `refs/flat/` — `DIMENSIONS.md` (arc lock explained) + historic flat SVG
 - `refs/oem/` — curated AP1 photos + labelled AP2 reference (caution: not a plate) + `SOURCES.md`
 - `assets/icons/` — OEM telltale SVG/PNG atlas (tinted at draw time)
 - `cad/` — OpenSCAD placeholders (overlay bezel + connectors + `replace_face/`). PETG/ASA notes stay here.
@@ -257,11 +259,11 @@ Optional: `lamps` object (`oil`, `cel`, `abs`, `turn_l`, `turn_r`, `high_beam`, 
 
 ## CAD placeholders
 
-See [`cad/README.md`](cad/README.md). Overlay 7" bezel + connector shells are dimensional guesses for a wall-powered bench (Pi 5 + 7" AMOLED). Option 1 (full arched face replace) lives in [`cad/replace_face/`](cad/replace_face/) with its own README, measure list, and placeholder STLs. None of this is a Honda drop-in.
+See [`cad/README.md`](cad/README.md). Overlay 7" bezel + connector shells are dimensional guesses for a wall-powered bench (Pi 5 + 7" AMOLED). Option 1 (full arched face replace) lives in [`cad/replace_face/`](cad/replace_face/): the mask's display windows and the hood crown are generated from the same `face_spec.py` lock as the UI, and the tray carries a parametric 7" panel pocket. None of this is a Honda drop-in.
 
 - Callipers required before any cabin print
 - Print **PETG or ASA**, never PLA in a sun-soaked dash
-- Overlay path: export STL locally. Replace-face placeholder STLs are under `cad/replace_face/stl/`. Cleaned remesh printables live under `cad/replace_face/print/` with a coloured GLB preview at `cad/replace_face/preview/assembly.glb`
+- `bash cad/replace_face/export.sh` regenerates `face_lock.scad` → `stl/` → cleaned `print/{stl,obj,step}` + `preview/assembly.glb` (OpenSCAD + `uv --extra cad`, no Blender)
 
 ## Disclaimer
 

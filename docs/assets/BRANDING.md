@@ -16,22 +16,23 @@ Same mark is copied to `apps/harness/public/docs/assets/` for the web demo.
 Product name in docs and chrome is **S2000 Digital Dash** (AP1 + AP2 faces).
 The live GitHub repo is `johnnyhuy/s2000-digital-dash`. See the root README.
 
-Cluster type is **Barlow Condensed Bold** (READY, C/H, E/F, bezel, LCD
-labels) and **Barlow Condensed SemiBold Italic** (tach numerals). **Share Tech
-Mono** is the harness JSON / protocol face. Speed and odo are **red 7-seg**,
-matching the AP1 photo. Faces live under `assets/fonts/` (SIL OFL). The web
-harness self-hosts the same OFL files from `apps/harness/app/fonts/`; Oxanium
-stays on the masthead only. DejaVu remains the pygame fallback when those
+Cluster type is **M PLUS Rounded 1c** Bold / ExtraBold (tach numerals,
+C/H, E/F, bezel and LCD legends) — the closest OFL match to the OEM plate's
+rounded gothic. **Oxanium** sets the READY card and masthead; **Share Tech
+Mono** is the harness JSON / protocol face. Speed and odo are **red 7-seg**
+with mitred 45° joints, matching the AP1 photo. Faces live under
+`assets/fonts/` (SIL OFL); the web harness self-hosts the same files from
+`apps/harness/app/fonts/`. DejaVu remains the pygame fallback when those
 files are absent.
 
-Printed tach amber grades `#f2aa32` → `#b03c12` toward redline in 48 slices,
-with a quiet live wash. The inner visor lip is a thin off-white
-(`#f2eadc`) on the **same parabola** as the printed tach, sitting just
-outside the band — not a high cream arc at the well peak. The web face
-keeps the printed scale and a short white chevron needle (not a filling
-LED bar). LCD red is `#ff3a22`
-with a quiet 188 / 888888 ghost (`#1a0606` on the web face) and a faint idle bloom. The LCD well is charcoal with a faint
-screen-door, not a brown overlay. TEMP uses the OEM coolant pictogram
+The tach is the OEM **bar graph on a true circular arc**: an unlit band
+grading `#6c380e` → `#ac5c18` toward both ends with hairline cell lines,
+amber `#f49420` cells lighting in 100 rpm steps, amber hatch below 0 and
+red hatch above 9 (`#ff3c28` when lit). There is no needle in either
+renderer. The hood crown is a second circle with a thin off-white lip just
+outside the band. LCD red is `#ff4228` with a faint `#4a0c0e` 188 / 888888
+ghost and a soft bloom. The LCD well is near-black with a quiet vignette,
+not a brown overlay. TEMP uses the OEM coolant pictogram
 (stem, bulb, ticks, two waves); FUEL is a pump with window, hose, and
 nozzle. Telltales: red `#e22820`, amber `#ec941c`, green `#22b84c`, ISO
 high-beam blue `#1c54d8` (never neon cyan). Off lamps sit just above black
@@ -42,12 +43,11 @@ high-beam D, CEL with CHECK punched through the block, filled key bow,
 person with sash and arm nubs, top-down car with both doors ajar) under
 `assets/icons/`, tinted at draw time. The web strip draws the same
 pictograms inline (`LampIcons.tsx`) so CSS masks cannot collapse them.
-Word lamps set in Barlow Condensed. Tach numerals sit **inside** the well
-(0 and 9 drop extra) in Barlow Condensed SemiBold Italic with a hairline
-well stroke so they read against the printed band. Ticks stay on the
-printed band. Analog lag on RPM; green turn lamps pulse at about 85
-flashes/min after the strike; redline needle and blocks breathe while the
-needle is in the 8–9 zone. Boot motion is sweep comet → READY glow →
-reveal settle. Preset buttons on the web harness snap the face so Idle /
-Cruise / VTEC / Warn are readable immediately. PUSH CANCEL is a speedo
-dial with a 2 o'clock needle and a cancel X, matching the OEM bezel.
+Word lamps set in M PLUS Rounded 1c. Tach numerals sit **inside** the
+well along the inward normal of the arc, ticks hang from the white
+baseline. Analog lag on RPM; green turn lamps pulse at about 85
+flashes/min after the strike; the red hatch lights past 9. Boot motion is
+sweep comet along the band → READY glow → reveal settle with a bulb check.
+Preset buttons on the web harness snap the face so Idle / Cruise / VTEC /
+Warn are readable immediately. PUSH CANCEL is a small dial mark beside its
+legend under the −/+ rocker, matching the OEM bezel.
