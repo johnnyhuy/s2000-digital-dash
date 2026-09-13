@@ -82,10 +82,12 @@ BEZEL_BAND_EDGE = (36, 38, 40)
 TACH_BAND_OUTER = 56.0
 # Numerals sit in the dark well, below the printed band (OEM photo).
 # Vertical drop varies with `1 − end²` — numerals 0/9 just clear the band
-# ends (~3% mh drop), middle numerals drop deep into the well (~25% mh drop).
+# ends (~3% mh drop, OEM plate via refs/oem/plates/oem_ap1_measurements.json
+# — drops 3.13 pp on a 480 mh photo = 22 px on the UI 752 mh module),
+# middle numerals drop deep into the well (~29% mh drop).
 # Horizontal inset (along inward normal) is a separate constant.
 TACH_NUM_X_INSET = 50.0
-TACH_NUM_DROP_BASE = 15.0
+TACH_NUM_DROP_BASE = 22.0
 TACH_NUM_DROP_PEAK = 193.0
 TACH_TICK_MAJOR = (2.4, 22.0)
 TACH_TICK_MINOR = (1.4, 13.0)
