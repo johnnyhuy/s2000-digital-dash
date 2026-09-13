@@ -9,3 +9,7 @@ __pycache__/
 cad/export/
 !cad/replace_face/stl/*.stl
 !cad/replace_face/print/stl/*.stl
+
+# scratch screenshots / browser-session logs
+output/
+.playwright-cli/
