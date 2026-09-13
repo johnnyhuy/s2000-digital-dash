@@ -9,11 +9,11 @@ eyeball test.
 
 | # | Track | Touches | Acceptance |
 | - | ----- | ------- | ---------- |
-| 1 | **graphics** | icon art, tick glyphs, bezel marks, needle shape | OEM pictogram proportions + tick direction match the lit reference |
+| 1 | **graphics** | icon art, tick glyphs, bezel marks, bar-graph cell / hatch shape | OEM pictogram proportions + tick direction match the lit reference |
 | 2 | **colour** | amber band, redline, LCD red, bloom | Palette and bloom match the lit AP1 reference |
-| 3 | **position** | element x/y anchors, arch parabola, notch geometry | `refs/flat/DIMENSIONS.md` percent-locks hold within ±0.5% |
+| 3 | **position** | element anchors, arc centre / radii, crown geometry — edited in `src/face_spec.py` only | `refs/flat/DIMENSIONS.md` locks hold within ±0.5% in pygame, SVG and CAD |
 | 4 | **size** | digit height, band thickness, numeral weight | OEM proportions hold at the 1920×1080 canvas |
-| 5 | **motion** | needle lag, lamp pulse, boot phases | Smoothing constants match the lit reference timing |
+| 5 | **motion** | bar-graph fill lag, lamp pulse, boot phases | Smoothing constants match the lit reference timing |
 | 6 | **font** | tach numerals, LCD digits, labels | Same family/weight/style as the OEM reference; weight + spacing match |
 
 A PR that touches more than one track is **rejected**. Split it.

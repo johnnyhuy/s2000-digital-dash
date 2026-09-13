@@ -50,7 +50,7 @@ Red 7-seg speed/odo on an **amber tach** in a hooded arched cowl. Flat 2.35:1 el
 
 Toggle in the [web harness](apps/harness/) or `python src/gauge_ui.py --style ap2` (keys `1` / `2` live). Protocol fields stay frozen.
 
-Arched tach **0–9 ×1000**, five redline blocks **8–9**, digital speed, **ODO / TRIP A**. Bottom strip uses OEM telltales: red BRAKE / battery / oil / door / seatbelt / SRS, amber ABS / CEL / MAINT / EPS, green immobilizer + turn arrows, blue high beam.
+Bar-graph tach **0–9 ×1000** on a circular arc with amber / red hatches past each end, mitred red 7-seg speed, **ODO / TRIP A**, 8-block TEMP and 16-block FUEL. Turn arrows and high beam sit in round wells inside the arc like the OEM; the bottom strip carries the rest: red BRAKE / battery / oil / seatbelt / SRS, amber ABS / CEL / MAINT / EPS, green immobilizer.
 
 </td>
 <td width="50%">
@@ -107,11 +107,11 @@ Phase 1 is **wall power** on the bench — no ESP32, no car taps. Phase 2 will a
 
 ### Placeholder CAD
 
-OpenSCAD in [`cad/`](cad/): overlay 7" bezel + generic connector shells, and an Option 1 **replace-face** stack in [`cad/replace_face/`](cad/replace_face/). **Not** AP1-accurate. Bay **callipers required** before any cabin print. **PETG or ASA — not PLA.**
+OpenSCAD in [`cad/`](cad/): overlay 7" bezel + generic connector shells, and an Option 1 **replace-face** stack in [`cad/replace_face/`](cad/replace_face/) whose mask windows and hood crown are generated from the same `face_spec.py` lock as the UI, over a 7" panel pocket. Millimetres are still estimates — bay **callipers required** before any cabin print. **PETG or ASA — not PLA.**
 
 </td>
 <td width="50%">
-  <img src="refs/flat/ap1_cluster_flat.png" alt="Flat OEM elevation lock used by the face" width="100%" />
+  <img src="cad/replace_face/preview/acrylic_face.png" alt="Replace-face mask plate generated from the face lock: tach sector, LCD, side-bar, telltale and button windows" width="100%" />
 </td>
 </tr>
 </table>

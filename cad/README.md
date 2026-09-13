@@ -9,7 +9,7 @@ Two tracks live here on purpose — do not mix them:
 | Track | Folder | What it is |
 | --- | --- | --- |
 | Overlay (7" bench bezel) | `bezel_7in_placeholder.scad` + connector shells | Rectangular frame for a Wisecoco-class panel in front of the OEM cluster. Sources only; export STL locally. |
-| **Option 1 replace-face** | [`replace_face/`](replace_face/) | Full arched face stack from the locked `refs/flat/` elevation. One solid per STL; cleaned printables in `replace_face/print/` + `preview/assembly.glb`. Callipers TBD. **PETG / ASA, not PLA.** |
+| **Option 1 replace-face** | [`replace_face/`](replace_face/) | Full arched face stack generated from the `src/face_spec.py` lock (mask windows + hood crown) over a 7" panel pocket. One solid per STL; cleaned printables in `replace_face/print/` + `preview/assembly.glb`. Callipers TBD. **PETG / ASA, not PLA.** |
 
 ## Overlay path
 
