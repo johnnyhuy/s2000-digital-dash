@@ -1,0 +1,594 @@
+{
+  "ap1": {
+    "arc_lamp_r": 0.0185,
+    "arc_lamps": [
+      {
+        "key": "turn_l",
+        "kind": "",
+        "size": 0.022,
+        "tone": "green",
+        "word": "",
+        "x": 0.35,
+        "y": 0.34
+      },
+      {
+        "key": "turn_r",
+        "kind": "",
+        "size": 0.022,
+        "tone": "green",
+        "word": "",
+        "x": 0.65,
+        "y": 0.34
+      },
+      {
+        "key": "high_beam",
+        "kind": "",
+        "size": 0.02,
+        "tone": "blue",
+        "word": "",
+        "x": 0.712,
+        "y": 0.42
+      }
+    ],
+    "btn_d": 0.05,
+    "btn_minus": {
+      "x": 0.06,
+      "y": 0.815
+    },
+    "btn_plus": {
+      "x": 0.118,
+      "y": 0.815
+    },
+    "btn_sel": {
+      "x": 0.935,
+      "y": 0.745
+    },
+    "btn_trip": {
+      "x": 0.978,
+      "y": 0.745
+    },
+    "cancel_icon": {
+      "x": 0.157,
+      "y": 0.935
+    },
+    "cancel_text": {
+      "x": 0.172,
+      "y": 0.935
+    },
+    "clock": null,
+    "crown_cy": 1.1926249999999998,
+    "crown_lip": 0.02,
+    "crown_r": 0.5035,
+    "extras": {},
+    "fuel": {
+      "h": 0.045,
+      "w": 0.11,
+      "x": 0.815,
+      "y": 0.465
+    },
+    "fuel_e": {
+      "x": 0.797,
+      "y": 0.49
+    },
+    "fuel_f": {
+      "x": 0.943,
+      "y": 0.49
+    },
+    "fuel_icon": {
+      "x": 0.905,
+      "y": 0.425
+    },
+    "fuel_segs": 16,
+    "fuel_underline_y": 0.525,
+    "module_aspect": 2.35,
+    "odo": {
+      "h": 0.13,
+      "w": 0.22,
+      "x": 0.39,
+      "y": 0.57
+    },
+    "odo_cy": 0.648,
+    "odo_digit_h": 0.056,
+    "odo_left": 0.408,
+    "oval_h": 0.06,
+    "oval_w": 0.04,
+    "panel_lamps": [
+      {
+        "key": "cruise_main",
+        "kind": "",
+        "size": 0.016,
+        "tone": "green",
+        "word": "CRUISE MAIN",
+        "x": 0.105,
+        "y": 0.66
+      },
+      {
+        "key": "cruise_on",
+        "kind": "",
+        "size": 0.016,
+        "tone": "green",
+        "word": "CRUISE CONTROL",
+        "x": 0.195,
+        "y": 0.66
+      },
+      {
+        "key": "immobilizer",
+        "kind": "",
+        "size": 0.022,
+        "tone": "green",
+        "word": "",
+        "x": 0.83,
+        "y": 0.635
+      },
+      {
+        "key": "door",
+        "kind": "",
+        "size": 0.024,
+        "tone": "red",
+        "word": "",
+        "x": 0.895,
+        "y": 0.635
+      }
+    ],
+    "panel_left": {
+      "h": 0.09,
+      "w": 0.185,
+      "x": 0.06,
+      "y": 0.615
+    },
+    "panel_right": {
+      "h": 0.09,
+      "w": 0.145,
+      "x": 0.79,
+      "y": 0.59
+    },
+    "sel_label": "SEL",
+    "side_gauges_arched": false,
+    "speed": {
+      "h": 0.24,
+      "w": 0.22,
+      "x": 0.39,
+      "y": 0.3
+    },
+    "speed_digit_h": 0.2,
+    "speed_right": 0.596,
+    "spring_y": 0.58,
+    "strip": {
+      "h": 0.14,
+      "w": 0.75,
+      "x": 0.155,
+      "y": 0.745
+    },
+    "strip_lamps": [
+      {
+        "key": "brake",
+        "kind": "",
+        "size": 0.03,
+        "tone": "red",
+        "word": "",
+        "x": 0.19,
+        "y": 0.815
+      },
+      {
+        "key": "batt_warn",
+        "kind": "battery",
+        "size": 0.022,
+        "tone": "red",
+        "word": "",
+        "x": 0.262,
+        "y": 0.815
+      },
+      {
+        "key": "oil",
+        "kind": "",
+        "size": 0.024,
+        "tone": "red",
+        "word": "",
+        "x": 0.322,
+        "y": 0.815
+      },
+      {
+        "key": "cel",
+        "kind": "",
+        "size": 0.024,
+        "tone": "amber",
+        "word": "",
+        "x": 0.388,
+        "y": 0.815
+      },
+      {
+        "key": "abs",
+        "kind": "",
+        "size": 0.02,
+        "tone": "amber",
+        "word": "ABS",
+        "x": 0.462,
+        "y": 0.815
+      },
+      {
+        "key": "maint",
+        "kind": "",
+        "size": 0.02,
+        "tone": "amber",
+        "word": "MAINT REQ'D",
+        "x": 0.545,
+        "y": 0.815
+      },
+      {
+        "key": "eps",
+        "kind": "",
+        "size": 0.02,
+        "tone": "amber",
+        "word": "EPS",
+        "x": 0.635,
+        "y": 0.815
+      },
+      {
+        "key": "srs",
+        "kind": "",
+        "size": 0.02,
+        "tone": "red",
+        "word": "SRS",
+        "x": 0.715,
+        "y": 0.815
+      },
+      {
+        "key": "seatbelt",
+        "kind": "",
+        "size": 0.03,
+        "tone": "red",
+        "word": "",
+        "x": 0.8,
+        "y": 0.815
+      }
+    ],
+    "style": "ap1",
+    "tach": {
+      "a0_deg": -127.8,
+      "a9_deg": -52.2,
+      "band": 0.033,
+      "cx": 0.5,
+      "cy": 1.3,
+      "deg_per_div": 8.790697674418604,
+      "first_div": 0.6,
+      "hatch_deg": 5.5,
+      "hatch_inner_over": 0.01,
+      "hatch_n": 5,
+      "hatch_w_deg": 0.62,
+      "line_gap": 0.003,
+      "line_w": 0.002,
+      "minors_per": 4,
+      "num_inset": 0.03,
+      "num_size": 0.034,
+      "r_in": 0.51,
+      "r_line": 0.506,
+      "r_num": 0.476,
+      "r_out": 0.543,
+      "tick_major": [
+        0.0028,
+        0.014
+      ],
+      "tick_minor": [
+        0.0017,
+        0.008
+      ]
+    },
+    "temp": {
+      "h": 0.055,
+      "w": 0.16,
+      "x": 0.13,
+      "y": 0.52
+    },
+    "temp_c": {
+      "x": 0.108,
+      "y": 0.548
+    },
+    "temp_h": {
+      "x": 0.312,
+      "y": 0.548
+    },
+    "temp_icon": {
+      "x": 0.15,
+      "y": 0.478
+    },
+    "temp_segs": 8,
+    "temp_underline_y": 0.59,
+    "trip_cy": 0.655,
+    "trip_digit_h": 0.05,
+    "trip_label": {
+      "x": 0.572,
+      "y": 0.598
+    },
+    "trip_right": 0.598,
+    "unit_x": 0.622,
+    "unit_y_bot": 0.515,
+    "unit_y_top": 0.455,
+    "units_label": {
+      "x": 0.9,
+      "y": 0.862
+    }
+  },
+  "ap2": {
+    "arc_lamp_r": 0.0185,
+    "arc_lamps": [
+      {
+        "key": "turn_l",
+        "kind": "",
+        "size": 0.022,
+        "tone": "green",
+        "word": "",
+        "x": 0.27,
+        "y": 0.68
+      },
+      {
+        "key": "srs",
+        "kind": "seatbelt",
+        "size": 0.024,
+        "tone": "red",
+        "word": "",
+        "x": 0.33,
+        "y": 0.68
+      },
+      {
+        "key": "turn_r",
+        "kind": "",
+        "size": 0.022,
+        "tone": "green",
+        "word": "",
+        "x": 0.64,
+        "y": 0.68
+      },
+      {
+        "key": "high_beam",
+        "kind": "",
+        "size": 0.02,
+        "tone": "blue",
+        "word": "",
+        "x": 0.7,
+        "y": 0.68
+      }
+    ],
+    "btn_d": 0.046,
+    "btn_minus": {
+      "x": 0.094,
+      "y": 0.825
+    },
+    "btn_plus": {
+      "x": 0.146,
+      "y": 0.825
+    },
+    "btn_sel": {
+      "x": 0.04,
+      "y": 0.825
+    },
+    "btn_trip": {
+      "x": 0.96,
+      "y": 0.825
+    },
+    "cancel_icon": {
+      "x": 0.178,
+      "y": 0.93
+    },
+    "cancel_text": {
+      "x": 0.193,
+      "y": 0.93
+    },
+    "clock": {
+      "x": 0.392,
+      "y": 0.592
+    },
+    "crown_cy": 1.1926249999999998,
+    "crown_lip": 0.02,
+    "crown_r": 0.5035,
+    "extras": {},
+    "fuel": {
+      "h": 0.17,
+      "w": 0.15,
+      "x": 0.755,
+      "y": 0.54
+    },
+    "fuel_e": {
+      "x": 0.756,
+      "y": 0.735
+    },
+    "fuel_f": {
+      "x": 0.894,
+      "y": 0.735
+    },
+    "fuel_icon": {
+      "x": 0.83,
+      "y": 0.665
+    },
+    "fuel_segs": 10,
+    "fuel_underline_y": 0.0,
+    "module_aspect": 2.35,
+    "odo": {
+      "h": 0.17,
+      "w": 0.24,
+      "x": 0.37,
+      "y": 0.55
+    },
+    "odo_cy": 0.665,
+    "odo_digit_h": 0.056,
+    "odo_left": 0.385,
+    "oval_h": 0.06,
+    "oval_w": 0.052,
+    "panel_lamps": [],
+    "panel_left": null,
+    "panel_right": null,
+    "sel_label": "CLOCK",
+    "side_gauges_arched": true,
+    "speed": {
+      "h": 0.22,
+      "w": 0.19,
+      "x": 0.394,
+      "y": 0.32
+    },
+    "speed_digit_h": 0.185,
+    "speed_right": 0.572,
+    "spring_y": 0.58,
+    "strip": {
+      "h": 0.13,
+      "w": 0.71,
+      "x": 0.18,
+      "y": 0.76
+    },
+    "strip_lamps": [
+      {
+        "key": "brake",
+        "kind": "",
+        "size": 0.03,
+        "tone": "red",
+        "word": "",
+        "x": 0.22,
+        "y": 0.825
+      },
+      {
+        "key": "abs",
+        "kind": "",
+        "size": 0.02,
+        "tone": "amber",
+        "word": "ABS",
+        "x": 0.282,
+        "y": 0.825
+      },
+      {
+        "key": "batt_warn",
+        "kind": "battery",
+        "size": 0.022,
+        "tone": "red",
+        "word": "",
+        "x": 0.342,
+        "y": 0.825
+      },
+      {
+        "key": "oil",
+        "kind": "",
+        "size": 0.024,
+        "tone": "red",
+        "word": "",
+        "x": 0.4,
+        "y": 0.825
+      },
+      {
+        "key": "cel",
+        "kind": "",
+        "size": 0.024,
+        "tone": "amber",
+        "word": "",
+        "x": 0.462,
+        "y": 0.825
+      },
+      {
+        "key": "maint",
+        "kind": "",
+        "size": 0.02,
+        "tone": "amber",
+        "word": "MAINT REQ'D",
+        "x": 0.545,
+        "y": 0.825
+      },
+      {
+        "key": "eps",
+        "kind": "",
+        "size": 0.02,
+        "tone": "amber",
+        "word": "EPS",
+        "x": 0.635,
+        "y": 0.825
+      },
+      {
+        "key": "immobilizer",
+        "kind": "",
+        "size": 0.022,
+        "tone": "green",
+        "word": "",
+        "x": 0.71,
+        "y": 0.825
+      },
+      {
+        "key": "door",
+        "kind": "",
+        "size": 0.024,
+        "tone": "red",
+        "word": "",
+        "x": 0.775,
+        "y": 0.825
+      },
+      {
+        "key": "seatbelt",
+        "kind": "",
+        "size": 0.03,
+        "tone": "red",
+        "word": "",
+        "x": 0.845,
+        "y": 0.825
+      }
+    ],
+    "style": "ap2",
+    "tach": {
+      "a0_deg": -132.0,
+      "a9_deg": -74.0,
+      "band": 0.033,
+      "cx": 0.52,
+      "cy": 1.379,
+      "deg_per_div": 6.744186046511628,
+      "first_div": 0.6,
+      "hatch_deg": 6.5,
+      "hatch_inner_over": 0.01,
+      "hatch_n": 5,
+      "hatch_w_deg": 0.62,
+      "line_gap": 0.003,
+      "line_w": 0.002,
+      "minors_per": 4,
+      "num_inset": 0.03,
+      "num_size": 0.034,
+      "r_in": 0.522,
+      "r_line": 0.518,
+      "r_num": 0.488,
+      "r_out": 0.555,
+      "tick_major": [
+        0.0028,
+        0.014
+      ],
+      "tick_minor": [
+        0.0017,
+        0.008
+      ]
+    },
+    "temp": {
+      "h": 0.17,
+      "w": 0.15,
+      "x": 0.69,
+      "y": 0.31
+    },
+    "temp_c": {
+      "x": 0.705,
+      "y": 0.49
+    },
+    "temp_h": {
+      "x": 0.825,
+      "y": 0.49
+    },
+    "temp_icon": {
+      "x": 0.765,
+      "y": 0.435
+    },
+    "temp_segs": 10,
+    "temp_underline_y": 0.0,
+    "trip_cy": 0.672,
+    "trip_digit_h": 0.05,
+    "trip_label": {
+      "x": 0.54,
+      "y": 0.6
+    },
+    "trip_right": 0.598,
+    "unit_x": 0.596,
+    "unit_y_bot": 0.515,
+    "unit_y_top": 0.455,
+    "units_label": {
+      "x": 0.905,
+      "y": 0.93
+    }
+  }
+}
