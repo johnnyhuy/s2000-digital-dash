@@ -1524,11 +1524,13 @@ def build_fonts(pygame) -> dict:
     return {
         "speed": _font(pygame, 132, bold=True, mono=True),
         "ready": _font(pygame, 92, bold=True),
-        # OEM Car Spy: tach numerals sit at ~38 px tall with a thin stroke;
-        # the SemiBoldItalic at 42 was rendering noticeably heavier than the
-        # OEM glyph plate. Sizing down + the natural pixel-thinness at this
-        # scale brings the stroke weight into OEM territory.
-        "tick": _font(pygame, 38, italic=True),
+        # OEM Car Spy lit photo: tach numerals sit at ~7 % mh (~53 px on the
+        # UI 752 mh module). SemiBoldItalic at 50 renders ~40 px glyph height
+        # = ~5.3 % mh, visually closer to the lit photo's 0–9 row than the
+        # previous 38 px (~4 % mh). Font weight remains SemiBoldItalic because
+        # a Regular/Light weight is not bundled; that closure belongs to a
+        # separate fonts-track housekeeping PR.
+        "tick": _font(pygame, 50, italic=True),
         "label": _font(pygame, 20, bold=True),
         "readout": _font(pygame, 26, bold=True, mono=True),
         "tiny": _font(pygame, 15, italic=True),
