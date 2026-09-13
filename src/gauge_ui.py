@@ -1377,6 +1377,21 @@ def draw_hardware_strip(
     _round_btn(pygame, fonts, surf, g.trip_blank, "CLOCK" if g.style == FaceStyle.AP2.value else "SEL")
     _round_btn(pygame, fonts, surf, g.trip, "TRIP")
 
+    # OEM AP1 prints "mph·km/h" in the lower-right bezel, just to the
+    # left of the SEL button — a small unit toggle hint, not a clickable.
+    # The label sits below the lamp strip, aligned with the bottom edge
+    # of the SEL/TRIP oval buttons.
+    if g.style != FaceStyle.AP2.value:
+        sb_x, sb_y, sb_w, sb_h = g.trip_blank
+        blit_text(
+            surf,
+            fonts["micro"],
+            "mph\u00b7km/h",
+            DIM,
+            (sb_x - 8, sb_y + sb_h - 2),
+            "midright",
+        )
+
 
 def draw_ready_card(fonts, surf, face: DisplayState, g: FaceGeom | None = None) -> None:
     """ID.4-like pre-drive summary sitting in the LCD well."""
