@@ -1,4 +1,4 @@
-# Iteration 0009 — graphics track, refine TEMP thermometer icon
+# Iteration 0009 - graphics track, refine TEMP thermometer icon
 
 ## Carryover
 
@@ -6,11 +6,11 @@ iter 0008 (PR #58) thinned the tach numerals toward OEM weight by
 lowering the tick font from 42 to 38. Position, colour, and font
 tracks are essentially done. Two graphics-track refinements remained:
 
-1. **TEMP thermometer waves** — the previous icon used a zigzag for
+1. **TEMP thermometer waves** - the previous icon used a zigzag for
    the two ~≈ waves below the bulb. The OEM glyph plate
    (`refs/oem/plates/oem_dash_glyphs_plate.png`) shows smooth
    sine-like waves.
-2. **TEMP thermometer proportions** — the previous stem was 18 px
+2. **TEMP thermometer proportions** - the previous stem was 18 px
    tall and the bulb only 6 px radius. The OEM plate has a clearly
    *larger* bulb relative to a *shorter* stem.
 
@@ -43,13 +43,13 @@ wave = [(cx-8 + x, y + (zigzag ±2)) for ...]   # zigzag
 
 # after
 stem = pygame.Rect(cx - 2, cy - 16, 4, 12)   # 12 tall × 4 wide (closer to OEM plate)
-bulb = circle(cx, cy + 4, 7)                   # 7 px radius (14 diameter — bulb larger than stem)
+bulb = circle(cx, cy + 4, 7)                   # 7 px radius (14 diameter - bulb larger than stem)
 ticks at dy = -12, -8, -4                      # 4-px spacing
 wave = [(cx-10 + x, baseline + round(sin(x*pi/5) * 2)) for x in 0..21]  # smooth ~≈
 ```
 
 The new bulb (r=7) is ~17% bigger and the stem (12 px) is ~33%
-shorter than before — net effect matches the OEM plate where the
+shorter than before - net effect matches the OEM plate where the
 bulb dominates and the stem is a small column.
 
 ## Scope (single track, single intent)
@@ -63,17 +63,17 @@ bulb dominates and the stem is a small column.
 
 ## Not in scope (deferred to later iterations)
 
-- **FUEL pump icon refinements** — current pump body + window + handle
+- **FUEL pump icon refinements** - current pump body + window + handle
   + base already matches the OEM plate's structure; further tweaks would
   be pixel-level and probably require SVG redraw (graphics track or
   housekeeping-track icons PR)
-- **Tach numerals stroke weight** — at 38 px the SemiBoldItalic still
+- **Tach numerals stroke weight** - at 38 px the SemiBoldItalic still
   reads slightly heavier than the OEM plate's thin/regular glyphs.
   Approximating the OEM weight exactly would require a new bundled
-  font (Barlow Condensed Regular/Light) — fonts-track housekeeping PR,
+  font (Barlow Condensed Regular/Light) - fonts-track housekeeping PR,
   explicitly out of scope here
-- **Speed centre y** (UI 68 % vs OEM 65 %) — within ±3 pp, bounded by
-  odo row + lamp strip top (position track, deferred — needs a
+- **Speed centre y** (UI 68 % vs OEM 65 %) - within ±3 pp, bounded by
+  odo row + lamp strip top (position track, deferred - needs a
   cabin-photo re-measure)
 - Boot motion timings (motion track)
 
@@ -83,11 +83,11 @@ bulb dominates and the stem is a small column.
 - `SDL_VIDEODRIVER=dummy uv run python src/gauge_ui.py --smoke` → exits 0
 - `uv run python scripts/compare_oem.py` → all five PNGs rebaked
 - `compare_ap1_lit_live.png`: TEMP thermometer icon now has a clearly
-  shorter stem, larger bulb, and smooth ~≈ waves — closer to the
+  shorter stem, larger bulb, and smooth ~≈ waves - closer to the
   OEM glyph plate
 - Module aspect 2.35:1, side notches 58–72 %, band peak 10.4 %, band
   ends 56 %, LCD cluster at 68 %/74 %, numerals drop formula at 15 px /
-  208 px — all `DIMENSIONS.md` locks hold within ±0.5 %
+  208 px - all `DIMENSIONS.md` locks hold within ±0.5 %
 
 ## Verify (objective)
 

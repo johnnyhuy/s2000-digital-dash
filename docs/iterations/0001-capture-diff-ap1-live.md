@@ -1,4 +1,4 @@
-# Iteration 0001 — capture + diff + first PR
+# Iteration 0001 - capture + diff + first PR
 
 ## Capture
 
@@ -32,7 +32,7 @@ No graphics diff worth a PR this iteration.
 
 | Element | OEM | UI | Verdict |
 | ------- | --- | -- | ------- |
-| Amber band | warm orange-amber with bloom | warm yellow-amber with bloom | close — UI leans yellow vs OEM orange |
+| Amber band | warm orange-amber with bloom | warm yellow-amber with bloom | close - UI leans yellow vs OEM orange |
 | Redline (8–9) | orange-red blocks | orange-red blocks | match |
 | LCD red | deep red with soft bloom | deep red with soft bloom | match |
 | Off-segment ghost | dim red ghost of `188` / `888888` | dim red ghost of `188` / `888888` | match |
@@ -53,7 +53,7 @@ Amber bias is a candidate but smaller than the position diff below. Defer.
 | Hardware strip y | ~80 % | 80.5 % | +0.5 pp | locked |
 
 The **biggest single position diff is the amber band rise**. The flat lock
-puts the printed band at peak 12 %, ends 50 % — a rise of ~38 % of module
+puts the printed band at peak 12 %, ends 50 % - a rise of ~38 % of module
 height. The UI overshoots to 52 %. The numerals 0 and 9 ride the band
 ends, so they drop too. The TEMP/FUEL bars also sit too high (50.5 % vs
 ~65 % in the flat lock), but that's a separate position diff for a later
@@ -63,9 +63,9 @@ iteration.
 
 | Element | OEM | UI | Verdict |
 | ------- | --- | -- | ------- |
-| Speed digit height | ~28 % module height | ~26 % (96 px on 751 mh) | close — UI slightly smaller |
-| Tach numerals | compact, narrower | Barlow SemiBold Italic | wider than OEM — defer to font track |
-| Amber band depth | thick (~9 % mh) | TACH_BAND_OUTER = 32 px ≈ 4.3 % mh | **UI band too thin** — size track |
+| Speed digit height | ~28 % module height | ~26 % (96 px on 751 mh) | close - UI slightly smaller |
+| Tach numerals | compact, narrower | Barlow SemiBold Italic | wider than OEM - defer to font track |
+| Amber band depth | thick (~9 % mh) | TACH_BAND_OUTER = 32 px ≈ 4.3 % mh | **UI band too thin** - size track |
 | Odo digit height | small | 26 px ≈ 3.5 % mh | close |
 | Trip digit height | smaller than odo | 22 px ≈ 2.9 % mh | match |
 | TEMP/FUEL bar height | thin dashes | 0.018 × mh ≈ 13 px | close |
@@ -75,7 +75,7 @@ to position. Defer.
 
 ### 5. motion
 
-Stills only — cannot diff motion from the composite. Boot phases are:
+Stills only - cannot diff motion from the composite. Boot phases are:
 sweep (1.35 s) → READY (1.75 s) → reveal (1.55 s) → live. Visual timing
 match against the lit reference will need a side-by-side video, not a
 still. Skip until a video diff lands.
@@ -84,7 +84,7 @@ still. Skip until a video diff lands.
 
 | Element | OEM | UI | Verdict |
 | ------- | --- | -- | ------- |
-| Tach numerals | narrow compact sans, italic slant | Barlow Condensed SemiBold Italic | UI slightly wider / heavier — defer |
+| Tach numerals | narrow compact sans, italic slant | Barlow Condensed SemiBold Italic | UI slightly wider / heavier - defer |
 | Speed / odo / trip | 7-seg LCD with rounded corners | rounded 7-seg in `lcd_digits.py` | match |
 | "x1000 r/min" label | tucked next to 0, smaller | tucked next to 0, smaller | match |
 | "TRIP A" label | small caps next to trip digits | small caps next to trip digits | match |
@@ -92,7 +92,7 @@ still. Skip until a video diff lands.
 
 Font diff is real but small. Defer.
 
-## First PR — position track, single fix
+## First PR - position track, single fix
 
 **Branch**: `iter/0001-position-band-rise`
 
@@ -126,7 +126,7 @@ Font diff is real but small. Defer.
   the speedo centre (band rise 42 % of module height vs prior 52 %)
 - numerals 0 / 9 still sit just below the band in the well
 - TEMP / FUEL bars still flank the speedo with no overlap with band ends
-- module aspect 2.35:1, hood arch 28 % rise, side notches 58–72 % — all
+- module aspect 2.35:1, hood arch 28 % rise, side notches 58–72 % - all
   `refs/flat/DIMENSIONS.md` locks hold within ±0.5 %
 
 ## Verify (hand-off checklist for human approval)

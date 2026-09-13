@@ -1,11 +1,11 @@
-# Iteration 0012 — size track, scale up the tach numerals to OEM
+# Iteration 0012 - size track, scale up the tach numerals to OEM
 
 ## Carryover
 
 iter 0008 thinned the tach numerals from 42 → 38 px to soften their
 pixel weight after the SemiBoldItalic's natural chunkiness pushed
 them past the OEM plate's thin/regular feel. But the **size** of the
-glyph dropped at the same time — and the Car Spy lit photo's
+glyph dropped at the same time - and the Car Spy lit photo's
 numerals sit visibly taller than 38 px in the cluster.
 
 Pixel measurement on the lit AP1 photo
@@ -20,7 +20,7 @@ Pixel measurement on the lit AP1 photo
 
 The 38 px SemiBoldItalic also remains the heaviest concrete delta
 relative to the OEM plate (would need a Regular/Light font to fix
-font-track side) — out of scope here.
+font-track side) - out of scope here.
 
 ## Capture
 
@@ -33,7 +33,7 @@ font-track side) — out of scope here.
 | Element | OEM | UI before | UI after | Verdict |
 | ------- | --- | --------- | -------- | ------- |
 | Tach numeral glyph height (on 480 mh module) | 30 – 35 px (~7 % mh) | ~30 px (font 38) | ~40 px (font **50**) | closer |
-| Tach numeral stroke weight | thin / regular | SemiBoldItalic | SemiBoldItalic | unchanged (font track — separate PR) |
+| Tach numeral stroke weight | thin / regular | SemiBoldItalic | SemiBoldItalic | unchanged (font track - separate PR) |
 | Tach numeral italic slant | slight (~8°) | SemiBoldItalic skew | unchanged | match |
 | LCD speed / odo / trip | 7-seg | lcd_digits.py | lcd_digits.py | unchanged |
 | "x1000 r/min" / "km/h" / "TRIP A" | sans-serif bold small | Barlow | Barlow | unchanged |
@@ -54,7 +54,7 @@ font-track side) — out of scope here.
 ```
 
 A bump from 38 → 50 lifts the numerals from ~4 % mh (visibly small,
-sinking below the band ends into the well) to ~5.3 % mh — closer to
+sinking below the band ends into the well) to ~5.3 % mh - closer to
 the OEM Car Spy photo's 7 % mh without crowding the well.
 
 ## Scope (single track, single intent)
@@ -65,12 +65,12 @@ the OEM Car Spy photo's 7 % mh without crowding the well.
 
 ## Not in scope (deferred)
 
-- **Tach numerals stroke weight** — SemiBoldItalic is still heavier
+- **Tach numerals stroke weight** - SemiBoldItalic is still heavier
   than the OEM plate's thin/regular; closing the gap exactly would
   require bundling `BarlowCondensed-Regular.ttf` /
   `BarlowCondensed-Light.ttf`. fonts-track housekeeping PR,
   **explicitly out of scope**.
-- Speed digit `h` (size track — separate iteration)
+- Speed digit `h` (size track - separate iteration)
 - Boot motion timings (motion track)
 - Tach numeral drop formula / position
 - LCD cluster window proportions
@@ -85,7 +85,7 @@ the OEM Car Spy photo's 7 % mh without crowding the well.
   photo's `0` – `9` row.
 - Module aspect 2.35:1, side notches 58–72 %, band peak 10.4 %, band
   ends 56 %, LCD cluster at 68 %/74 %, numerals drop formula at 22 px
-  base + 193 px peak — all `DIMENSIONS.md` locks hold within ±0.5 %
+  base + 193 px peak - all `DIMENSIONS.md` locks hold within ±0.5 %
 
 ## Verify (objective)
 

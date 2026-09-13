@@ -1,11 +1,11 @@
-# Iteration 0013 — graphics track, sharpen the chevron needle
+# Iteration 0013 - graphics track, sharpen the chevron needle
 
 ## Carryover
 
 iter 0009 (graphics) closed the TEMP thermometer refinement; iter 0010
 closed the FUEL pump icon. The remaining graphics-track deltas are
 small ad-hoc refinements: chevron needle, hood lip details, label
-kernels. The most visually obvious is the **chevron needle** — in
+kernels. The most visually obvious is the **chevron needle** - in
 the OEM Car Spy lit photo it reads as a tiny cream mark on the printed
 band (no visible tail behind the band's spring), whereas the UI's
 chevron has a TAIL = 16.5 px which doubles the visible footprint.
@@ -14,7 +14,7 @@ chevron has a TAIL = 16.5 px which doubles the visible footprint.
 
 - UI live shot rebaked: `docs/assets/compare/compare_ap1_lit_live.png`
 - OEM lit photo: `refs/oem/lit/lit_ap1_carspy_cluster.jpg`
-- OEM glyph plate (chevron not present — needle is small at idle)
+- OEM glyph plate (chevron not present - needle is small at idle)
 
 ## Diff (graphics track only)
 
@@ -54,13 +54,13 @@ shrinks by ~40 %.
 
 ## Not in scope (deferred)
 
-- **Tach numerals stroke weight** — SemiBoldItalic is still heavier
+- **Tach numerals stroke weight** - SemiBoldItalic is still heavier
   than the OEM plate's thin/regular; closing the gap exactly would
   require bundling `BarlowCondensed-Regular.ttf` /
   `BarlowCondensed-Light.ttf`. fonts-track housekeeping PR,
   explicitly out of scope.
-- **Speed digit `h`** — size track, separate iteration
-- **Boot motion timings** — motion track, no OEM video reference
+- **Speed digit `h`** - size track, separate iteration
+- **Boot motion timings** - motion track, no OEM video reference
 - Telltale glyph art
 - Tach numerals / position
 
@@ -74,7 +74,7 @@ shrinks by ~40 %.
   the well
 - Module aspect 2.35:1, side notches 58–72 %, band peak 10.4 %, band
   ends 56 %, LCD cluster at 68 %/74 %, numerals drop 22 px base +
-  193 px peak — all `DIMENSIONS.md` locks hold within ±0.5 %
+  193 px peak - all `DIMENSIONS.md` locks hold within ±0.5 %
 
 ## Verify (objective)
 
