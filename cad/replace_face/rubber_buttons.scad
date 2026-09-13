@@ -6,7 +6,7 @@
 // NOT OEM rubber and NOT a verified AP1 drop-in.
 //
 // F5 plate preview only. Export button_rocker / button_sel / button_trip
-// as separate solids (cleaner Blender remesh).
+// as separate solids (one solid per STL).
 //
 // Print in TPU 95A, or print a master and cast silicone.
 // Do NOT use PLA. Cabin-facing hard parts around these stay PETG / ASA.

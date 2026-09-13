@@ -1,155 +1,130 @@
-# Option 1 — replace-face printable stack
+# Option 1 — replace-face printable stack (arc lock)
 
 **This is not a verified AP1 drop-in.** Do not print these parts for the
 car until you have measured the cluster bay **and** the OEM face with
 callipers. Every critical size in the SCAD is marked `PLACEHOLDER` or
-`TODO measure`. Millimetre numbers taken from
-[`refs/flat/DIMENSIONS.md`](../../refs/flat/DIMENSIONS.md) are
-**ESTIMATED** (170 × 72.3 mm, 2.35:1) and may be wrong on the real
-plastic.
+`TODO measure`. The millimetre envelope (170 × 72.3 mm, 2.35:1) is
+**ESTIMATED** from [`refs/flat/DIMENSIONS.md`](../../refs/flat/DIMENSIONS.md).
 
-This folder is a **full face replace** (Option 1): a printable stack that
-follows the locked flat OEM elevation in
-[`refs/flat/DIMENSIONS.md`](../../refs/flat/DIMENSIONS.md) (PR
-[#12](https://github.com/johnnyhuy/s2000-digital-dash/pull/12)). It is
-**not** the overlay-only 7" bezel in `cad/bezel_7in_placeholder.scad`.
+![Mask plate — every window is a display aperture](preview/acrylic_face.png)
 
-**Face lock (do not invent):** 170 × 72.3 mm, 2.35:1, flat bottom,
-rectangular 58–72% notches, parabola `y% = 28 u²`. Speed centre
-**(50%, 40%)**; ODO/TRIP under the speed. **TEMP** is a **horizontal**
-C→H bar **left of the speedo** at **(8.0%, 50.5%)**, w = 16%, h = 1.2%,
-6 thin ticks. **FUEL** is a **horizontal** E→F bar **right of the
-speedo** at **(76.0%, 50.5%)**, same w/h. Vertical TEMP/FUEL stacks are
-**erroneous** — they are not modelled here. Callipers are still
-PLACEHOLDER; this is **not** a verified AP1 drop-in.
+## One lock, three renderers
 
-No connector pitch, clip pattern, or “it will just click in” claim lives
-here. The generic shells in `cad/connector_*_placeholder.scad` are
-unrelated bench guesses — do not mate them to a factory Honda plug.
+The face geometry is **not** typed into the SCAD. `src/face_spec.py` is the
+single source of truth for the AP1 / AP2 face (tach arc centre + radii,
+hood crown, LCD windows, side bars, telltale spots, buttons). It exports:
 
-OpenSCAD is the parametric source of truth. Committed STLs in `stl/` are
-raw CGAL dumps — one body per file. The Blender clean pass lives in
-[`blender_remesh.py`](blender_remesh.py); edit numbers here, not in a mesh.
+| Output | Consumer |
+| --- | --- |
+| `apps/harness/lib/faceSpec.json` | Next.js SVG harness |
+| `cad/replace_face/face_lock.scad` | this stack (`dims.scad` includes it) |
+| in-process | pygame (`src/gauge_ui.py`) |
+
+So the pixels the panel shows and the holes the mask cuts come from the
+same numbers. To move anything: edit `face_spec.py`, then
+`bash cad/replace_face/export.sh`.
+
+`face_lock.scad` is in top-left fractions (x / w / radii of module width,
+y / h of module height). `dims.scad` converts to millimetres and flips to
+y-up with `X() Y() W() H()`; arc maths uses `tach_pt()` / `crown_pt()`.
+
+## How the digital face maps onto the OEM plate
+
+The OEM face is a printed plate over a segment LCD. Here the whole face is
+drawn by a **7" 16:9 AMOLED** (Wisecoco-class, ~164 × 100 module, ~154 × 87
+active — PLACEHOLDER) and the mask only leaves **windows** where the OEM
+face had backlit or printed-on-glass content:
+
+- one **annular sector** from just outside the bar-graph band to just
+  inside the numerals (band, ticks, 0–9, hatch overrun) — the panel draws
+  the amber bar graph exactly as `gauge_ui.py` does
+- **speed** and **odo / trip** LCD windows
+- **TEMP** and **FUEL** block bars with their icons and C/H · E/F letters
+- three round **arc telltales** (turn L/R, high beam)
+- the **telltale strip** and the two lower **panels**
+- button holes and four (fictional) alignment holes
+
+Every window is clipped to the hood inset by `min_rim` so the mask keeps a
+rim where the band runs under the crown lip. PUSH CANCEL, mph·km/h and
+the cowl stay printed on the plate, as on the OEM.
+
+The panel's active area is centred on the module: it is **taller** than
+the face (87 vs 72.3) and **narrower** (154 vs 170). Every display window
+falls inside it. The −/+ rocker and SEL / TRIP ovals sit over the panel's
+dead border, so their switch wells are **skipped** in the tray
+(`point_in_rect` check) until a real panel drawing says where a switch can
+go. That is an open problem, not a solved one.
 
 ## What you get
 
-Each printable is **one solid** (meshes cleanly; Blender can remesh
-without splitting bodies).
+Each printable is **one solid**.
 
 | File | Part | Material |
 | --- | --- | --- |
-| `backlight.scad` + `stl/backlight.stl` | Tray shell (floor, rim, face rebate, stem wells, align holes) | PETG / ASA |
-| `backlight_web.scad` + `stl/backlight_web.stl` | Cowl-band light-web insert (drops on the tray floor) | PETG / ASA |
-| `acrylic_face.scad` + `stl/acrylic_face.stl` | Arched mask: LCD / tach / lamp / button / align windows | PETG / ASA proxy, or laser acrylic |
-| `button_rocker.scad` + `stl/button_rocker.stl` | −/+ PUSH CANCEL rocker (no stem — switch UNKNOWN) | TPU / silicone |
-| `button_sel.scad` + `stl/button_sel.stl` | SEL oval (if present on the OEM face) | TPU / silicone |
-| `button_trip.scad` + `stl/button_trip.stl` | TRIP oval | TPU / silicone |
+| `backlight.scad` → `backlight.stl` | Tray: hood silhouette + panel envelope, face rebate, 7" pocket, board cavity, FPC / cable notches | PETG / ASA |
+| `backlight_web.scad` → `backlight_web.stl` | 0.9 mm light-baffle web between panel glass and mask | PETG / ASA |
+| `acrylic_face.scad` → `acrylic_face.stl` | Arched mask with the display windows above | laser acrylic, or PETG / ASA as a tracing template |
+| `button_rocker.scad` → `button_rocker.stl` | −/+ PUSH CANCEL rocker (no stem — switch UNKNOWN) | TPU / silicone |
+| `button_sel.scad`, `button_trip.scad` | SEL / TRIP ovals | TPU / silicone |
 
-Preview only (do **not** export as printables):
+Preview only (never export as a printable): `assembly.scad` (exploded
+stack, F5; `-D print_placement=true` echoes part offsets),
+`rubber_buttons.scad` (three buttons on one plate).
 
-- `assembly.scad` — exploded stack (F5)
-- `rubber_buttons.scad` — three buttons on one plate (F5)
+Shared maths: `face_lock.scad` (generated), `dims.scad` (mm + stack),
+`outline.scad` (2D silhouette + windows), `parts.scad` (3D solids).
 
-Shared math: `dims.scad` (numbers), `outline.scad` (2D lock), `parts.scad`
-(3D modules).
+![Exploded stack: tray, 7" panel, web, mask, buttons](preview/assembly.png)
+
+## Regenerate
 
 ```bash
-bash cad/replace_face/export.sh
+bash cad/replace_face/export.sh            # lock → STL → print/ + preview/
+uv run --extra cad python cad/replace_face/mesh_export.py --explode 0
 ```
 
-## Blender handoff
+`export.sh` runs `face_spec.py`, one OpenSCAD export per part into
+`stl/` (raw CGAL dumps, one body each), then `mesh_export.py` (trimesh,
+no Blender): merge / degenerate / winding clean, refuses anything not
+watertight, writes `print/stl`, `print/obj`, faceted `print/step`
+(honest tessellation — not a B-rep rebuild) and the coloured exploded
+`preview/assembly.glb`. Needs OpenSCAD on `PATH` (`brew install --cask
+openscad@snapshot` on macOS) and `uv`.
 
-See [`BLENDER.md`](BLENDER.md) for the remesh steps and material notes.
+## Stack (front → rear)
 
-- Units: millimetres. Face-plate origin is the bottom-left of the 170 × 72.3
-  bounding box. Buttons are local to the part.
-- One STL = one manifold solid. Do not merge the tray and web in OpenSCAD
-  or in Blender.
-- Raw dumps: `stl/*.stl`. Cleaned printables: `print/stl/*.stl` plus
-  faceted `print/step/*.step` (OBJ fallback in `print/obj/`). Coloured
-  exploded preview: `preview/assembly.glb`.
-- Re-run `blender --background --python cad/replace_face/blender_remesh.py`
-  after `export.sh`. Keep this SCAD parametric — callipers will change
-  the numbers.
-- Stems, clips, and pin bosses are omitted on purpose (unknown hardware).
-  Add them after measure, without pretending they fit.
-
-## BOM layers (front → rear)
-
-Driver / glass plane
-
-1. **Rubber buttons** — TPU 95A or cast silicone. Rocker (− / +, push =
-   CANCEL), SEL (blank oval, if the OEM face has it), TRIP oval.
-2. **Acrylic front face** — 2 mm **PLACEHOLDER**. Laser-cut black / smoked
-   / painted acrylic for a real mask, or a PETG / ASA print as a tracing
-   template. Windows: arched LCD (inset `lcd_frame_mm` so the hole cannot
-   breach the arch and split the mask), ten tach slots (0–9 placeholders,
-   not OEM digits), lamp strip, three button holes, four align holes.
-3. **Diffuser sheet** — bought 1.2 mm opal acrylic / PET **PLACEHOLDER**.
-   Cut to the LCD aperture. Not a printed part.
-4. **Cowl-band web** — optional PETG / ASA insert. Layout only, not optics.
-5. **Backlight / backscreen tray** — PETG or ASA. Outer rim is
-   `offset(wall)` around the 170 × 72.3 silhouette — a print wall, **not**
-   a measured bay clip.
-6. **LCD / AMOLED module** — not modelled. Pocket clearance is a guess.
-   Phase 1 bench panel (Wisecoco-class 7") is a different rectangle; do
-   not assume it fills this aperture.
-7. **Switches / encoder under the rocker** — not modelled.
-
-Rear / harness (out of scope — no pitch invented)
-
-## Materials
+1. **Rubber buttons** — TPU 95A or cast silicone.
+2. **Mask** — 2 mm PLACEHOLDER. Black / smoked acrylic for real, PETG / ASA
+   print as a template.
+3. **Baffle web** — `web_t` 1.0 mm gap, 0.9 mm part. Layout only, not optics.
+4. **7" AMOLED** — bought module in the tray pocket, glass toward the mask.
+   `panel_*` in `dims.scad` are PLACEHOLDER; check the vendor drawing.
+5. **Tray** — floor, rim, board cavity under the panel. Outer rim is
+   `offset(wall)` around the hood + panel envelope — a print wall, **not** a
+   measured bay clip.
+6. **Switches under the buttons** — not modelled (see the open problem above).
 
 | Part | Use | Do not use |
 | --- | --- | --- |
-| Tray, web, printed face proxy, any cabin-facing hard plastic | **PETG or ASA** | **PLA** — softens and creeps on a sun-soaked dash |
-| Buttons | TPU 95A, or silicone from a printed master | PLA, and do not call TPU “OEM rubber” |
-| Production face | Cast acrylic (laser) | PLA |
-| Diffuser | Opal acrylic / PET sheet | PLA |
-
-Keep first prints as **tracing templates**. Fits stay loose until a
-second measure.
+| Tray, web, printed mask proxy | **PETG or ASA** | **PLA** — creeps on a sun-soaked dash |
+| Buttons | TPU 95A, or silicone from a printed master | PLA |
+| Production mask | Cast acrylic (laser) | PLA |
 
 ## Measure list (callipers required)
 
-Panel / bay
-
-- [ ] OEM face overall width × height × thickness
-- [ ] Arch rise and spring points (confirm 28% / `y = 28 u²`)
-- [ ] Notch y-range and depth (confirm 58–72% / 4.4% of width)
-- [ ] Bay opening width × height × depth, lip, corner radius
-- [ ] Glass plane to bay rear / harness
-- [ ] Fastener or clip pattern and fastener size — **do not drill from this CAD**
-- [ ] Sight line / hood so the stack does not reflect on the windscreen
-
-Windows and hardware
-
-- [ ] LCD / glass active area versus the inner aperture
-- [ ] Lamp-strip envelope (telltale pack width is a placeholder)
-- [ ] Rocker, SEL, TRIP centre-to-centre and outline
-- [ ] Whether PUSH CANCEL is the rocker push, a separate knob, or both
-- [ ] Button travel and the actual switch / encoder you will use
-
-Stack
-
-- [ ] Acrylic thickness
-- [ ] Diffuser thickness
-- [ ] LCD module thickness (PCB + stiffener)
-- [ ] Alignment hole / pin locations on the real face (the four holes here are fiction)
-
-Do **not** copy a 2.54 mm pitch or any other hobby pitch onto a Honda
-connector. Measure the real plug if you ever model one.
+- [ ] OEM face overall width × height × thickness; hood crown radius and spring points
+- [ ] Bay opening width × height × depth, lip, corner radius, fastener / clip pattern — **do not drill from this CAD**
+- [ ] Glass plane to bay rear; sight line so the stack does not reflect in the windscreen
+- [ ] Panel module outline, active area, thickness, FPC exit — replace `panel_*`
+- [ ] Rocker, SEL, TRIP centre-to-centre and outline; whether PUSH CANCEL is the rocker push
+- [ ] Button travel and the actual switch / encoder, and where it can live beside the panel
+- [ ] Mask thickness; alignment pin locations (the four holes here are fiction)
 
 ## What this is not
 
-- Not a verified AP1 drop-in
-- Not the overlay-only 7" AMOLED bezel (`cad/bezel_7in_placeholder.scad`)
-- Not a pygame / UI change (Honda’s track)
-- Not a factory-harness replica
-- Not optically designed (tach “channels” are layout placeholders)
-- Not a finished cabin part (Blender only cleaned the placeholder mesh)
+- Not a verified AP1 drop-in, not a factory-harness replica
+- Not the overlay-only 7" bezel (`cad/bezel_7in_placeholder.scad`)
+- Not optically designed; not a finished cabin part
 
-If the face geometry in `refs/flat/` moves, update `dims.scad` to match
-that lock file — do not invent a new silhouette family. TEMP/FUEL must
-stay **horizontal bars flanking the speedo** (see #12); do not restore
-the old bottom-bar (y = 72%) or a vertical side stack.
+If the face lock moves, it moves in `src/face_spec.py` — never by hand
+in `face_lock.scad` or a mesh.

@@ -13,6 +13,11 @@ dev = [
     "pyserial>=3.5",
     "pytest>=8.0",
 ]
+# cad/replace_face/mesh_export.py — clean OpenSCAD dumps, write OBJ/STEP/GLB
+cad = [
+    "numpy>=1.26",
+    "trimesh>=4.4",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

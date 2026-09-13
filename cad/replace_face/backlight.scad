@@ -1,7 +1,7 @@
 // =============================================================================
 // PLACEHOLDER — backlight / backscreen tray (Option 1 replace-face)
 // =============================================================================
-// Tray shell only — one solid for Blender remesh.
+// Tray shell only — one solid.
 // ESTIMATED from refs/flat/DIMENSIONS.md. Callipers UNKNOWN.
 // NOT a verified AP1 drop-in. Do not treat the outer rim as a bay clip.
 //

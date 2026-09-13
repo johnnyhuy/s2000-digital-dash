@@ -1,74 +1,61 @@
 // =============================================================================
-// 2D OEM silhouette + window helpers (replace-face)
+// 2D OEM silhouette + window helpers (replace-face, arc lock)
 // =============================================================================
-// Matches refs/flat/DIMENSIONS.md and src/gauge_ui.py hood_outer_points():
-// flat bottom, rectangular 58–72% notches, parabola y% = 28 u².
-// All sizes still ESTIMATED / PLACEHOLDER — see dims.scad.
+// Same maths as src/face_spec.py / gauge_ui.py hood_outer_points(): the hood
+// is a circular crown (crown_c, crown_r) springing from a flat lower bezel;
+// the tach is a bar graph on a true circular arc (tach_c, r_out .. r_in).
+// All millimetre sizes are still ESTIMATED — see dims.scad.
 // =============================================================================
 
 include <dims.scad>
 
-function arch_points(x0, x1, y_peak, y_spring, n = arch_steps) =
-    [for (i = [0 : n])
-        let (t = i / n, u = 2 * t - 1)
-        [x0 + (x1 - x0) * t, y_peak - (y_peak - y_spring) * u * u]
-    ];
+// Points along a circle (mm) between two screen angles.
+function arc_pts(c, r_mm, deg0, deg1, n = arc_steps) =
+    [for (i = [0 : n]) on_circle(c, r_mm, deg0 + (deg1 - deg0) * i / n)];
 
-// Counter-clockwise from bottom-left. Notch-top is colinear with the inset
-// side; kept so the point list matches the pygame lock.
+// Screen angles where a crown circle of radius r meets the spring line
+// (right spring first, sweeping over the top to the left).
+function crown_angles(r_frac) =
+    let (
+        half = crown_half(r_frac),
+        dy = crown_c[1] - spring_y             // screen-space dy (spring above centre → negative)
+    )
+    [atan2(dy, half), atan2(dy, -half)];
+
+// Crown arc in mm from the right spring, over the peak, to the left spring.
+function crown_arc(r_frac) =
+    let (a = crown_angles(r_frac)) arc_pts(crown_c, W(r_frac), a[0], a[1]);
+
+// Counter-clockwise from bottom-left: flat bottom, up the right side to the
+// spring, over the hood crown (crown + lip), down the left side.
 function hood_points() =
+    let (arc = crown_arc(crown_r + crown_lip))
     concat(
-        [
-            [0, 0],
-            [face_w, 0],
-            [face_w, notch_bot_y],
-            [face_w - step_w, notch_bot_y],
-            [face_w - step_w, notch_top_y],
-            [face_w - step_w, spring_y]
-        ],
-        arch_points(face_w - step_w, step_w, face_h, spring_y),
-        [
-            [step_w, spring_y],
-            [step_w, notch_top_y],
-            [step_w, notch_bot_y],
-            [0, notch_bot_y]
-        ]
+        [[0, 0], [face_w, 0], [face_w, spring_y], arc[0]],
+        arc,
+        [arc[len(arc) - 1], [0, spring_y]]
     );
 
-function lcd_points() =
+// Black face aperture: crown inner edge over the top, full width (minus the
+// lip) below the spring.
+function aperture_points() =
+    let (arc = crown_arc(crown_r), lip = W(crown_lip))
     concat(
-        [
-            [lcd_x, lcd_bot_y],
-            [lcd_x + lcd_w, lcd_bot_y],
-            [lcd_x + lcd_w, lcd_spring_y]
-        ],
-        arch_points(lcd_x + lcd_w, lcd_x, lcd_peak_y, lcd_spring_y),
-        [[lcd_x, lcd_spring_y]]
+        [[face_w - lip, lip], [face_w - lip, spring_y], arc[0]],
+        arc,
+        [arc[len(arc) - 1], [lip, spring_y], [lip, lip]]
     );
 
-module hood_2d() {
-    polygon(hood_points());
-}
-
-module lcd_2d() {
-    polygon(lcd_points());
-}
-
-module lcd_window_2d() {
-    // Keep a continuous frame — the raw LCD polygon breaches the hood
-    // arch at both springs (lcd_spring sits above hood spring).
-    intersection() {
-        offset(delta = -lcd_frame_mm)
-            hood_2d();
-        lcd_2d();
-    }
-}
+module hood_2d() { polygon(hood_points()); }
+module aperture_2d() { polygon(aperture_points()); }
 
 module stadium_2d(w, h) {
     r = min(w, h) / 2;
     hull() {
         translate([r, r]) circle(r = r);
         translate([w - r, r]) circle(r = r);
+        translate([r, h - r]) circle(r = r);
+        translate([w - r, h - r]) circle(r = r);
     }
 }
 
@@ -82,66 +69,131 @@ module rounded_rect_2d(w, h, r) {
     }
 }
 
-module tach_slots_2d() {
-    // PLACEHOLDER windows along the outer arch (0–9). Not OEM digit geometry.
-    x0 = step_w;
-    x1 = face_w - step_w;
-    for (i = [0 : tach_slots - 1]) {
-        t = i / (tach_slots - 1);
-        u = (2 * t - 1) * 0.82;     // keep slots off the inset side walls
-        p = arch_xy(u, x0, x1, face_h, spring_y);
-        translate([p[0] - tach_slot_w / 2, p[1] - tach_slot_h - tach_slot_inset])
-            rounded_rect_2d(tach_slot_w, tach_slot_h, 0.6);
+module rect_mm_2d(r, radius = 0) {
+    m = rect_mm(r);
+    translate([m[0], m[1]]) rounded_rect_2d(m[2], m[3], radius);
+}
+
+// Annular sector between two radii (fractions of module width) and two
+// screen angles — the display shows the band, ticks and numerals through it.
+module sector_2d(r_hi, r_lo, deg0, deg1) {
+    outer = arc_pts(tach_c, W(r_hi), deg0, deg1);
+    inner = arc_pts(tach_c, W(r_lo), deg1, deg0);
+    polygon(concat(outer, inner));
+}
+
+// One window from just outside the band's outer edge to just inside the
+// numerals, spanning the hatch overrun past 0 and 9.
+module tach_window_2d() {
+    margin = tach_win_margin / face_w;
+    over = tach_hatch_deg + 1.5;
+    sector_2d(
+        tach_r_out + margin,
+        tach_r_num - tach_win_num_depth / face_w,
+        tach_a0 - over,
+        tach_a9 + over
+    );
+}
+
+module speed_window_2d() { rect_mm_2d(speed_win, lcd_win_r); }
+module odo_window_2d() { rect_mm_2d(odo_win, lcd_win_r); }
+
+// TEMP / FUEL windows include the icon above and the C/H or E/F letters.
+module temp_window_2d() {
+    icon = pt_mm(temp_icon);
+    c = pt_mm(temp_c);
+    h = pt_mm(temp_h);
+    top = icon[1] + W(0.016);
+    bot = Y(temp_underline_y) - gauge_pad;
+    x0 = c[0] - W(0.012) - gauge_pad;
+    x1 = h[0] + W(0.012) + gauge_pad;
+    translate([x0, bot]) rounded_rect_2d(x1 - x0, top - bot, 1.2);
+}
+
+module fuel_window_2d() {
+    icon = pt_mm(fuel_icon);
+    e = pt_mm(fuel_e);
+    f = pt_mm(fuel_f);
+    top = icon[1] + W(0.015);
+    bot = Y(fuel_underline_y) - gauge_pad;
+    x0 = e[0] - W(0.012) - gauge_pad;
+    x1 = f[0] + W(0.012) + gauge_pad;
+    translate([x0, bot]) rounded_rect_2d(x1 - x0, top - bot, 1.2);
+}
+
+module arc_lamp_holes_2d(clear = arc_lamp_hole_clear) {
+    for (l = arc_lamps)
+        translate(pt_mm(l)) circle(r = W(arc_lamp_r) + clear);
+}
+
+module strip_window_2d(pad = strip_pad) {
+    m = rect_mm(strip);
+    translate([m[0] - pad, m[1] - pad]) rounded_rect_2d(m[2] + 2 * pad, m[3] + 2 * pad, 2.0);
+}
+
+module panel_windows_2d() {
+    if (len(panel_left) == 4) rect_mm_2d(panel_left, 1.0);
+    if (len(panel_right) == 4) rect_mm_2d(panel_right, 1.0);
+}
+
+// Every window is clipped to the hood inset by min_rim so the mask keeps a
+// printable / laser-safe rim where the band runs under the crown lip.
+module display_windows_2d() {
+    intersection() {
+        union() {
+            tach_window_2d();
+            speed_window_2d();
+            odo_window_2d();
+            temp_window_2d();
+            fuel_window_2d();
+            arc_lamp_holes_2d();
+            strip_window_2d();
+            panel_windows_2d();
+        }
+        offset(delta = -min_rim) hood_2d();
     }
 }
 
-module lamp_window_2d() {
-    translate([lamp_x, lamp_y])
-        rounded_rect_2d(lamp_w, lamp_h, 1.2);
+// --- hardware -------------------------------------------------------------------
+module rocker_2d(extra = 0) {
+    translate([btn_minus_c[0] - btn_d_mm / 2 - extra, btn_minus_c[1] - btn_d_mm / 2 - extra])
+        stadium_2d(rocker_w + 2 * extra, rocker_h + 2 * extra);
+}
+
+module oval_2d(c, extra = 0) {
+    translate([c[0] - oval_w_mm / 2 - extra, c[1] - oval_h_mm / 2 - extra])
+        stadium_2d(oval_w_mm + 2 * extra, oval_h_mm + 2 * extra);
 }
 
 module button_caps_2d(extra = 0) {
-    translate([rocker_x - extra, btn_y - extra])
-        stadium_2d(rocker_w + 2 * extra, btn_h + 2 * extra);
-    translate([sel_x - extra, btn_y - extra])
-        stadium_2d(trip_w + 2 * extra, btn_h + 2 * extra);
-    translate([trip_x - extra, btn_y - extra])
-        stadium_2d(trip_w + 2 * extra, btn_h + 2 * extra);
+    rocker_2d(extra);
+    oval_2d(btn_sel_c, extra);
+    oval_2d(btn_trip_c, extra);
 }
 
-// Horizontal flanking envelopes (LCD-drawn). w >> h — never a vertical stack.
-// Sit inside the LCD aperture, so they are not acrylic-mask through-windows.
-module temp_bar_2d() {
-    translate([temp_x, temp_y])
-        rounded_rect_2d(temp_w, temp_h, min(0.4, temp_h / 2));
-}
+function stem_xy() = [btn_minus_c, btn_plus_c, btn_sel_c, btn_trip_c];
 
-module fuel_bar_2d() {
-    translate([fuel_x, fuel_y])
-        rounded_rect_2d(fuel_w, fuel_h, min(0.4, fuel_h / 2));
-}
-
-module gauge_bars_2d() {
-    temp_bar_2d();
-    fuel_bar_2d();
-}
-
-// Four PLACEHOLDER pins in the bottom bezel (not in the LCD). Fiction until measured.
+// Four PLACEHOLDER alignment pins in the lower bezel corners — fiction until measured.
 function align_xy() = [
-    [rocker_x + rocker_w + 4.0, 3.2],
-    [sel_x - 4.0, 3.2],
-    [rocker_x + rocker_w + 4.0, lcd_bot_y - 3.0],
-    [sel_x - 4.0, lcd_bot_y - 3.0]
+    [W(0.035), 3.0],
+    [face_w - W(0.035), 3.0],
+    [W(0.035), spring_y - 3.0],
+    [face_w - W(0.035), spring_y - 3.0]
 ];
 
 module align_holes_2d(d = align_hole_d) {
-    for (p = align_xy())
-        translate(p) circle(d = d);
+    for (p = align_xy()) translate(p) circle(d = d);
 }
 
-function stem_xy() = [
-    [rocker_x + rocker_w * 0.28, btn_y + btn_h / 2],
-    [rocker_x + rocker_w * 0.72, btn_y + btn_h / 2],
-    [sel_x + trip_w / 2, btn_y + btn_h / 2],
-    [trip_x + trip_w / 2, btn_y + btn_h / 2]
-];
+// --- panel pocket --------------------------------------------------------------------
+module panel_pocket_2d(clear = panel_clear) {
+    translate([panel_rect[0] - clear, panel_rect[1] - clear])
+        rounded_rect_2d(panel_rect[2] + 2 * clear, panel_rect[3] + 2 * clear, 1.5);
+}
+
+module active_area_2d() {
+    translate([active_rect[0], active_rect[1]]) square([active_rect[2], active_rect[3]]);
+}
+
+function point_in_rect(p, r) =
+    p[0] >= r[0] && p[0] <= r[0] + r[2] && p[1] >= r[1] && p[1] <= r[1] + r[3];
