@@ -138,9 +138,9 @@ def draw_digit(
                 min(255, color[0] + 20),
                 min(255, color[1] + 24),
                 min(255, color[2] + 10),
-                96,
+                44,
             )
-            pygame.draw.polygon(bloom, glow, _expand(pts, max(3, h * 0.06)))
+            pygame.draw.polygon(bloom, glow, _expand(pts, max(2, h * 0.04)))
         pygame.draw.polygon(dest, color, pts)
 
 
@@ -232,7 +232,7 @@ def blit_digits(
                     pygame.draw.rect(dest, ghost, rect)
                 pygame.draw.rect(dest, color, rect)
                 if layer is not None:
-                    pygame.draw.rect(layer, (*color, 90), rect.inflate(side, side))
+                    pygame.draw.rect(layer, (*color, 44), rect.inflate(side, side))
             x += dot
             continue
         box = (x + shear, y0, dw, digit_h)
@@ -247,7 +247,7 @@ def blit_digits(
     return (x0, y0, total_w, digit_h)
 
 
-def composite_bloom(pygame, dest, layer, shrink: int = 3) -> None:
+def composite_bloom(pygame, dest, layer, shrink: int = 2) -> None:
     """Cheap blur: downscale the glow layer and stretch it back over ``dest``."""
     w, h = dest.get_size()
     small = pygame.transform.smoothscale(layer, (max(1, w // shrink), max(1, h // shrink)))

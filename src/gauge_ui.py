@@ -1070,7 +1070,7 @@ def draw_tach_fill(pygame, surf, rpm: float, bloom, g: FaceGeom | None = None) -
             pygame.draw.polygon(surf, col, poly)
     glow = arc_poly(g, t.r_out + 0.004, t.r_in - 0.004, t.a0_deg, a_lit)
     if glow and bloom is not None:
-        pygame.draw.polygon(bloom, (*AMBER_HOT, 64), glow)
+        pygame.draw.polygon(bloom, (*AMBER_HOT, 30), glow)
     if rpm > RPM_MAX:
         for a in t.hatch_angles("right"):
             if a <= a_lit:
@@ -1113,7 +1113,7 @@ def draw_welcome_sweep(pygame, surf, sweep_t: float, bloom, g: FaceGeom | None =
             pygame.draw.polygon(surf, col, poly)
     glow = arc_poly(g, t.r_out + 0.006, t.r_in - 0.006, max(t.band_start_deg(), head - 8.0), head)
     if glow:
-        pygame.draw.polygon(bloom, (255, 214, 120, 90), glow)
+        pygame.draw.polygon(bloom, (255, 214, 120, 44), glow)
 
 
 def _seg_blocks(

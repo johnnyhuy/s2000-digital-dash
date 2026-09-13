@@ -178,7 +178,7 @@ function TachFill({ g, rpm }: { g: FaceGeom; rpm: number }) {
       : null;
   return (
     <g aria-hidden className="tach-fill">
-      <path d={arcPath(g, t.r_out + 0.004, t.r_in - 0.004, t.a0_deg, aLit)} fill={AMBER_HOT} opacity={0.28} filter="url(#amber-bloom)" />
+      <path d={arcPath(g, t.r_out + 0.004, t.r_in - 0.004, t.a0_deg, aLit)} fill={AMBER_HOT} opacity={0.15} filter="url(#amber-bloom)" />
       {cells}
       {over}
     </g>
@@ -619,12 +619,12 @@ export function ClusterFace({
         <svg viewBox={`0 0 ${VIEW_W} ${MODULE_H}`} role="img" aria-label={`${styleName} cluster, ${speed} kilometres per hour, ${Math.round(rpm)} rpm`}>
           <defs>
             <filter id="amber-bloom" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="2.2" />
+              <feGaussianBlur stdDeviation="1.2" />
             </filter>
             <filter id="lcd-bloom" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="1.4" result="blur" />
+              <feGaussianBlur stdDeviation="1.0" result="blur" />
               <feComponentTransfer in="blur" result="soft">
-                <feFuncA type="linear" slope="0.55" />
+                <feFuncA type="linear" slope="0.35" />
               </feComponentTransfer>
               <feMerge>
                 <feMergeNode in="soft" />
@@ -632,7 +632,7 @@ export function ClusterFace({
               </feMerge>
             </filter>
             <filter id="lamp-bloom" x="-40%" y="-40%" width="180%" height="180%">
-              <feGaussianBlur stdDeviation="1.6" result="blur" />
+              <feGaussianBlur stdDeviation="1.2" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
