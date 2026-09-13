@@ -92,7 +92,10 @@ TACH_NUM_DROP_PEAK = 193.0
 TACH_TICK_MAJOR = (2.4, 22.0)
 TACH_TICK_MINOR = (1.4, 13.0)
 TACH_NEEDLE_TIP = -3.4
-TACH_NEEDLE_TAIL = 16.5
+# Tail shrank from 16.5 → 9.0 (iter 0013 graphics) so the chevron reads as
+# the small cream tip-only mark seen in the OEM Car Spy lit photo — no
+# long dart hanging into the well behind the band's spring.
+TACH_NEEDLE_TAIL = 9.0
 
 # --- locked % layout (see refs/flat/DIMENSIONS.md) ---------------------------
 # Module as % of the 1920×1080 canvas; height from OEM 2.35:1 elevation
