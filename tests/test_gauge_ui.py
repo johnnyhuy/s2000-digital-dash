@@ -1,6 +1,7 @@
 """OEM cluster helpers — flags, lerp, intro phases, smoke path."""
 from __future__ import annotations
 
+import math
 import os
 import sys
 import tempfile
@@ -234,9 +235,14 @@ class FaceGeomTests(unittest.TestCase):
         mid = pts[len(pts) // 2]
         self.assertLess(mid[1], peak_y)
         self.assertLess(peak_y - mid[1], FACE.module[2] * 0.012)
-        # springs meet the bezel at ~8 % / 92 % W
-        self.assertAlmostEqual(self._pct(*pts[0])[0], 0.08, delta=0.02)
-        self.assertAlmostEqual(self._pct(*pts[-1])[0], 0.92, delta=0.02)
+        # crown is concentric with the band: constant gap all the way round
+        c = FACE.arc_px(0.0, -90.0)
+        radii = [math.hypot(x - c[0], y - c[1]) for x, y in pts]
+        self.assertLess(max(radii) - min(radii), 1.5)
+        self.assertAlmostEqual(min(radii) / FACE.module[2], AP1.tach.r_out + 0.004, delta=0.002)
+        # springs meet the bezel at ~5 % / 95 % W
+        self.assertAlmostEqual(self._pct(*pts[0])[0], 0.05, delta=0.02)
+        self.assertAlmostEqual(self._pct(*pts[-1])[0], 0.95, delta=0.02)
 
     def test_band_runs_under_the_hood_lip_not_past_it(self) -> None:
         """OEM: the band ends tuck under the hood edge. The printed band may

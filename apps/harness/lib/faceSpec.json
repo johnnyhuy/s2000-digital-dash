@@ -56,9 +56,9 @@
       "y": 0.935
     },
     "clock": null,
-    "crown_cy": 1.1926249999999998,
-    "crown_lip": 0.02,
-    "crown_r": 0.5035,
+    "crown_cy": 1.3,
+    "crown_lip": 0.012,
+    "crown_r": 0.547,
     "extras": {},
     "fuel": {
       "h": 0.045,
@@ -377,9 +377,9 @@
       "x": 0.392,
       "y": 0.592
     },
-    "crown_cy": 1.1926249999999998,
-    "crown_lip": 0.02,
-    "crown_r": 0.5035,
+    "crown_cy": 1.3,
+    "crown_lip": 0.012,
+    "crown_r": 0.547,
     "extras": {},
     "fuel": {
       "h": 0.17,
@@ -530,8 +530,8 @@
       "a0_deg": -132.0,
       "a9_deg": -74.0,
       "band": 0.033,
-      "cx": 0.52,
-      "cy": 1.379,
+      "cx": 0.5,
+      "cy": 1.3,
       "deg_per_div": 6.744186046511628,
       "first_div": 0.6,
       "hatch_deg": 6.5,
@@ -543,10 +543,10 @@
       "minors_per": 4,
       "num_inset": 0.03,
       "num_size": 0.034,
-      "r_in": 0.522,
-      "r_line": 0.518,
-      "r_num": 0.488,
-      "r_out": 0.555,
+      "r_in": 0.51,
+      "r_line": 0.506,
+      "r_num": 0.476,
+      "r_out": 0.543,
       "tick_major": [
         0.0028,
         0.014

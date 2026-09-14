@@ -612,11 +612,14 @@ export function ClusterFace({
   const lamps = liveLike ? face.lamps : {};
   const styleName = style === "ap2" ? "AP2" : "AP1";
   const rx = wpx(g, 0.012);
+  // The cowl lip rises just past the module top (crown is concentric with the
+  // band); give the viewBox that headroom so the rim is not clipped.
+  const pad = wpx(g, g.spec.crown_lip);
 
   return (
     <figure className={`cluster cluster-${style} cluster-${phase}`}>
       <div className="cluster-stage">
-        <svg viewBox={`0 0 ${VIEW_W} ${MODULE_H}`} role="img" aria-label={`${styleName} cluster, ${speed} kilometres per hour, ${Math.round(rpm)} rpm`}>
+        <svg viewBox={`0 ${-pad} ${VIEW_W} ${MODULE_H + pad}`} role="img" aria-label={`${styleName} cluster, ${speed} kilometres per hour, ${Math.round(rpm)} rpm`}>
           <defs>
             <filter id="amber-bloom" x="-20%" y="-20%" width="140%" height="140%">
               <feGaussianBlur stdDeviation="1.2" />
@@ -651,7 +654,7 @@ export function ClusterFace({
               <stop offset="100%" stopColor={BTN} />
             </radialGradient>
             <clipPath id={`face-clip-${style}`}>
-              <rect x={g.module.x} y={g.module.y} width={g.module.w} height={g.module.h} rx={rx} />
+              <rect x={g.module.x} y={g.module.y - pad} width={g.module.w} height={g.module.h + pad} rx={rx} />
             </clipPath>
           </defs>
 
