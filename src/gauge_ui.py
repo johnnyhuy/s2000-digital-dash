@@ -953,10 +953,12 @@ def _draw_side_gauge_print(pygame, surf, g: FaceGeom) -> None:
     _pump_icon(pygame, surf, fx, fy, int(g.w(0.028)), WHITE)
     lw = max(2, int(g.w(0.0022)))
     mx, my, mw, mh = g.module
+    tx, _, tw, _ = g.temp
     ty_ = int(my + mh * s.temp_underline_y)
-    pygame.draw.line(surf, WHITE, (int(mx + mw * (s.temp_c.x + 0.012)), ty_), (int(mx + mw * (s.temp_h.x - 0.012)), ty_), lw)
+    pygame.draw.line(surf, WHITE, (tx, ty_), (tx + tw, ty_), lw)  # OEM: rule is exactly bar-wide
+    fx, _, fw, _ = g.fuel
     fy_ = int(my + mh * s.fuel_underline_y)
-    pygame.draw.line(surf, WHITE, (int(mx + mw * (s.fuel_e.x + 0.012)), fy_), (int(mx + mw * (s.fuel_f.x - 0.012)), fy_), lw)
+    pygame.draw.line(surf, WHITE, (fx, fy_), (fx + fw, fy_), lw)
     half_x = int(mx + mw * (s.fuel.x + s.fuel.w * 0.5))
     pygame.draw.rect(surf, WHITE, pygame.Rect(half_x - lw // 2, fy_ - int(g.w(0.007)), lw, int(g.w(0.007))))
 

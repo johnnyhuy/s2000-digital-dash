@@ -377,9 +377,9 @@ function SideGauges({ g, face, on, bulbCheck }: { g: FaceGeom; face: DisplayStat
       ) : (
         <>
           <SegBar r={g.temp} segs={s.temp_segs} lit={tempLit} colour={tempColour} on={on} />
-          <line x1={g.temp.x - wpx(g, 0.012)} x2={g.temp.x + g.temp.w + wpx(g, 0.012)} y1={hpx(g, s.temp_underline_y)} y2={hpx(g, s.temp_underline_y)} stroke={litW} strokeWidth={0.9} />
+          <line x1={g.temp.x} x2={g.temp.x + g.temp.w} y1={hpx(g, s.temp_underline_y)} y2={hpx(g, s.temp_underline_y)} stroke={litW} strokeWidth={0.9} />
           <SegBar r={g.fuel} segs={s.fuel_segs} lit={fuelLit} colour={fuelColour} on={on} />
-          <line x1={g.fuel.x - wpx(g, 0.012)} x2={g.fuel.x + g.fuel.w + wpx(g, 0.012)} y1={hpx(g, s.fuel_underline_y)} y2={hpx(g, s.fuel_underline_y)} stroke={litW} strokeWidth={0.9} />
+          <line x1={g.fuel.x} x2={g.fuel.x + g.fuel.w} y1={hpx(g, s.fuel_underline_y)} y2={hpx(g, s.fuel_underline_y)} stroke={litW} strokeWidth={0.9} />
           {on ? <rect x={g.fuel.x + g.fuel.w * 0.42} y={hpx(g, s.fuel_underline_y) - 3} width={0.9} height={3} fill={litW} /> : null}
         </>
       )}

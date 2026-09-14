@@ -67,8 +67,8 @@ past 9. There is no needle.
 | --- | --- |
 | Speed window | rect **(39 %, 30 %) 22 × 24 %**, 3-digit 7-seg (ghost `188`), digit h = 20 % H, right edge 59.6 %; `mph` (unlit) over `km/h` to the right |
 | ODO / TRIP window | rect **(39 %, 57 %) 22 × 13 %**; 6-digit odo (h 5.6 %) at y 64.8 %; `TRIP A` + `xxx.x` (h 5.0 %) at y 65.5 % |
-| TEMP | **horizontal 8-block bar** at **(13 %, 52 %) 16 × 5.5 %**, left of the speedo; thermometer icon above, `C` / `H` beside, white underline at 59 % |
-| FUEL | **horizontal 16-block bar** at **(81.5 %, 46.5 %) 11 × 4.5 %**, right of the speedo; pump icon above, `E` / `F` beside, underline at 52.5 % |
+| TEMP | **horizontal 8-block bar** at **(13 %, 52 %) 16 × 5.5 %**, left of the speedo; thermometer icon above, `C` / `H` hugging the bar ends, white underline exactly bar-wide touching the block bottoms |
+| FUEL | **horizontal 16-block bar** at **(81.5 %, 46.5 %) 11 × 4.5 %**, right of the speedo; pump icon above, `E` / `F` hugging the bar ends, underline exactly bar-wide touching the block bottoms |
 | Arc telltales | round wells in the well: **←** (35 %, 34 %), **→** (65 %, 34 %), high beam (71 %, 42 %) |
 | Telltale strip | rect **(15.5 %, 74.5 %) 75 × 14 %**: BRAKE 19 %, battery 26 %, oil 32 %, CEL 39 %, ABS 46 %, MAINT 55 %, EPS 64 %, SRS 72 %, seatbelt 80 % |
 | Lower panels | left (6 %, 61.5 %) 18.5 × 9 %; right (79 %, 59 %) 14.5 × 9 % |

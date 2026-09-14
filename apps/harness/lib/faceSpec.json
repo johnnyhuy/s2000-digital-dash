@@ -67,11 +67,11 @@
       "y": 0.465
     },
     "fuel_e": {
-      "x": 0.797,
+      "x": 0.806,
       "y": 0.49
     },
     "fuel_f": {
-      "x": 0.943,
+      "x": 0.934,
       "y": 0.49
     },
     "fuel_icon": {
@@ -79,7 +79,7 @@
       "y": 0.425
     },
     "fuel_segs": 16,
-    "fuel_underline_y": 0.525,
+    "fuel_underline_y": 0.506,
     "module_aspect": 2.35,
     "odo": {
       "h": 0.13,
@@ -280,11 +280,11 @@
       "y": 0.52
     },
     "temp_c": {
-      "x": 0.108,
+      "x": 0.121,
       "y": 0.548
     },
     "temp_h": {
-      "x": 0.312,
+      "x": 0.299,
       "y": 0.548
     },
     "temp_icon": {
@@ -292,7 +292,7 @@
       "y": 0.478
     },
     "temp_segs": 8,
-    "temp_underline_y": 0.59,
+    "temp_underline_y": 0.569,
     "trip_cy": 0.655,
     "trip_digit_h": 0.05,
     "trip_label": {

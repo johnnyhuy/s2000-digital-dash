@@ -246,15 +246,15 @@ AP1 = FaceSpec(
     temp=Rect(0.130, 0.520, 0.160, 0.055),
     temp_segs=8,
     temp_icon=Anchor(0.150, 0.478),
-    temp_c=Anchor(0.108, 0.548),
-    temp_h=Anchor(0.312, 0.548),
-    temp_underline_y=0.590,
+    temp_c=Anchor(0.121, 0.548),  # C hugs the bar: bar.x − half-letter − hair
+    temp_h=Anchor(0.299, 0.548),  # H hugs the bar: bar right + half-letter + hair
+    temp_underline_y=0.569,  # rule touches the block bottoms (no floating gap)
     fuel=Rect(0.815, 0.465, 0.110, 0.045),
     fuel_segs=16,
     fuel_icon=Anchor(0.905, 0.425),
-    fuel_e=Anchor(0.797, 0.490),
-    fuel_f=Anchor(0.943, 0.490),
-    fuel_underline_y=0.525,
+    fuel_e=Anchor(0.806, 0.490),
+    fuel_f=Anchor(0.934, 0.490),
+    fuel_underline_y=0.506,  # rule touches the block bottoms (no floating gap)
     arc_lamps=(
         LampSpot("turn_l", 0.350, 0.340, tone="green", size=0.022),
         LampSpot("turn_r", 0.650, 0.340, tone="green", size=0.022),
