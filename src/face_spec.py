@@ -222,12 +222,19 @@ class FaceSpec:
     extras: dict[str, float] = field(default_factory=dict)
 
 
+# The hood crown is CONCENTRIC with the tach: the OEM band hugs the cowl with
+# a constant dark gap all the way round, so the crown is the band's outer
+# circle plus a hairline. The lip is the visible cowl rim outside that.
+CROWN_GAP = 0.004   # W - dark gap between band outer edge and cowl
+CROWN_LIP = 0.012   # W
+
+_AP1_TACH = ArcSpec()
 AP1 = FaceSpec(
     style="ap1",
-    tach=ArcSpec(),
-    crown_cy=w_to_h(0.5075),
-    crown_r=0.5035,
-    crown_lip=0.020,
+    tach=_AP1_TACH,
+    crown_cy=_AP1_TACH.cy,
+    crown_r=_AP1_TACH.r_out + CROWN_GAP,
+    crown_lip=CROWN_LIP,
     spring_y=0.58,
     speed=Rect(0.39, 0.30, 0.22, 0.24),
     speed_digit_h=0.20,
@@ -246,15 +253,15 @@ AP1 = FaceSpec(
     temp=Rect(0.130, 0.520, 0.160, 0.055),
     temp_segs=8,
     temp_icon=Anchor(0.150, 0.478),
-    temp_c=Anchor(0.108, 0.548),
-    temp_h=Anchor(0.312, 0.548),
-    temp_underline_y=0.590,
+    temp_c=Anchor(0.121, 0.548),  # C hugs the bar: bar.x − half-letter − hair
+    temp_h=Anchor(0.299, 0.548),  # H hugs the bar: bar right + half-letter + hair
+    temp_underline_y=0.569,  # rule touches the block bottoms (no floating gap)
     fuel=Rect(0.815, 0.465, 0.110, 0.045),
     fuel_segs=16,
     fuel_icon=Anchor(0.905, 0.425),
-    fuel_e=Anchor(0.797, 0.490),
-    fuel_f=Anchor(0.943, 0.490),
-    fuel_underline_y=0.525,
+    fuel_e=Anchor(0.806, 0.490),
+    fuel_f=Anchor(0.934, 0.490),
+    fuel_underline_y=0.506,  # rule touches the block bottoms (no floating gap)
     arc_lamps=(
         LampSpot("turn_l", 0.350, 0.340, tone="green", size=0.022),
         LampSpot("turn_r", 0.650, 0.340, tone="green", size=0.022),
@@ -295,12 +302,14 @@ AP1 = FaceSpec(
 
 # AP2 (2004–07): the same bar-graph engine, arc rotated so 9 lands near the
 # top right, arched TEMP / FUEL on the right, clock row under the speed.
+_AP2_TACH = ArcSpec(a0_deg=-132.0, a9_deg=-74.0, hatch_deg=6.5)
 AP2 = FaceSpec(
     style="ap2",
-    tach=ArcSpec(cx=0.52, cy=1.379, r_out=0.555, a0_deg=-132.0, a9_deg=-74.0, hatch_deg=6.5),
-    crown_cy=w_to_h(0.5075),
-    crown_r=0.5035,
-    crown_lip=0.020,
+    # Same housing and arc as AP1 - only the sweep differs (ends at 2 o'clock).
+    tach=_AP2_TACH,
+    crown_cy=_AP2_TACH.cy,
+    crown_r=_AP2_TACH.r_out + CROWN_GAP,
+    crown_lip=CROWN_LIP,
     spring_y=0.58,
     speed=Rect(0.394, 0.32, 0.19, 0.22),
     speed_digit_h=0.185,

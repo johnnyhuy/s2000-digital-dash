@@ -28,8 +28,9 @@ The previous lock drew the tach as a quadratic bezier and placed elements
 by eyeballed `%` constants spread across `gauge_ui.py`. Fitting a circle
 through the OEM tick marks shows the real cluster is a **true circular
 arc** whose centre sits well **below** the module - the band is a shallow
-cap, not a parabola - and the hood crown is a second, slightly smaller
-circle. Everything below is derived from those two circles.
+cap, not a parabola - and the hood crown is **concentric** with it: the
+band hugs the cowl with a constant hairline gap all the way round.
+Everything below is derived from that one circle.
 
 ## Silhouette
 
@@ -37,23 +38,23 @@ circle. Everything below is derived from those two circles.
 | --- | --- |
 | Module aspect | **2.35:1** |
 | Bottom | flat |
-| Hood crown | circle, centre `(50 %, 119.3 % H)`, r = **50.35 % W**, printed lip **2 % W** outside it |
-| Crown top | y ≈ **0.9 %** (just clears the band apex) |
-| Spring line | y = **58 %** - crown meets the flat lower bezel; springs land at x ≈ 8 % / 92 % |
+| Hood crown | circle **concentric with the tach** `(50 %, 130 % H)`, r = band `r_out` + **0.4 % W** gap = **54.7 % W**; cowl lip **1.2 % W** outside it |
+| Crown top | y ≈ **0.5 %** (constant gap over the band apex; the lip rises just past the module top) |
+| Spring line | y = **58 %** - crown meets the flat lower bezel; springs land at x ≈ 5 % / 95 % |
 | Lower bezel | full width below the spring; strip and buttons live here |
 
 ## Tach arc
 
 | Item | AP1 | AP2 |
 | --- | --- | --- |
-| Centre | `(50 %, 130.0 % H)` | `(52 %, 137.9 % H)` |
+| Centre | `(50 %, 130.0 % H)` | same (shared housing, concentric crown) |
 | Band outer / inner radius | 54.3 % / 51.0 % W | same |
 | Baseline (white line) radius | 50.6 % W | same |
 | Numeral radius | 47.6 % W | same |
 | 0 → 9 sweep (screen angles) | **−127.8° → −52.2°** (75.6°) | −132° → −74° (58°) |
-| 0 tick / 9 tick | (19 %, 36 %) / (81 %, 36 %) | (17 %, 47 %) / (66 %, 21 %) |
-| Band apex | y ≈ **2.4 %** | y ≈ 7.5 % |
-| Numeral 0 / 5 | (21 %, 42 %) / (52 %, 18 %) | (19 %, 53 %) / (43 %, 25 %) |
+| 0 tick / 9 tick | (19 %, 36 %) / (81 %, 36 %) | (16 %, 42 %) / (64 %, 16 %) |
+| Band apex | y ≈ **2.4 %** | same |
+| Numeral 0 / 5 | (21 %, 42 %) / (52 %, 18 %) | (18 %, 47 %) / (41 %, 20 %) |
 | First division | 0 → 1 is **60 %** of a division (OEM squeezes the idle band) | same |
 | Hatches | amber overrun below 0 and red above 9, **5.5°** each, 5 blocks | 6.5° |
 
@@ -67,8 +68,8 @@ past 9. There is no needle.
 | --- | --- |
 | Speed window | rect **(39 %, 30 %) 22 × 24 %**, 3-digit 7-seg (ghost `188`), digit h = 20 % H, right edge 59.6 %; `mph` (unlit) over `km/h` to the right |
 | ODO / TRIP window | rect **(39 %, 57 %) 22 × 13 %**; 6-digit odo (h 5.6 %) at y 64.8 %; `TRIP A` + `xxx.x` (h 5.0 %) at y 65.5 % |
-| TEMP | **horizontal 8-block bar** at **(13 %, 52 %) 16 × 5.5 %**, left of the speedo; thermometer icon above, `C` / `H` beside, white underline at 59 % |
-| FUEL | **horizontal 16-block bar** at **(81.5 %, 46.5 %) 11 × 4.5 %**, right of the speedo; pump icon above, `E` / `F` beside, underline at 52.5 % |
+| TEMP | **horizontal 8-block bar** at **(13 %, 52 %) 16 × 5.5 %**, left of the speedo; thermometer icon above, `C` / `H` hugging the bar ends, white underline exactly bar-wide touching the block bottoms |
+| FUEL | **horizontal 16-block bar** at **(81.5 %, 46.5 %) 11 × 4.5 %**, right of the speedo; pump icon above, `E` / `F` hugging the bar ends, underline exactly bar-wide touching the block bottoms |
 | Arc telltales | round wells in the well: **←** (35 %, 34 %), **→** (65 %, 34 %), high beam (71 %, 42 %) |
 | Telltale strip | rect **(15.5 %, 74.5 %) 75 × 14 %**: BRAKE 19 %, battery 26 %, oil 32 %, CEL 39 %, ABS 46 %, MAINT 55 %, EPS 64 %, SRS 72 %, seatbelt 80 % |
 | Lower panels | left (6 %, 61.5 %) 18.5 × 9 %; right (79 %, 59 %) 14.5 × 9 % |

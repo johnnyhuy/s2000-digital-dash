@@ -377,9 +377,9 @@ function SideGauges({ g, face, on, bulbCheck }: { g: FaceGeom; face: DisplayStat
       ) : (
         <>
           <SegBar r={g.temp} segs={s.temp_segs} lit={tempLit} colour={tempColour} on={on} />
-          <line x1={g.temp.x - wpx(g, 0.012)} x2={g.temp.x + g.temp.w + wpx(g, 0.012)} y1={hpx(g, s.temp_underline_y)} y2={hpx(g, s.temp_underline_y)} stroke={litW} strokeWidth={0.9} />
+          <line x1={g.temp.x} x2={g.temp.x + g.temp.w} y1={hpx(g, s.temp_underline_y)} y2={hpx(g, s.temp_underline_y)} stroke={litW} strokeWidth={0.9} />
           <SegBar r={g.fuel} segs={s.fuel_segs} lit={fuelLit} colour={fuelColour} on={on} />
-          <line x1={g.fuel.x - wpx(g, 0.012)} x2={g.fuel.x + g.fuel.w + wpx(g, 0.012)} y1={hpx(g, s.fuel_underline_y)} y2={hpx(g, s.fuel_underline_y)} stroke={litW} strokeWidth={0.9} />
+          <line x1={g.fuel.x} x2={g.fuel.x + g.fuel.w} y1={hpx(g, s.fuel_underline_y)} y2={hpx(g, s.fuel_underline_y)} stroke={litW} strokeWidth={0.9} />
           {on ? <rect x={g.fuel.x + g.fuel.w * 0.42} y={hpx(g, s.fuel_underline_y) - 3} width={0.9} height={3} fill={litW} /> : null}
         </>
       )}
@@ -612,11 +612,14 @@ export function ClusterFace({
   const lamps = liveLike ? face.lamps : {};
   const styleName = style === "ap2" ? "AP2" : "AP1";
   const rx = wpx(g, 0.012);
+  // The cowl lip rises just past the module top (crown is concentric with the
+  // band); give the viewBox that headroom so the rim is not clipped.
+  const pad = wpx(g, g.spec.crown_lip);
 
   return (
     <figure className={`cluster cluster-${style} cluster-${phase}`}>
       <div className="cluster-stage">
-        <svg viewBox={`0 0 ${VIEW_W} ${MODULE_H}`} role="img" aria-label={`${styleName} cluster, ${speed} kilometres per hour, ${Math.round(rpm)} rpm`}>
+        <svg viewBox={`0 ${-pad} ${VIEW_W} ${MODULE_H + pad}`} role="img" aria-label={`${styleName} cluster, ${speed} kilometres per hour, ${Math.round(rpm)} rpm`}>
           <defs>
             <filter id="amber-bloom" x="-20%" y="-20%" width="140%" height="140%">
               <feGaussianBlur stdDeviation="1.2" />
@@ -651,7 +654,7 @@ export function ClusterFace({
               <stop offset="100%" stopColor={BTN} />
             </radialGradient>
             <clipPath id={`face-clip-${style}`}>
-              <rect x={g.module.x} y={g.module.y} width={g.module.w} height={g.module.h} rx={rx} />
+              <rect x={g.module.x} y={g.module.y - pad} width={g.module.w} height={g.module.h + pad} rx={rx} />
             </clipPath>
           </defs>
 

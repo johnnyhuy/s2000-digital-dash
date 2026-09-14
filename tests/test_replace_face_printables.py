@@ -30,9 +30,9 @@ PARTS = ("backlight", "backlight_web", "acrylic_face", "button_rocker", "button_
 # Expected bbox of the cleaned printables — pins the meshes to the SCAD lock.
 # (min), (max), tolerance mm
 BBOX = {
-    "acrylic_face": ((0.0, 0.0, 0.0), (170.0, 75.06, 2.0), 0.05),
+    "acrylic_face": ((0.0, 0.0, 0.0), (170.0, 73.33, 2.0), 0.05),
     "backlight": ((-2.0, -16.13, 0.0), (172.0, 88.47, 12.0), 0.08),
-    "backlight_web": ((3.85, 3.85, 0.0), (166.15, 53.77, 0.9), 0.08),
+    "backlight_web": ((2.49, 2.49, 0.0), (167.51, 53.77, 0.9), 0.08),
     "button_rocker": ((-1.6, -1.6, 0.0), (19.96, 10.1, 3.6), 0.08),
     "button_sel": ((-1.0, -1.0, 0.0), (7.8, 5.34, 3.6), 0.08),
     "button_trip": ((-1.0, -1.0, 0.0), (7.8, 5.34, 3.6), 0.08),
