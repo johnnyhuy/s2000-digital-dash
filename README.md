@@ -1,6 +1,6 @@
 <h1 align="center">
-  <img src="docs/assets/honda-unofficial-mark.svg" alt="Unofficial geometric H mark" width="64" valign="middle" />
-  S2000 Digital Dash
+  <img src="docs/assets/honda-h-mark.svg" alt="Retraced Honda H-mark" width="56" valign="middle" />
+  <img src="docs/assets/s2000-badge.svg" alt="Retraced S2000 badge" height="28" valign="middle" />
 </h1>
 
 <p align="center">
@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/assets/intro-live.gif" alt="ID.4-style boot: sweep, READY, reveal, then live gauges" width="960" />
+  <img src="docs/assets/intro-live.gif" alt="Boot: tach self-test sweep, READY with badges, reveal, then live gauges" width="960" />
 </p>
 
 <p align="center">
@@ -60,14 +60,13 @@ Bar-graph tach **0–9 ×1000** on a circular arc with amber / red hatches past 
 <tr>
 <td width="50%" valign="middle">
 
-### ID.4-style boot
+### Ignition boot
 
 Skippable with Space or `--no-intro` (web harness: Space or **Skip boot**):
 
-1. Welcome light sweep along the cowl
-2. **READY** summary (batt / fuel / temp / odo)
-3. Gauge reveal (tach self-test + lamp bulb-check)
-4. Live
+1. Tach bar fills 0→9 with every lamp and `188` lit (OEM bulb check)
+2. **READY** with the retraced Honda H and S2000 badge
+3. Gauge reveal, then live
 
 </td>
 <td width="50%">

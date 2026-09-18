@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Honda H-mark retraced from a generated S2000-era steering-wheel plate">
+  <!--
+    Retrace of docs/assets/brand/honda-h-mark-ref.png (image-gen plate).
+    Squircle ring + open H with pill-ended bars. DIY cluster mark, not
+    Honda Motor Co. trademark artwork; no affiliation or endorsement.
+  -->
+  <defs>
+    <linearGradient id="h-chrome" x1="18" y1="10" x2="110" y2="118" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f7f8fa"/>
+      <stop offset="0.38" stop-color="#d5d8dc"/>
+      <stop offset="0.62" stop-color="#9aa0a6"/>
+      <stop offset="1" stop-color="#eceef0"/>
+    </linearGradient>
+    <linearGradient id="h-bar" x1="36" y1="28" x2="92" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f4f5f7"/>
+      <stop offset="0.45" stop-color="#c5c9ce"/>
+      <stop offset="1" stop-color="#8d9399"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" fill="#000"/>
+  <rect x="16" y="16" width="96" height="96" rx="26" fill="none" stroke="url(#h-chrome)" stroke-width="8"/>
+  <rect x="37" y="33" width="15" height="62" rx="7.5" fill="url(#h-bar)"/>
+  <rect x="76" y="33" width="15" height="62" rx="7.5" fill="url(#h-bar)"/>
+  <rect x="37" y="56.5" width="54" height="15" rx="7.5" fill="url(#h-bar)"/>
+</svg>

@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   title: "S2000 Digital Dash — unofficial DIY",
   description:
     "Shareable web demo of the S2000 digital dash (AP1 / AP2 face styles). Unofficial enthusiast project — not affiliated with Honda Motor Co., Ltd.",
-  icons: { icon: "/docs/assets/honda-unofficial-mark.svg" },
+  icons: { icon: "/docs/assets/honda-h-mark.svg" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

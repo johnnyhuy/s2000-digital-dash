@@ -4,14 +4,16 @@ import {
   VIEW_W,
   anchorPx,
   arcPath,
-  arcPx,
   faceGeom,
-  hatchAngles,
+  hatchSpans,
   hoodPath,
   lcdPath,
   radialTickPath,
   rectPx,
   sideArchSector,
+  cellWindow,
+  divAt,
+  scaleCells,
   tachAngleDeg,
   tachNumXY,
   tempSegmentsLit,
@@ -47,7 +49,6 @@ const AMBER = "#f49420";
 const AMBER_HOT = "#ffb03c";
 const BAND_UNLIT_END = "#ac5c18";
 const BAND_UNLIT_MID = "#6c380e";
-const BAND_SEG_LINE = "#5c2e0c";
 const HATCH_AMBER = "#d0761e";
 const HATCH_RED = "#9c2018";
 const HATCH_RED_LIT = "#ff3c28";
@@ -68,9 +69,6 @@ const BTN_TEXT = "#282828";
 const LAMP_GHOST = "#1c1a18";
 const TONE: Record<Tone, string> = { red: "#e22820", amber: "#ec941c", green: "#22b84c", blue: "#1c54d8" };
 
-const TACH_CELL_RPM = 100;
-const TACH_CELL_GAP_DEG = 0.22;
-
 function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
@@ -81,8 +79,6 @@ function lerpHex(a: string, b: string, t: number): string {
   const [br, bg, bb] = parse(b);
   return `rgb(${Math.round(lerp(ar, br, t))},${Math.round(lerp(ag, bg, t))},${Math.round(lerp(ab, bb, t))})`;
 }
-
-const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
 // --- housing -------------------------------------------------------------------------
 function Housing({ g }: { g: FaceGeom }) {
@@ -102,26 +98,18 @@ function Housing({ g }: { g: FaceGeom }) {
 // --- printed tach (static) ---------------------------------------------------------------
 function TachPrint({ g, dim }: { g: FaceGeom; dim?: boolean }) {
   const t = g.spec.tach;
-  const a0 = t.a0_deg - t.hatch_deg;
-  const a1 = t.a9_deg + t.hatch_deg;
-  const slices = 60;
-  const band = [];
-  for (let i = 0; i < slices; i += 1) {
-    const d0 = a0 + ((a1 - a0) * i) / slices;
-    const d1 = a0 + ((a1 - a0) * (i + 1)) / slices + 0.05;
-    const u = Math.abs(((i + 0.5) / slices) * 2 - 1);
-    band.push(<path key={`b${i}`} d={arcPath(g, t.r_out, t.r_in, d0, d1, 2)} fill={lerpHex(BAND_UNLIT_MID, BAND_UNLIT_END, u * u)} />);
-  }
-  const lines = [];
-  for (let rpm = TACH_CELL_RPM; rpm < RPM_MAX; rpm += TACH_CELL_RPM) {
-    const d = tachAngleDeg(rpm, g);
-    lines.push(<path key={`l${rpm}`} d={radialTickPath(g, t.r_out, t.band, 0.0007, d)} fill={BAND_SEG_LINE} />);
-  }
+  const mid = (t.a0_deg + t.a9_deg) / 2;
+  const half = Math.max(1e-6, (t.a9_deg - t.a0_deg) / 2);
+  const band = scaleCells(t).map(({ rpm0, d0, d1 }) => {
+    const u = Math.abs(((d0 + d1) / 2 - mid) / half);
+    const fill = rpm0 >= t.redline_rpm ? HATCH_RED : lerpHex(BAND_UNLIT_MID, BAND_UNLIT_END, Math.min(1, u) ** 1.6);
+    return <path key={`b${rpm0}`} d={arcPath(g, t.r_out, t.r_in, d0, d1, 2)} fill={fill} />;
+  });
   const hatch = (["left", "right"] as const).flatMap((side) =>
-    hatchAngles(t, side).map((a) => (
+    hatchSpans(t, side).map(([d0, d1]) => (
       <path
-        key={`${side}${a.toFixed(1)}`}
-        d={arcPath(g, t.r_out, t.r_in - t.hatch_inner_over, a - t.hatch_w_deg / 2, a + t.hatch_w_deg / 2, 1)}
+        key={`${side}${d0.toFixed(2)}`}
+        d={arcPath(g, t.r_out, t.r_in - t.hatch_inner_over, d0, d1, 1)}
         fill={side === "left" ? HATCH_AMBER : HATCH_RED}
       />
     )),
@@ -135,7 +123,6 @@ function TachPrint({ g, dim }: { g: FaceGeom; dim?: boolean }) {
   return (
     <g aria-hidden className="tach-print">
       {band}
-      {lines}
       {hatch}
       <path d={arcPath(g, t.r_line + t.line_w / 2, t.r_line - t.line_w / 2, t.a0_deg, t.a9_deg)} fill={dim ? DIM : WHITE} />
       {ticks}
@@ -147,7 +134,7 @@ function TachPrint({ g, dim }: { g: FaceGeom; dim?: boolean }) {
           </text>
         );
       })}
-      <text className="unit-label" x={zero.x + wpx(g, 0.024)} y={zero.y + wpx(g, 0.034)} fontSize={wpx(g, 0.0105)} fill={dim ? DIM : WHITE}>
+      <text className="unit-label" x={zero.x + wpx(g, g.spec.rpm_dx)} y={zero.y + wpx(g, g.spec.rpm_dy + 0.003)} fontSize={wpx(g, 0.009)} fill={dim ? DIM : WHITE} textAnchor="middle">
         x1000r/min
       </text>
     </g>
@@ -157,55 +144,29 @@ function TachPrint({ g, dim }: { g: FaceGeom; dim?: boolean }) {
 // --- lit bar graph -------------------------------------------------------------------------
 function TachFill({ g, rpm }: { g: FaceGeom; rpm: number }) {
   const t = g.spec.tach;
+  const step = t.cell_rpm;
   const r = Math.max(0, Math.min(RPM_MAX * 1.06, rpm));
-  if (r < TACH_CELL_RPM * 0.5) return null;
-  const aLit = tachAngleDeg(r, g);
+  if (r < step * 0.5) return null;
+  const aLit = t.a0_deg + divAt(t, r) * t.deg_per_div;
   const cells = [];
-  for (let i = 0; i <= Math.floor(r / TACH_CELL_RPM); i += 1) {
-    const r0 = i * TACH_CELL_RPM;
-    const r1 = Math.min(r, r0 + TACH_CELL_RPM);
+  for (let i = 0; i <= Math.floor(Math.min(r, RPM_MAX) / step); i += 1) {
+    const r0 = i * step;
+    const r1 = Math.min(r, r0 + step);
     if (r1 - r0 < 1) continue;
-    const d0 = tachAngleDeg(r0, g) + TACH_CELL_GAP_DEG / 2;
-    const d1 = tachAngleDeg(r1, g) - (r1 >= r0 + TACH_CELL_RPM ? TACH_CELL_GAP_DEG / 2 : 0);
+    const [d0, d1] = cellWindow(t, r0, r1, r1 >= r0 + step);
     if (d1 <= d0) continue;
-    cells.push(<path key={r0} d={arcPath(g, t.r_out, t.r_in, d0, d1, 2)} fill={r0 >= RPM_MAX ? HATCH_RED_LIT : AMBER} />);
+    cells.push(<path key={r0} d={arcPath(g, t.r_out, t.r_in, d0, d1, 2)} fill={r0 >= t.redline_rpm ? HATCH_RED_LIT : AMBER} />);
   }
   const over =
     r > RPM_MAX
-      ? hatchAngles(t, "right")
-          .filter((a) => a <= aLit)
-          .map((a) => <path key={`h${a.toFixed(1)}`} d={arcPath(g, t.r_out, t.r_in - t.hatch_inner_over, a - t.hatch_w_deg / 2, a + t.hatch_w_deg / 2, 1)} fill={HATCH_RED_LIT} />)
+      ? hatchSpans(t, "right")
+          .filter(([d0, d1]) => (d0 + d1) / 2 <= aLit)
+          .map(([d0, d1]) => <path key={`h${d0.toFixed(2)}`} d={arcPath(g, t.r_out, t.r_in - t.hatch_inner_over, d0, d1, 1)} fill={HATCH_RED_LIT} />)
       : null;
   return (
     <g aria-hidden className="tach-fill">
-      <path d={arcPath(g, t.r_out + 0.004, t.r_in - 0.004, t.a0_deg, aLit)} fill={AMBER_HOT} opacity={0.15} filter="url(#amber-bloom)" />
       {cells}
       {over}
-    </g>
-  );
-}
-
-/** ID.4-style light comet running the bar graph 0 → 9 during boot. */
-function WelcomeSweep({ g, t }: { g: FaceGeom; t: number }) {
-  const a = g.spec.tach;
-  const start = a.a0_deg - a.hatch_deg;
-  const end = a.a9_deg + a.hatch_deg;
-  const head = start + (end - start) * smoothstep(clamp01(t));
-  const tail = 16;
-  const slices = 20;
-  const bits = [];
-  for (let i = 0; i < slices; i += 1) {
-    const d1 = head - (tail * i) / slices + 0.1;
-    const d0 = Math.max(start, head - (tail * (i + 1)) / slices);
-    if (d1 < start || d1 <= d0) continue;
-    const k = 1 - i / slices;
-    bits.push(<path key={i} d={arcPath(g, a.r_out, a.r_in, d0, d1, 2)} fill={lerpHex(AMBER, "#ffe08a", k * k)} opacity={0.25 + 0.75 * k} />);
-  }
-  const tip = arcPx(g, (a.r_out + a.r_in) / 2, head);
-  return (
-    <g aria-hidden className="sweep-bead">
-      {bits}
-      <circle cx={tip.x} cy={tip.y} r={wpx(g, 0.006)} fill="#fff2c8" filter="url(#amber-bloom)" />
     </g>
   );
 }
@@ -230,13 +191,11 @@ function SpeedWindow({ g, speed, on, bulbCheck }: { g: FaceGeom; speed: number; 
       <LcdWindow r={win} on={on} rx={rx} />
       {on ? (
         <>
-          <g filter="url(#lcd-bloom)">
-            <SevenSeg text={text} ghost="888" digitH={hpx(g, s.speed_digit_h)} color={RED_LCD} ghostColor={RED_LCD_GHOST} x={wpx(g, s.speed_right)} y={g.speed.y} align="right" />
-          </g>
+          <SevenSeg text={text} ghost="888" digitH={hpx(g, s.speed_digit_h)} color={RED_LCD} ghostColor={RED_LCD_GHOST} x={wpx(g, s.speed_right)} y={g.speed.y} align="right" />
           <text className="lcd-label" x={wpx(g, s.unit_x)} y={hpx(g, s.unit_y_top) + wpx(g, 0.006)} fontSize={wpx(g, 0.017)} fill={LABEL_OFF}>
             mph
           </text>
-          <text className="lcd-label" x={wpx(g, s.unit_x)} y={hpx(g, s.unit_y_bot) + wpx(g, 0.006)} fontSize={wpx(g, 0.017)} fill={RED_LCD} filter="url(#lcd-bloom)">
+          <text className="lcd-label" x={wpx(g, s.unit_x)} y={hpx(g, s.unit_y_bot) + wpx(g, 0.006)} fontSize={wpx(g, 0.017)} fill={RED_LCD}>
             km/h
           </text>
         </>
@@ -256,7 +215,7 @@ function OdoWindow({ g, face, on, battWarn, clock }: { g: FaceGeom; face: Displa
     <g>
       <LcdWindow r={win} on={on} rx={rx} />
       {on ? (
-        <g filter="url(#lcd-bloom)">
+        <g>
           <SevenSeg text={odo} ghost="888888" digitH={hpx(g, s.odo_digit_h)} color={RED_LCD} ghostColor={RED_LCD_GHOST} x={wpx(g, s.odo_left)} y={hpx(g, s.odo_cy)} align="left" />
           <text className="lcd-label" x={tripLabel.x} y={tripLabel.y + wpx(g, 0.004)} fontSize={wpx(g, 0.0105)} fill={RED_LCD} textAnchor="middle">
             TRIP A
@@ -363,10 +322,10 @@ function SideGauges({ g, face, on, bulbCheck }: { g: FaceGeom; face: DisplayStat
   const litW = on ? WHITE : DIM;
   return (
     <g aria-hidden>
-      <CoolantIcon x={tIcon.x} y={tIcon.y} h={wpx(g, 0.026)} fill={hot && on ? RED : litW} />
+      <CoolantIcon x={tIcon.x} y={tIcon.y} h={wpx(g, s.temp_icon_h)} fill={hot && on ? RED : litW} />
       {label(s.temp_c, "C", litW)}
       {label(s.temp_h, "H", hot && on ? RED : litW)}
-      <PumpIcon x={fIcon.x} y={fIcon.y} h={wpx(g, 0.024)} fill={low && on ? AMBER_HOT : litW} />
+      <PumpIcon x={fIcon.x} y={fIcon.y} h={wpx(g, s.fuel_icon_h)} fill={low && on ? AMBER_HOT : litW} />
       {label(s.fuel_e, "E", low && on ? RED : litW)}
       {label(s.fuel_f, "F", litW)}
       {s.side_gauges_arched ? (
@@ -457,9 +416,7 @@ function ArcLamps({ g, lamps, bulbCheck }: { g: FaceGeom; lamps: Record<string, 
         return (
           <g key={spot.key}>
             <circle cx={p.x} cy={p.y} r={r} fill="#101012" stroke="#2a2a2e" strokeWidth={0.7} />
-            <g filter={lit ? "url(#lamp-bloom)" : undefined}>
-              <Lamp g={g} spot={spot} lit={lit} index={i} />
-            </g>
+            <Lamp g={g} spot={spot} lit={lit} index={i} />
           </g>
         );
       })}
@@ -526,14 +483,10 @@ function Hardware({ g, lamps, bulbCheck }: { g: FaceGeom; lamps: Record<string, 
       {panel(s.panel_right)}
       <g className="lamp-strip" role="group" aria-label="OEM telltales">
         {s.strip_lamps.map((spot, i) => (
-          <g key={spot.key} filter={bulbCheck || lamps[spot.key] ? "url(#lamp-bloom)" : undefined}>
-            <Lamp g={g} spot={spot} lit={bulbCheck || Boolean(lamps[spot.key])} index={i} />
-          </g>
+          <Lamp key={spot.key} g={g} spot={spot} lit={bulbCheck || Boolean(lamps[spot.key])} index={i} />
         ))}
         {s.panel_lamps.map((spot, i) => (
-          <g key={spot.key} filter={bulbCheck || lamps[spot.key] ? "url(#lamp-bloom)" : undefined}>
-            <Lamp g={g} spot={spot} lit={bulbCheck || Boolean(lamps[spot.key])} index={s.strip_lamps.length + i} />
-          </g>
+          <Lamp key={spot.key} g={g} spot={spot} lit={bulbCheck || Boolean(lamps[spot.key])} index={s.strip_lamps.length + i} />
         ))}
       </g>
       <RoundButton g={g} c={s.btn_minus} label="−" />
@@ -549,37 +502,49 @@ function Hardware({ g, lamps, bulbCheck }: { g: FaceGeom; lamps: Record<string, 
 }
 
 // --- boot card --------------------------------------------------------------------------------------
+function HondaHMark({ cx, cy, size }: { cx: number; cy: number; size: number }) {
+  const x = cx - size / 2;
+  const y = cy - size / 2;
+  const sw = size / 16;
+  const bar = size * 0.12;
+  const h = size * 0.48;
+  const gap = size * 0.18;
+  return (
+    <g aria-hidden className="honda-h-mark">
+      <rect x={x + sw} y={y + sw} width={size - sw * 2} height={size - sw * 2} rx={size / 5} fill="none" stroke="#d2d6da" strokeWidth={sw} />
+      <rect x={cx - gap - bar / 2} y={cy - h / 2} width={bar} height={h} rx={bar / 2} fill="#dce0e4" />
+      <rect x={cx + gap - bar / 2} y={cy - h / 2} width={bar} height={h} rx={bar / 2} fill="#dce0e4" />
+      <rect x={cx - gap - bar / 2} y={cy - bar / 2 - size * 0.02} width={gap * 2 + bar} height={bar} rx={bar / 2} fill="#dce0e4" />
+    </g>
+  );
+}
+
 function ReadyCard({ g, face }: { g: FaceGeom; face: DisplayState }) {
   const sw = g.speedWin;
-  const ow = g.odoWin;
   const cx = sw.x + sw.w / 2;
-  const chips: Array<[string, string, number]> = [
-    ["BATT", `${face.batt_v.toFixed(1)}V`, 0.2],
-    ["FUEL", `${face.fuel_pct.toFixed(0)}%`, 0.18],
-    ["TEMP", `${face.ect_c.toFixed(0)}°C`, 0.2],
-    ["ODO", `${Math.round(face.odo_km).toLocaleString("en-AU")}km`, 0.42],
+  const chips: Array<[string, string]> = [
+    ["BATT", `${face.batt_v.toFixed(1)}V`],
+    ["FUEL", `${face.fuel_pct.toFixed(0)}%`],
+    ["TEMP", `${face.ect_c.toFixed(0)}°C`],
+    ["ODO", `${Math.round(face.odo_km).toLocaleString("en-AU")}km`],
   ];
-  let left = 0;
   return (
     <g className="ready-card">
-      <text className="unit-label" x={cx} y={sw.y + sw.h * 0.2} textAnchor="middle" fontSize={wpx(g, 0.0095)} fill={DIM} letterSpacing="0.22em">
-        S2000  DIGITAL  DASH
+      <HondaHMark cx={g.module.w / 2} cy={hpx(g, 0.318)} size={wpx(g, 0.062)} />
+      <text className="unit-label" x={g.module.w / 2} y={hpx(g, 0.398)} textAnchor="middle" fontSize={wpx(g, 0.016)} fill="#dce0e4" letterSpacing="0.22em">
+        S2000
       </text>
-      <text x={cx} y={sw.y + sw.h * 0.62} textAnchor="middle" fontSize={wpx(g, 0.05)} fontWeight={700} fill={AMBER_HOT} className="ready-word" letterSpacing="0.06em">
+      <text x={cx} y={sw.y + sw.h * 0.78} textAnchor="middle" fontSize={wpx(g, 0.046)} fontWeight={700} fill={AMBER_HOT} className="ready-word" letterSpacing="0.06em">
         READY
       </text>
-      <text className="unit-label" x={cx} y={sw.y + sw.h * 0.9} textAnchor="middle" fontSize={wpx(g, 0.0085)} fill={DIM} letterSpacing="0.12em">
-        IGNITION ON   SYSTEMS OK
-      </text>
-      {chips.map(([name, val, share]) => {
-        const x = ow.x + ow.w * (left + share / 2);
-        left += share;
+      {chips.map(([name, val], i) => {
+        const x = g.module.w * (0.30 + 0.13 * i);
         return (
           <g key={name}>
-            <text className="unit-label" x={x} y={ow.y + ow.h * 0.36} textAnchor="middle" fontSize={wpx(g, 0.0085)} fill={DIM}>
+            <text className="unit-label" x={x} y={hpx(g, 0.555)} textAnchor="middle" fontSize={wpx(g, 0.0085)} fill={DIM}>
               {name}
             </text>
-            <text className="unit-label" x={x} y={ow.y + ow.h * 0.78} textAnchor="middle" fontSize={wpx(g, 0.0135)} fill={AMBER}>
+            <text className="unit-label" x={x} y={hpx(g, 0.593)} textAnchor="middle" fontSize={wpx(g, 0.0135)} fill={AMBER}>
               {val}
             </text>
           </g>
@@ -604,12 +569,14 @@ export function ClusterFace({
   phaseT?: number;
 }) {
   const g = faceGeom(style);
+  const selfTest = phase === "sweep";
   const liveLike = phase === "live" || phase === "reveal";
-  const rpm = phase === "reveal" ? revealRpm(phaseT, face.rpm) : liveLike ? face.rpm : 0;
-  const bulbCheck = phase === "reveal" && phaseT < 0.55;
+  const rpm = selfTest ? RPM_MAX * smoothstep(phaseT) : phase === "reveal" ? revealRpm(phaseT, face.rpm) : liveLike ? face.rpm : 0;
+  const bulbCheck = selfTest || (phase === "reveal" && phaseT < 0.55);
   const battWarn = liveLike && (face.batt_v < BATT_LOW_V || Boolean(face.lamps.batt_warn));
   const speed = Math.round(Math.max(0, Math.min(399, face.speed_kmh)));
   const lamps = liveLike ? face.lamps : {};
+  const odoFace = bulbCheck ? { ...face, odo_km: 888888, trip_km: 888.8 } : face;
   const styleName = style === "ap2" ? "AP2" : "AP1";
   const rx = wpx(g, 0.012);
   // The cowl lip rises just past the module top (crown is concentric with the
@@ -621,26 +588,6 @@ export function ClusterFace({
       <div className="cluster-stage">
         <svg viewBox={`0 ${-pad} ${VIEW_W} ${MODULE_H + pad}`} role="img" aria-label={`${styleName} cluster, ${speed} kilometres per hour, ${Math.round(rpm)} rpm`}>
           <defs>
-            <filter id="amber-bloom" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="1.2" />
-            </filter>
-            <filter id="lcd-bloom" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="1.0" result="blur" />
-              <feComponentTransfer in="blur" result="soft">
-                <feFuncA type="linear" slope="0.35" />
-              </feComponentTransfer>
-              <feMerge>
-                <feMergeNode in="soft" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <filter id="lamp-bloom" x="-40%" y="-40%" width="180%" height="180%">
-              <feGaussianBlur stdDeviation="1.2" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
             <radialGradient id="well-vignette" cx="50%" cy="30%" r="70%">
               <stop offset="0%" stopColor="#141012" stopOpacity="0.35" />
               <stop offset="100%" stopColor="#000" stopOpacity="0" />
@@ -660,12 +607,11 @@ export function ClusterFace({
 
           <g clipPath={`url(#face-clip-${style})`}>
             <Housing g={g} />
-            <TachPrint g={g} dim={phase === "sweep" || phase === "ready"} />
-            {phase === "sweep" ? <WelcomeSweep g={g} t={phaseT} /> : null}
-            {liveLike ? <TachFill g={g} rpm={rpm} /> : null}
-            <SideGauges g={g} face={face} on={liveLike} bulbCheck={bulbCheck} />
-            <SpeedWindow g={g} speed={speed} on={liveLike} bulbCheck={bulbCheck} />
-            <OdoWindow g={g} face={face} on={liveLike} battWarn={battWarn} clock={FACE_CLOCK} />
+            <TachPrint g={g} dim={phase === "ready"} />
+            {selfTest || liveLike ? <TachFill g={g} rpm={rpm} /> : null}
+            <SideGauges g={g} face={face} on={selfTest || liveLike} bulbCheck={bulbCheck} />
+            <SpeedWindow g={g} speed={speed} on={selfTest || liveLike} bulbCheck={bulbCheck} />
+            <OdoWindow g={g} face={odoFace} on={selfTest || liveLike} battWarn={battWarn} clock={FACE_CLOCK} />
             {phase === "ready" ? <ReadyCard g={g} face={face} /> : null}
             <ArcLamps g={g} lamps={lamps} bulbCheck={bulbCheck} />
             <Hardware g={g} lamps={lamps} bulbCheck={bulbCheck} />

@@ -129,6 +129,7 @@ def main() -> int:
     sweep = _render(pygame, fonts, draw_frame, DisplayState, sample_telem(), "sweep", 0.55)
     apply_face_style(FaceStyle.AP2)
     live_ap2 = _render(pygame, fonts, draw_frame, DisplayState, sample_telem(), "live", 1.0)
+    sweep_ap2 = _render(pygame, fonts, draw_frame, DisplayState, sample_telem(), "sweep", 0.55)
     apply_face_style(FaceStyle.AP1)
 
     pairs = [
@@ -166,6 +167,13 @@ def main() -> int:
             live_ap2,
             "AP2 OEM (arched TEMP/FUEL) — reference, not a plate",
             "UI AP2 style (interpretive side gauges)",
+        ),
+        (
+            "compare_ap2_sweep.png",
+            OEM / "ap2" / "ap2_s2ki_arched_gauges.jpg",
+            sweep_ap2,
+            "AP2 OEM (arched TEMP/FUEL) — reference, not a plate",
+            "UI AP2 ignition sweep / bulb check",
         ),
     ]
 

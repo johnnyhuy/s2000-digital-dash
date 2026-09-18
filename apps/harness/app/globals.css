@@ -90,6 +90,11 @@ body {
   height: 44px;
 }
 
+.masthead img.s2000-badge {
+  width: auto;
+  height: 28px;
+}
+
 .masthead h1 {
   margin: 0;
   font-family: var(--font-oxanium), var(--font-cluster);
@@ -157,29 +162,7 @@ body {
 }
 
 .seg-lit {
-  filter: drop-shadow(0 0 1.4px rgba(255, 176, 48, 0.42));
-  transition: fill 90ms ease-out, filter 140ms ease-out, opacity 140ms ease-out;
-}
-
-.seg-lit.seg-red {
-  filter: drop-shadow(0 0 2.4px rgba(255, 52, 28, 0.7));
-}
-
-.seg-ghost {
-  transition: fill 200ms ease-out;
-}
-
-.cluster-live .seven-seg {
-  animation: lcd-idle 3.4s ease-in-out infinite;
-}
-
-.sweep-bead {
-  filter: drop-shadow(0 0 13px #ffc050) drop-shadow(0 0 4px #fff6d0);
-}
-
-.ready-word {
-  filter: drop-shadow(0 0 10px rgba(255, 176, 48, 0.34));
-  animation: ready-glow 1.75s ease-in-out;
+  transition: fill 90ms ease-out, opacity 140ms ease-out;
 }
 
 .ready-card {
@@ -208,16 +191,6 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes ready-glow {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 12px rgba(255, 176, 48, 0.34));
-  }
-  42% {
-    filter: drop-shadow(0 0 22px rgba(255, 196, 72, 0.62));
   }
 }
 
@@ -264,11 +237,10 @@ body {
 
 /* Telltales are SVG groups now; --lamp is the lit colour, --i the strike order. */
 .telltale {
-  transition: filter 120ms ease-out, opacity 120ms ease-out;
+  transition: opacity 120ms ease-out;
 }
 
 .telltale-on {
-  filter: drop-shadow(0 0 2.4px var(--lamp)) drop-shadow(0 0 0.6px var(--lamp));
   animation: lamp-strike 0.14s ease-out both;
   animation-delay: calc(var(--i, 0) * 10ms);
 }
@@ -280,10 +252,6 @@ body {
   animation-delay: calc(var(--i, 0) * 10ms), 0.14s;
 }
 
-.telltale-on.telltale-blue {
-  filter: drop-shadow(0 0 3.2px var(--lamp)) drop-shadow(0 0 0.8px #6a98ff);
-}
-
 .lamp-word {
   font-family: var(--font-cluster);
   font-weight: 700;
@@ -293,21 +261,19 @@ body {
 
 @keyframes lamp-strike {
   from {
-    filter: drop-shadow(0 0 6px var(--lamp)) brightness(1.22);
+    opacity: 0.55;
   }
   to {
-    filter: drop-shadow(0 0 2.4px var(--lamp)) drop-shadow(0 0 0.6px var(--lamp));
+    opacity: 1;
   }
 }
 
 @keyframes lamp-pulse {
   0%,
   100% {
-    filter: drop-shadow(0 0 2.4px var(--lamp)) drop-shadow(0 0 0.6px var(--lamp));
     opacity: 1;
   }
   50% {
-    filter: drop-shadow(0 0 3.6px var(--lamp)) drop-shadow(0 0 0.8px var(--lamp));
     opacity: 0.82;
   }
 }

@@ -142,6 +142,10 @@ export function HarnessApp() {
 
   const applyStyle = useCallback((next: FaceStyle) => {
     setFaceStyle(next);
+    skippedRef.current = false;
+    bootRef.current = 0;
+    setPhase("sweep");
+    setPhaseT(0);
     if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
     if (next === "ap1") url.searchParams.delete("style");

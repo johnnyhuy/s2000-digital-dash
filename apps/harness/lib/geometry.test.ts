@@ -11,6 +11,8 @@ import {
   crownSpringX,
   hoodPath,
   lcdPath,
+  hatchSpans,
+  scaleCells,
   specFor,
   tachAngleDeg,
   tachArchNormal,
@@ -45,11 +47,27 @@ describe("face geometry (shared faceSpec.json lock)", () => {
       const p = tachArchXY(f);
       near(Math.hypot(p.x - c.x, p.y - c.y) / FACE.module.w, t.r_line, 0.001);
     }
-    // 0 / 9 ticks at x ≈ 0.19 / 0.81, y ≈ 0.36 H; band apex ≈ 2.3 % H
-    near(pctX(tachArchXY(0).x), 0.19, 0.02);
-    near(pctX(tachArchXY(1).x), 0.81, 0.02);
-    near(pctY(tachArchXY(0).y), 0.36, 0.03);
-    near(pctY(arcPx(FACE, t.r_out, -90).y), 0.023, 0.01);
+    // 0 / 9 ticks at x ≈ 0.17 / 0.83, y ≈ 0.47 H; band apex ≈ 10 % H
+    near(pctX(tachArchXY(0).x), 0.17, 0.03);
+    near(pctX(tachArchXY(1).x), 0.83, 0.03);
+    near(pctY(tachArchXY(0).y), 0.47, 0.03);
+    near(pctY(arcPx(FACE, t.r_out, -90).y), 0.10, 0.015);
+  });
+
+  it("prints the bar graph as gapped cells, not a filled ribbon", () => {
+    const t = FACE.spec.tach;
+    const cells = scaleCells(t);
+    assert.equal(cells.length, RPM_MAX / t.cell_rpm);
+    assert.equal(cells.filter((c) => c.rpm0 >= t.redline_rpm).length, 5);
+    for (let i = 1; i < cells.length; i += 1) {
+      assert.ok(cells[i].d0 - cells[i - 1].d1 >= t.cell_gap_deg * 0.99);
+    }
+    const right = hatchSpans(t, "right");
+    assert.equal(right.length, t.hatch_n);
+    assert.ok(right[0][0] > t.a9_deg);
+    for (let i = 1; i < right.length; i += 1) {
+      assert.ok(right[i][0] - right[i - 1][1] >= t.cell_gap_deg * 0.99);
+    }
   });
 
   it("squeezes 0→1 to 60 % of a division over a 75.6° sweep", () => {
@@ -69,8 +87,8 @@ describe("face geometry (shared faceSpec.json lock)", () => {
       assert.ok((p.x - a.x) * n.x + (p.y - a.y) * n.y > 0);
       assert.ok(p.y > a.y);
     }
-    near(pctY(tachNumXY(5 / 9).y), 0.19, 0.03);
-    near(pctY(tachNumXY(0).y), 0.43, 0.03);
+    near(pctY(tachNumXY(5 / 9).y), 0.28, 0.03);
+    near(pctY(tachNumXY(0).y), 0.53, 0.03);
   });
 
   it("keeps hood, band, hatch, ticks and numerals on separate radii", () => {
@@ -103,14 +121,14 @@ describe("face geometry (shared faceSpec.json lock)", () => {
   });
 
   it("locks the AP1 windows and side bars to the plate", () => {
-    near(pctX(FACE.speedWin.x), 0.39, 0.02);
-    near(pctY(FACE.speedWin.y), 0.3, 0.02);
-    near(pctX(FACE.odoWin.x), 0.39, 0.02);
-    near(pctY(FACE.odoWin.y), 0.57, 0.02);
+    near(pctX(FACE.speedWin.x), 0.418, 0.02);
+    near(pctY(FACE.speedWin.y), 0.370, 0.02);
+    near(pctX(FACE.odoWin.x), 0.405, 0.02);
+    near(pctY(FACE.odoWin.y), 0.512, 0.02);
     assert.ok(FACE.odoWin.y > FACE.speedWin.y + FACE.speedWin.h);
-    near(pctX(FACE.temp.x), 0.13, 0.02);
-    near(pctY(FACE.temp.y), 0.52, 0.02);
-    near(pctX(FACE.fuel.x), 0.815, 0.02);
+    near(pctX(FACE.temp.x), 0.232, 0.02);
+    near(pctY(FACE.temp.y), 0.540, 0.02);
+    near(pctX(FACE.fuel.x), 0.675, 0.02);
     assert.ok(FACE.temp.w > FACE.temp.h * 2.5);
     assert.ok(FACE.temp.x + FACE.temp.w < FACE.speedWin.x);
     assert.ok(FACE.fuel.x > FACE.speedWin.x + FACE.speedWin.w);
