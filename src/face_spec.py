@@ -73,13 +73,13 @@ class ArcSpec:
     hatch_deg: float = 5.5      # band overrun past 0 and 9 (5 stripes each)
     hatch_n: int = 5
     hatch_w_deg: float = 0.62
-    hatch_inner_over: float = 0.010  # W — stripes reach past the band's inner edge
+    hatch_inner_over: float = 0.0    # W — hatches stay inside the band (do not cross the ticks)
     minors_per: int = 4
     line_w: float = 0.0020      # W — white baseline arc under the band
-    line_gap: float = 0.003     # W — dark gap between band and baseline
-    tick_major: tuple[float, float] = (0.0028, 0.014)  # (w, len) in W
-    tick_minor: tuple[float, float] = (0.0017, 0.008)
-    num_inset: float = 0.030    # W — baseline → numeral centre
+    line_gap: float = 0.008     # W — dark gap so the baseline is not painted on the band
+    tick_major: tuple[float, float] = (0.0024, 0.012)  # (w, len) in W
+    tick_minor: tuple[float, float] = (0.0014, 0.007)
+    num_inset: float = 0.034    # W — baseline → numeral centre (clears tick tips)
     num_size: float = 0.034     # W — font size (M PLUS Rounded 1c Bold)
 
     @property
@@ -222,11 +222,11 @@ class FaceSpec:
     extras: dict[str, float] = field(default_factory=dict)
 
 
-# The hood crown is CONCENTRIC with the tach: the OEM band hugs the cowl with
-# a constant dark gap all the way round, so the crown is the band's outer
-# circle plus a hairline. The lip is the visible cowl rim outside that.
-CROWN_GAP = 0.004   # W - dark gap between band outer edge and cowl
-CROWN_LIP = 0.012   # W
+# The hood crown is CONCENTRIC with the tach. OEM leaves a visible dark
+# well between the cowl lip and the band — a hairline gap makes the lip,
+# the band and the tick baseline paint as one stroke.
+CROWN_GAP = 0.014   # W — dark well between band outer edge and cowl
+CROWN_LIP = 0.018   # W
 
 _AP1_TACH = ArcSpec()
 AP1 = FaceSpec(

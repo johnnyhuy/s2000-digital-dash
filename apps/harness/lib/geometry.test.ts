@@ -73,17 +73,29 @@ describe("face geometry (shared faceSpec.json lock)", () => {
     near(pctY(tachNumXY(0).y), 0.43, 0.03);
   });
 
+  it("keeps hood, band, hatch, ticks and numerals on separate radii", () => {
+    const t = FACE.spec.tach;
+    assert.ok(FACE.spec.crown_r - t.r_out >= 0.012);
+    assert.ok(t.r_in - t.r_line >= t.line_gap);
+    assert.ok(t.hatch_inner_over <= t.line_gap * 0.25);
+    const tickTip = t.r_line - t.tick_major[1];
+    const numeralOuter = t.r_num + t.num_size / 2;
+    assert.ok(tickTip - numeralOuter > 0.002);
+  });
+
   it("draws the hood crown concentric with the band, clearing its apex, springing at ~5 % W", () => {
     const pts = visorLipPoly().split(" ").map((p) => p.split(",").map(Number));
     assert.ok(pts.length > 20);
     const mid = pts[Math.floor(pts.length / 2)];
     const apex = arcPx(FACE, FACE.spec.tach.r_out, -90);
     assert.ok(mid[1] < apex.y);
-    assert.ok(apex.y - mid[1] < FACE.module.w * 0.012);
+    const well = apex.y - mid[1];
+    assert.ok(well > FACE.module.w * 0.010);
+    assert.ok(well < FACE.module.w * 0.020);
     const c = arcPx(FACE, 0, -90);
     const radii = pts.map(([x, y]) => Math.hypot(x - c.x, y - c.y) / FACE.module.w);
     near(Math.max(...radii) - Math.min(...radii), 0, 0.002);
-    near(Math.min(...radii), FACE.spec.tach.r_out + 0.004, 0.002);
+    near(Math.min(...radii), FACE.spec.tach.r_out + 0.014, 0.002);
     const half = crownSpringX(FACE.spec, FACE.spec.crown_r, FACE.spec.spring_y);
     near(0.5 - half, 0.05, 0.02);
     assert.match(hoodPath(), /^M .* Z$/);

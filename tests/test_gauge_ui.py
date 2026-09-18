@@ -228,18 +228,30 @@ class FaceGeomTests(unittest.TestCase):
         self.assertAlmostEqual(self._pct(*tach_num_xy(5 / 9))[1], 0.19, delta=0.03)
         self.assertAlmostEqual(self._pct(*tach_num_xy(0.0))[1], 0.43, delta=0.03)
 
+    def test_arc_stack_radii_do_not_overlap(self) -> None:
+        """Hood lip, band, hatch, baseline and numerals each own a radius."""
+        t = AP1.tach
+        self.assertGreaterEqual(AP1.crown_r - t.r_out, 0.012)
+        self.assertGreaterEqual(t.r_in - t.r_line, t.line_gap)
+        self.assertLessEqual(t.hatch_inner_over, t.line_gap * 0.25)
+        tick_tip = t.r_line - t.tick_major[1]
+        numeral_outer = t.r_num + t.num_size / 2.0
+        self.assertGreater(tick_tip - numeral_outer, 0.002)
+
     def test_visor_lip_clears_the_band(self) -> None:
         _, peak_y = FACE.arc_px(AP1.tach.r_out, -90.0)
         pts = visor_lip_points()
         self.assertGreater(len(pts), 20)
         mid = pts[len(pts) // 2]
         self.assertLess(mid[1], peak_y)
-        self.assertLess(peak_y - mid[1], FACE.module[2] * 0.012)
+        well = peak_y - mid[1]
+        self.assertGreater(well, FACE.module[2] * 0.010)
+        self.assertLess(well, FACE.module[2] * 0.020)
         # crown is concentric with the band: constant gap all the way round
         c = FACE.arc_px(0.0, -90.0)
         radii = [math.hypot(x - c[0], y - c[1]) for x, y in pts]
         self.assertLess(max(radii) - min(radii), 1.5)
-        self.assertAlmostEqual(min(radii) / FACE.module[2], AP1.tach.r_out + 0.004, delta=0.002)
+        self.assertAlmostEqual(min(radii) / FACE.module[2], AP1.tach.r_out + 0.014, delta=0.002)
         # springs meet the bezel at ~5 % / 95 % W
         self.assertAlmostEqual(self._pct(*pts[0])[0], 0.05, delta=0.02)
         self.assertAlmostEqual(self._pct(*pts[-1])[0], 0.95, delta=0.02)
