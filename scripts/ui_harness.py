@@ -31,13 +31,17 @@ os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
 AHASH_TOLERANCE = 18
 AHASH_SIZE = 16
 
-SCENES: tuple[tuple[str, str, str, float], ...] = (
-    ("harness_sweep", "sample", "sweep", 0.55),
-    ("harness_ready", "sample", "ready", 0.55),
-    ("harness_reveal", "sample", "reveal", 0.40),
-    ("harness_live", "sample", "live", 1.0),
-    ("harness_cruise", "cruise", "live", 1.0),
-    ("harness_selftest", "selftest", "live", 1.0),
+# name, telem, phase, local_t, style
+SCENES: tuple[tuple[str, str, str, float, str], ...] = (
+    ("harness_sweep", "sample", "sweep", 0.55, "ap1"),
+    ("harness_ready", "sample", "ready", 0.55, "ap1"),
+    ("harness_reveal", "sample", "reveal", 0.40, "ap1"),
+    ("harness_live", "sample", "live", 1.0, "ap1"),
+    ("harness_cruise", "cruise", "live", 1.0, "ap1"),
+    ("harness_selftest", "selftest", "live", 1.0, "ap1"),
+    ("harness_ap2_sweep", "sample", "sweep", 0.55, "ap2"),
+    ("harness_ap2_ready", "sample", "ready", 0.55, "ap2"),
+    ("harness_ap2_live", "sample", "live", 1.0, "ap2"),
 )
 
 
@@ -72,12 +76,14 @@ def _telem(kind: str):
 
 
 def render_scenes(pygame, fonts, dest: Path) -> dict[str, str]:
-    from gauge_ui import W, H, DisplayState, draw_frame
+    from face_style import FaceStyle
+    from gauge_ui import W, H, DisplayState, apply_face_style, draw_frame
 
     dest.mkdir(parents=True, exist_ok=True)
     hashes: dict[str, str] = {}
     canvas = pygame.Surface((W, H))
-    for name, telem_kind, phase, local_t in SCENES:
+    for name, telem_kind, phase, local_t, style in SCENES:
+        apply_face_style(FaceStyle.AP2 if style == "ap2" else FaceStyle.AP1)
         face = DisplayState()
         telem = _telem(telem_kind)
         face.snap(telem)
@@ -87,6 +93,7 @@ def render_scenes(pygame, fonts, dest: Path) -> dict[str, str]:
         path = dest / f"{name}.png"
         pygame.image.save(canvas, str(path))
         hashes[name] = ahash(pygame, canvas)
+    apply_face_style(FaceStyle.AP1)
     return hashes
 
 

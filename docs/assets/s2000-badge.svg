@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="96" viewBox="0 0 420 96" role="img" aria-label="S2000 badge retraced italic wordmark">
+  <!--
+    Retrace of docs/assets/brand/s2000-badge-ref.png (image-gen plate).
+    Italic S2000, five glyphs. DIY cluster mark, not Honda trademark artwork.
+  -->
+  <defs>
+    <linearGradient id="s2k-chrome" x1="0" y1="8" x2="0" y2="88" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f6f7f8"/>
+      <stop offset="0.42" stop-color="#c8ccd1"/>
+      <stop offset="1" stop-color="#8a9096"/>
+    </linearGradient>
+  </defs>
+  <rect width="420" height="96" fill="#000"/>
+  <g fill="url(#s2k-chrome)" transform="translate(18 8) skewX(-12)">
+    <!-- S -->
+    <path d="M72 22c0-12-11-20-32-20C18 2 6 12 6 26c0 10 6 16 22 20l16 4c8 2 12 6 12 12 0 10-8 16-24 16-14 0-24-6-28-18l-0.4 0 6 18c6 10 20 16 36 16 26 0 42-12 42-32 0-12-8-19-24-24L48 32C40 30 36 27 36 22 36 14 42 10 52 10c10 0 16 4 18 12h2z"/>
+    <!-- 2 -->
+    <path d="M96 20c0-12 12-18 30-18 20 0 32 8 32 22 0 14-8 22-28 34L108 74h52v18H90V76l36-38c10-10 14-16 14-22 0-8-6-12-16-12s-16 5-16 14h-12z"/>
+    <!-- 0 -->
+    <path d="M196 8c28 0 44 16 44 40s-16 40-44 40-44-16-44-40 16-40 44-40zm0 18c-14 0-22 10-22 22s8 22 22 22 22-10 22-22-8-22-22-22z"/>
+    <!-- 0 -->
+    <path d="M278 8c28 0 44 16 44 40s-16 40-44 40-44-16-44-40 16-40 44-40zm0 18c-14 0-22 10-22 22s8 22 22 22 22-10 22-22-8-22-22-22z"/>
+    <!-- 0 -->
+    <path d="M360 8c28 0 44 16 44 40s-16 40-44 40-44-16-44-40 16-40 44-40zm0 18c-14 0-22 10-22 22s8 22 22 22 22-10 22-22-8-22-22-22z"/>
+  </g>
+</svg>

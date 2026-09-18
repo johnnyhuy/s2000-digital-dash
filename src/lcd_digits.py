@@ -176,7 +176,7 @@ def blit_digits(
     color: tuple[int, int, int],
     ghost: tuple[int, int, int] | None = None,
     ghost_text: str | None = None,
-    bloom: bool = True,
+    bloom: bool = False,
     italic: float = 0.0,
     align: str = "center",
     bloom_layer=None,
@@ -188,9 +188,8 @@ def blit_digits(
     bounding rect (x, y, w, h). ``ghost_text`` defaults to eights so unused
     digits keep the OEM 188 / 888888 / 888.8 silhouette.
 
-    Pass ``bloom_layer`` (an SRCALPHA surface the size of ``dest``) to batch
-    the glow with other LCD elements; otherwise ``bloom=True`` composites a
-    private layer immediately.
+    Pass ``bloom_layer`` to batch a glow layer. Off by default: the cluster
+    is an LCD, so software bloom just smears the digits.
     """
     dw, gap, dot = digit_metrics(digit_h)
     total_w, _ = measure_text(text, digit_h, gap)
@@ -249,6 +248,8 @@ def blit_digits(
 
 def composite_bloom(pygame, dest, layer, shrink: int = 2) -> None:
     """Cheap blur: downscale the glow layer and stretch it back over ``dest``."""
+    if layer is None:
+        return
     w, h = dest.get_size()
     small = pygame.transform.smoothscale(layer, (max(1, w // shrink), max(1, h // shrink)))
     dest.blit(pygame.transform.smoothscale(small, (w, h)), (0, 0))

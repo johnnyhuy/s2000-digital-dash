@@ -38,8 +38,8 @@ Everything below is derived from that one circle.
 | --- | --- |
 | Module aspect | **2.35:1** |
 | Bottom | flat |
-| Hood crown | circle **concentric with the tach** `(50 %, 130 % H)`, r = band `r_out` + **1.4 % W** well = **55.7 % W**; cowl lip **1.8 % W** outside it |
-| Crown top | y ≈ **0.5 %** (constant gap over the band apex; the lip rises just past the module top) |
+| Hood crown | circle **concentric with the tach** `(50 %, 148.7 % H)`, r = band `r_out` + **1.4 % W** well = **60.4 % W**; cowl lip **1.8 % W** outside it |
+| Crown top | y ≈ **2.6 %** (lip) then a dark well; band apex at **10 % H** |
 | Spring line | y = **58 %** - crown meets the flat lower bezel; springs land at x ≈ 5 % / 95 % |
 | Lower bezel | full width below the spring; strip and buttons live here |
 
@@ -47,14 +47,14 @@ Everything below is derived from that one circle.
 
 | Item | AP1 | AP2 |
 | --- | --- | --- |
-| Centre | `(50 %, 130.0 % H)` | same (shared housing, concentric crown) |
-| Band outer / inner radius | 54.3 % / 51.0 % W | same |
-| Baseline (white line) radius | 50.6 % W | same |
-| Numeral radius | 47.6 % W | same |
+| Centre | `(50 %, 148.7 % H)` | same (shared housing, concentric crown) |
+| Band outer / inner radius | 59.0 % / 55.7 % W | same |
+| Baseline (white line) radius | 54.8 % W | same |
+| Numeral radius | 51.4 % W | same |
 | 0 → 9 sweep (screen angles) | **−127.8° → −52.2°** (75.6°) | −132° → −74° (58°) |
-| 0 tick / 9 tick | (19 %, 36 %) / (81 %, 36 %) | (16 %, 42 %) / (64 %, 16 %) |
-| Band apex | y ≈ **2.4 %** | same |
-| Numeral 0 / 5 | (21 %, 42 %) / (52 %, 18 %) | (18 %, 47 %) / (41 %, 20 %) |
+| 0 tick / 9 tick | (17 %, 47 %) / (83 %, 47 %) | (13 %, 53 %) / (65 %, 25 %) |
+| Band apex | y ≈ **10 %** | same |
+| Numeral 0 / 5 | (18 %, 53 %) / (50 %, 28 %) | (15 %, 58 %) / (41 %, 30 %) |
 | First division | 0 → 1 is **60 %** of a division (OEM squeezes the idle band) | same |
 | Hatches | amber overrun below 0 and red above 9, **5.5°** each, 5 blocks | 6.5° |
 
@@ -66,11 +66,11 @@ past 9. There is no needle.
 
 | Item | Placement |
 | --- | --- |
-| Speed window | rect **(39 %, 30 %) 22 × 24 %**, 3-digit 7-seg (ghost `188`), digit h = 20 % H, right edge 59.6 %; `mph` (unlit) over `km/h` to the right |
-| ODO / TRIP window | rect **(39 %, 57 %) 22 × 13 %**; 6-digit odo (h 5.6 %) at y 64.8 %; `TRIP A` + `xxx.x` (h 5.0 %) at y 65.5 % |
-| TEMP | **horizontal 8-block bar** at **(13 %, 52 %) 16 × 5.5 %**, left of the speedo; thermometer icon above, `C` / `H` hugging the bar ends, white underline exactly bar-wide touching the block bottoms |
-| FUEL | **horizontal 16-block bar** at **(81.5 %, 46.5 %) 11 × 4.5 %**, right of the speedo; pump icon above, `E` / `F` hugging the bar ends, underline exactly bar-wide touching the block bottoms |
-| Arc telltales | round wells in the well: **←** (35 %, 34 %), **→** (65 %, 34 %), high beam (71 %, 42 %) |
+| Speed window | rect **(40 %, 34.5 %) 20 × 17.5 %**, 3-digit 7-seg (ghost `188`), digit h = 14.5 % H, right edge 58.4 %; `mph` (unlit) over `km/h` to the right — sits under numeral 5 |
+| ODO / TRIP window | rect **(40 %, 53.5 %) 20 × 10.5 %**; 6-digit odo (h 5.0 %) at y 59.5 %; `TRIP A` + `xxx.x` (h 4.4 %) at y 60.0 % |
+| TEMP | **horizontal 8-block bar** at **(21.5 %, 50 %) 15 × 4.5 %**, between 0 and the speedo; thermometer icon above, `C` / `H` hugging the bar ends, white underline exactly bar-wide |
+| FUEL | **horizontal 16-block bar** at **(66.8 %, 50 %) 10.5 × 3.8 %**, between the speedo and 9; pump icon above, `E` / `F` hugging the bar ends, underline exactly bar-wide |
+| Arc telltales | round wells in the well: **←** (33.8 %, 40 %), **→** (66.2 %, 40 %), high beam (69.8 %, 44.8 %) |
 | Telltale strip | rect **(15.5 %, 74.5 %) 75 × 14 %**: BRAKE 19 %, battery 26 %, oil 32 %, CEL 39 %, ABS 46 %, MAINT 55 %, EPS 64 %, SRS 72 %, seatbelt 80 % |
 | Lower panels | left (6 %, 61.5 %) 18.5 × 9 %; right (79 %, 59 %) 14.5 × 9 % |
 | Buttons | −/+ at (6 %, 81.5 %) / (11.8 %, 81.5 %), d 5 % W; **SEL** (93.5 %, 74.5 %), **TRIP** (97.8 %, 74.5 %), ovals 4 × 6 % |

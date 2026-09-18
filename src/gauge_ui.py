@@ -111,14 +111,18 @@ LAMP_TONE = {"red": LAMP_RED, "amber": LAMP_AMBER, "green": LAMP_GREEN, "blue": 
 MODULE_X_PCT = 0.040
 MODULE_W_PCT = 0.920
 
-# Boot: sweep → READY summary → gauge reveal (OEM all-segments check) → live
+# Boot (OEM ignition self-test, then a branded READY card):
+#   sweep  — bar fills 0→9, all lamps + 188 (the car's bulb check)
+#   ready  — Honda H + S2000 badge + READY
+#   reveal — settle onto live values
+#   live
 PHASE_SWEEP_S = 1.35
 PHASE_READY_S = 1.75
 PHASE_REVEAL_S = 1.55
 
-# Bar-graph resolution (r/min per LCD cell) — cells show as hairline gaps.
-TACH_CELL_RPM = 100
-TACH_CELL_GAP_DEG = 0.22
+# Bar-graph resolution lives on ArcSpec; aliases keep older call sites compiling.
+TACH_CELL_RPM = 200
+TACH_CELL_GAP_DEG = 0.16
 
 
 @dataclass(frozen=True)
@@ -525,8 +529,11 @@ def intro_duration_s() -> float:
 
 
 def boot_strip_mode(phase: str, phase_t: float) -> tuple[dict[str, bool] | None, bool]:
-    """Hide drive lamps until reveal; bulb-check only in the first half of reveal."""
-    if phase in ("sweep", "ready"):
+    """OEM ignition lights every telltale. Sweep is that bulb check; reveal
+    repeats it briefly, then live lamps take over."""
+    if phase == "sweep":
+        return None, True
+    if phase == "ready":
         return {}, False
     if phase == "reveal" and phase_t < 0.55:
         return None, True
@@ -833,28 +840,24 @@ def _draw_cowl(pygame, surf, g: FaceGeom) -> None:
 
 
 def _draw_band_unlit(pygame, surf, g: FaceGeom) -> None:
+    """Printed bar graph: discrete cells with the black well showing in the gaps."""
     t = g.spec.tach
-    a_start, a_end = t.band_start_deg(), t.band_end_deg()
-    slices = 72
-    for i in range(slices):
-        d0 = a_start + (a_end - a_start) * i / slices
-        d1 = a_start + (a_end - a_start) * (i + 1) / slices + 0.15
-        u = abs((i + 0.5) / slices * 2.0 - 1.0)  # 0 centre → 1 ends
-        col = lerp_colour(BAND_UNLIT_MID, BAND_UNLIT_END, u ** 1.6)
+    mid = (t.a0_deg + t.a9_deg) / 2.0
+    half = max(1e-6, (t.a9_deg - t.a0_deg) / 2.0)
+    for rpm0, _rpm1, d0, d1 in t.iter_scale_cells():
+        if rpm0 >= t.redline_rpm:
+            col = HATCH_RED
+        else:
+            u = abs(((d0 + d1) / 2.0 - mid) / half)
+            col = lerp_colour(BAND_UNLIT_MID, BAND_UNLIT_END, min(1.0, u) ** 1.6)
         poly = arc_poly(g, t.r_out, t.r_in, d0, d1, steps=2)
         if poly:
             pygame.draw.polygon(surf, col, poly)
-    # hairline cell gaps every 100 r/min (LCD segments)
-    for rpm in range(0, RPM_MAX + 1, TACH_CELL_RPM):
-        a = t.angle_deg(rpm)
-        poly = arc_poly(g, t.r_out, t.r_in, a - TACH_CELL_GAP_DEG / 2, a + TACH_CELL_GAP_DEG / 2, steps=1)
-        if poly:
-            pygame.draw.polygon(surf, BAND_SEG_LINE, poly)
-    # printed hatch stripes past 0 (amber) and past 9 (red)
     for side, col in (("left", HATCH_AMBER), ("right", HATCH_RED)):
-        for a in t.hatch_angles(side):
-            poly = arc_poly(g, t.r_out, t.r_in - t.hatch_inner_over, a - t.hatch_w_deg / 2, a + t.hatch_w_deg / 2, steps=1)
-            pygame.draw.polygon(surf, col, poly)
+        for d0, d1 in t.hatch_spans(side):
+            poly = arc_poly(g, t.r_out, t.r_in - t.hatch_inner_over, d0, d1, steps=1)
+            if poly:
+                pygame.draw.polygon(surf, col, poly)
     # white baseline arc + ticks
     base = arc_poly(g, t.r_line + t.line_w / 2, t.r_line - t.line_w / 2, t.a0_deg - 0.3, t.a9_deg + 0.3)
     pygame.draw.polygon(surf, WHITE, base)
@@ -874,11 +877,11 @@ def _draw_numerals(pygame, surf, g: FaceGeom, col=WHITE) -> None:
     zx, zy = g.arc_px(t.r_num, t.angle_deg(0))
     blit_text(
         surf,
-        _font(pygame, int(g.w(0.0115)), kind="round"),
+        _font(pygame, int(g.w(0.0095)), kind="round"),
         "x1000r/min",
         col,
-        (int(zx + g.w(0.024)), int(zy + g.w(0.030))),
-        "midleft",
+        (int(zx + g.w(g.spec.rpm_dx)), int(zy + g.w(g.spec.rpm_dy))),
+        "center",
     )
 
 
@@ -937,9 +940,9 @@ def _draw_side_gauge_print(pygame, surf, g: FaceGeom) -> None:
             blit_text(surf, letter, lt, WHITE, g.anchor_px(left), "center")
             blit_text(surf, letter, rt, WHITE, g.anchor_px(right), "center")
         tx, ty = g.anchor_px(s.temp_icon)
-        _thermometer_icon(pygame, surf, tx, ty, int(g.w(0.030)), WHITE)
+        _thermometer_icon(pygame, surf, tx, ty, int(g.w(s.temp_icon_h)), WHITE)
         fx, fy = g.anchor_px(s.fuel_icon)
-        _pump_icon(pygame, surf, fx, fy, int(g.w(0.028)), WHITE)
+        _pump_icon(pygame, surf, fx, fy, int(g.w(s.fuel_icon_h)), WHITE)
         return
     _gauge_window(pygame, surf, g, g.temp)
     _gauge_window(pygame, surf, g, g.fuel)
@@ -948,9 +951,9 @@ def _draw_side_gauge_print(pygame, surf, g: FaceGeom) -> None:
     blit_text(surf, letter, "E", WHITE, g.anchor_px(s.fuel_e), "center")
     blit_text(surf, letter, "F", WHITE, g.anchor_px(s.fuel_f), "center")
     tx, ty = g.anchor_px(s.temp_icon)
-    _thermometer_icon(pygame, surf, tx, ty, int(g.w(0.030)), WHITE)
+    _thermometer_icon(pygame, surf, tx, ty, int(g.w(s.temp_icon_h)), WHITE)
     fx, fy = g.anchor_px(s.fuel_icon)
-    _pump_icon(pygame, surf, fx, fy, int(g.w(0.028)), WHITE)
+    _pump_icon(pygame, surf, fx, fy, int(g.w(s.fuel_icon_h)), WHITE)
     lw = max(2, int(g.w(0.0022)))
     mx, my, mw, mh = g.module
     tx, _, tw, _ = g.temp
@@ -1045,39 +1048,44 @@ def static_face(pygame, g: FaceGeom | None = None):
 
 # --- live elements --------------------------------------------------------------------
 def _bloom_layer(pygame, surf):
-    return pygame.Surface(surf.get_size(), pygame.SRCALPHA)
+    """Software bloom is off: the cluster is an LCD, so the pixels already emit."""
+    del pygame, surf
+    return None
 
 
 def draw_tach_fill(pygame, surf, rpm: float, bloom, g: FaceGeom | None = None) -> None:
-    """Light the bar graph from 0 up to ``rpm`` (cells of TACH_CELL_RPM)."""
+    """Light the bar graph from 0 up to ``rpm`` (same cell windows as the print)."""
     g = _geom(g)
     t = g.spec.tach
+    step = t.cell_rpm
     rpm = clamp(rpm, 0.0, RPM_MAX * 1.06)
-    if rpm < TACH_CELL_RPM * 0.5:
+    if rpm < step * 0.5:
         return
     a_lit = t.angle_deg(rpm)
-    cells = int(rpm // TACH_CELL_RPM)
+    cells = int(min(rpm, RPM_MAX) // step)
     for i in range(cells + 1):
-        r0 = i * TACH_CELL_RPM
-        r1 = min(rpm, r0 + TACH_CELL_RPM)
+        r0 = i * step
+        r1 = min(rpm, r0 + step)
         if r1 - r0 < 1.0:
             continue
-        d0 = t.angle_deg(r0) + TACH_CELL_GAP_DEG / 2
-        d1 = t.angle_deg(r1) - (TACH_CELL_GAP_DEG / 2 if r1 >= r0 + TACH_CELL_RPM else 0.0)
+        closed = r1 >= r0 + step
+        d0, d1 = t.cell_window(r0, r1, closed=closed)
         if d1 <= d0:
             continue
-        col = HATCH_RED_LIT if r0 >= RPM_MAX else AMBER
+        col = HATCH_RED_LIT if r0 >= t.redline_rpm else AMBER
         poly = arc_poly(g, t.r_out, t.r_in, d0, d1, steps=2)
         if poly:
             pygame.draw.polygon(surf, col, poly)
-    glow = arc_poly(g, t.r_out + 0.004, t.r_in - 0.004, t.a0_deg, a_lit)
-    if glow and bloom is not None:
-        pygame.draw.polygon(bloom, (*AMBER_HOT, 30), glow)
+    if bloom is not None:
+        glow = arc_poly(g, t.r_out + 0.004, t.r_in - 0.004, t.a0_deg, min(a_lit, t.a9_deg))
+        if glow:
+            pygame.draw.polygon(bloom, (*AMBER_HOT, 30), glow)
     if rpm > RPM_MAX:
-        for a in t.hatch_angles("right"):
-            if a <= a_lit:
-                poly = arc_poly(g, t.r_out, t.r_in - t.hatch_inner_over, a - t.hatch_w_deg / 2, a + t.hatch_w_deg / 2, steps=1)
-                pygame.draw.polygon(surf, HATCH_RED_LIT, poly)
+        for d0, d1 in t.hatch_spans("right"):
+            if (d0 + d1) / 2.0 <= a_lit:
+                poly = arc_poly(g, t.r_out, t.r_in - t.hatch_inner_over, d0, d1, steps=1)
+                if poly:
+                    pygame.draw.polygon(surf, HATCH_RED_LIT, poly)
 
 
 def draw_tach_segments(pygame, surf, lit_frac: float, ghost: bool = True, g: FaceGeom | None = None) -> None:
@@ -1095,27 +1103,8 @@ def draw_tach_numbers(pygame, fonts, surf, dim: bool = False, g: FaceGeom | None
 
 
 def draw_welcome_sweep(pygame, surf, sweep_t: float, bloom, g: FaceGeom | None = None) -> None:
-    """ID.4-style light comet running the bar graph from 0 to 9."""
-    g = _geom(g)
-    t = g.spec.tach
-    tt = smoothstep(clamp(sweep_t, 0.0, 1.0))
-    head = t.band_start_deg() + (t.band_end_deg() - t.band_start_deg()) * tt
-    tail_len = 16.0
-    slices = 20
-    for i in range(slices):
-        d0 = head - tail_len * (i + 1) / slices
-        d1 = head - tail_len * i / slices + 0.1
-        if d1 < t.band_start_deg():
-            continue
-        d0 = max(d0, t.band_start_deg())
-        k = 1.0 - i / slices
-        col = lerp_colour(BAND_UNLIT_MID, AMBER_HOT, k ** 1.4)
-        poly = arc_poly(g, t.r_out, t.r_in, d0, d1, steps=1)
-        if poly:
-            pygame.draw.polygon(surf, col, poly)
-    glow = arc_poly(g, t.r_out + 0.006, t.r_in - 0.006, max(t.band_start_deg(), head - 8.0), head)
-    if glow:
-        pygame.draw.polygon(bloom, (255, 214, 120, 44), glow)
+    """Car self-test: the bar graph fills 0 → 9 the way a needle would sweep."""
+    draw_tach_fill(pygame, surf, RPM_MAX * smoothstep(clamp(sweep_t, 0.0, 1.0)), bloom, g)
 
 
 def _seg_blocks(
@@ -1252,10 +1241,10 @@ def draw_speed(pygame, fonts, surf, speed: float, bloom=None, g: FaceGeom | None
         color=RED_LCD,
         ghost=RED_LCD_GHOST,
         ghost_text="888",
-        bloom=bloom is None,
+        bloom=False,
         italic=0.0,
         align="right",
-        bloom_layer=bloom,
+        bloom_layer=None,
     )
     ux = int(mx + mw * s.unit_x)
     unit_font = fonts.get("label") if fonts else None
@@ -1286,33 +1275,29 @@ def draw_odo_row(
     mx, my, mw, mh = g.module
     odo = int(round(face.odo_km)) % 1_000_000
     trip = clamp(face.trip_km, 0.0, 999.9)
-    own = bloom is None
-    if own:
-        bloom = _bloom_layer(pygame, surf)
+    del bloom
     blit_digits(
         pygame, surf, f"{odo:06d}", (int(mx + mw * s.odo_left), int(my + mh * s.odo_cy)),
         digit_h=int(mh * s.odo_digit_h), color=RED_LCD, ghost=RED_LCD_GHOST, ghost_text="888888",
-        italic=0.0, align="left", bloom_layer=bloom,
+        italic=0.0, align="left", bloom=False, bloom_layer=None,
     )
     blit_text(surf, _font(pygame, int(g.w(0.011)), kind="round"), "TRIP A", RED_LCD, g.anchor_px(s.trip_label), "center")
     blit_digits(
         pygame, surf, f"{trip:05.1f}", (int(mx + mw * s.trip_right), int(my + mh * s.trip_cy)),
         digit_h=int(mh * s.trip_digit_h), color=RED_LCD, ghost=RED_LCD_GHOST, ghost_text="888.8",
-        italic=0.0, align="right", bloom_layer=bloom,
+        italic=0.0, align="right", bloom=False, bloom_layer=None,
     )
     if s.clock is not None:
         blit_digits(
             pygame, surf, _clock_text(), g.clock_c,
             digit_h=int(mh * s.trip_digit_h), color=RED_LCD, ghost=RED_LCD_GHOST, ghost_text="88:88",
-            italic=0.0, align="left", bloom_layer=bloom,
+            italic=0.0, align="left", bloom=False, bloom_layer=None,
         )
     if batt_warn:
         blit_text(
             surf, _font(pygame, int(g.w(0.010)), kind="round"), f"{face.batt_v:.1f}V", RED,
             (g.odo_win[0] + g.odo_win[2] + int(g.w(0.012)), g.odo_win[1] + int(g.w(0.006))), "midleft",
         )
-    if own:
-        composite_bloom(pygame, surf, bloom)
 
 
 _ICON_CACHE: dict[tuple, object] = {}
@@ -1396,26 +1381,43 @@ def draw_hardware_strip(
     _draw_hardware_print(pygame, surf, g)
     flags = face.lamps if lamps is None else lamps
     batt_low = False if lamps is not None else face.batt_v < BATT_LOW_V
-    own = bloom is None
-    if own:
-        bloom = _bloom_layer(pygame, surf)
+    del bloom
     for spot in s.strip_lamps + s.panel_lamps + s.arc_lamps:
         lit = bool(flags.get(spot.key, False))
         if spot.key == "batt_warn" and batt_low:
             lit = True
-        _draw_lamp(pygame, surf, bloom, g, spot, lit, bulb_check)
-    if own:
-        composite_bloom(pygame, surf, bloom)
+        _draw_lamp(pygame, surf, None, g, spot, lit, bulb_check)
+
+
+def _draw_h_mark(pygame, surf, cx: int, cy: int, size: int) -> None:
+    """Retraced S2000-era H-mark: squircle ring + pill-ended H."""
+    ring = pygame.Rect(0, 0, size, size)
+    ring.center = (cx, cy)
+    pygame.draw.rect(surf, (210, 214, 218), ring, width=max(2, size // 16), border_radius=size // 5)
+    bar_w = max(3, int(size * 0.12))
+    bar_h = int(size * 0.48)
+    gap = int(size * 0.18)
+    left = pygame.Rect(0, 0, bar_w, bar_h)
+    left.midleft = (cx - gap - bar_w // 2, cy)
+    right = left.copy()
+    right.midright = (cx + gap + bar_w // 2, cy)
+    cross = pygame.Rect(0, 0, gap + bar_w, bar_w)
+    cross.center = (cx, cy - int(size * 0.02))
+    chrome = (220, 224, 228)
+    pygame.draw.rect(surf, chrome, left, border_radius=bar_w // 2)
+    pygame.draw.rect(surf, chrome, right, border_radius=bar_w // 2)
+    pygame.draw.rect(surf, chrome, cross, border_radius=bar_w // 2)
 
 
 def draw_ready_card(fonts, surf, face: DisplayState, g: FaceGeom | None = None, pygame=None) -> None:
-    """ID.4-like pre-drive summary shown in the (dark) LCD windows."""
+    """Honda H + S2000 badge in the well, READY in the speed window."""
     g = _geom(g)
+    mx, my, mw, mh = g.module
     sx, sy, sw, sh = g.speed_win
-    cx = sx + sw // 2
-    blit_text(surf, fonts["micro"], "S2000  DIGITAL  DASH", DIM, (cx, sy + int(sh * 0.16)), "center")
-    blit_text(surf, fonts["ready"], "READY", AMBER_HOT, (cx, sy + int(sh * 0.52)), "center")
-    blit_text(surf, fonts["tiny"], "IGNITION ON   SYSTEMS OK", DIM, (cx, sy + int(sh * 0.86)), "center")
+    cx = mx + mw // 2
+    _draw_h_mark(pygame, surf, cx, my + int(mh * 0.318), max(28, int(mw * 0.062)))
+    blit_text(surf, fonts["label"], "S2000", (220, 224, 228), (cx, my + int(mh * 0.392)), "center")
+    blit_text(surf, fonts["ready"], "READY", AMBER_HOT, (cx, sy + int(sh * 0.72)), "center")
     # widths are proportional so the odometer chip gets the room it needs
     chips = [
         ("BATT", f"{face.batt_v:.1f}V", 0.20),
@@ -1423,13 +1425,11 @@ def draw_ready_card(fonts, surf, face: DisplayState, g: FaceGeom | None = None, 
         ("TEMP", f"{face.ect_c:.0f}°C", 0.20),
         ("ODO", f"{face.odo_km:,.0f}km", 0.42),
     ]
-    ox, oy, ow, oh = g.odo_win
-    left = 0.0
-    for name, val, share in chips:
-        x = ox + int(ow * (left + share / 2.0))
-        left += share
-        blit_text(surf, fonts["micro"], name, DIM, (x, oy + int(oh * 0.30)), "center")
-        blit_text(surf, fonts["label"], val, AMBER, (x, oy + int(oh * 0.68)), "center")
+    row_y = my + int(mh * 0.555)
+    for i, (name, val, _share) in enumerate(chips):
+        x = mx + int(mw * (0.30 + 0.13 * i))
+        blit_text(surf, fonts["micro"], name, DIM, (x, row_y), "center")
+        blit_text(surf, fonts["label"], val, AMBER, (x, row_y + int(mh * 0.038)), "center")
 
 
 def draw_live_face(
@@ -1447,26 +1447,31 @@ def draw_live_face(
     layer = surf
     if fade < 0.999:
         layer = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
-    bloom = _bloom_layer(pygame, surf)
+    bloom = None
     _draw_windows_off(pygame, layer, g, on=True)
     draw_tach_fill(pygame, layer, rpm, bloom, g)
     if bulb_check:
         draw_temp_bar(pygame, fonts, layer, 1.0, False, g=g)
         draw_fuel_bar(pygame, fonts, layer, 1.0, False, g=g)
         draw_speed(pygame, fonts, layer, 188.0, bloom=bloom, g=g)
+        check = DisplayState()
+        check.odo_km = 888888.0
+        check.trip_km = 888.8
+        check.trip_origin = 0.0
+        draw_odo_row(pygame, fonts, layer, check, False, bloom=bloom, g=g)
     else:
         draw_temp_bar(pygame, fonts, layer, ect_frac(face.ect_c), face.ect_c >= ECT_HOT_C, g=g)
         draw_fuel_bar(pygame, fonts, layer, fuel_frac(face.fuel_pct), face.fuel_pct < FUEL_LOW_PCT, g=g)
         draw_speed(pygame, fonts, layer, face.speed_kmh, bloom=bloom, g=g)
-    draw_odo_row(
-        pygame,
-        fonts,
-        layer,
-        face,
-        face.batt_v < BATT_LOW_V or face.lamps.get("batt_warn", False),
-        bloom=bloom,
-        g=g,
-    )
+        draw_odo_row(
+            pygame,
+            fonts,
+            layer,
+            face,
+            face.batt_v < BATT_LOW_V or face.lamps.get("batt_warn", False),
+            bloom=bloom,
+            g=g,
+        )
     draw_hardware_strip(pygame, fonts, layer, face, bulb_check=bulb_check, g=g, bloom=bloom)
     composite_bloom(pygame, layer, bloom)
     if fade < 0.999:
@@ -1503,15 +1508,19 @@ def draw_frame(
     surf.blit(static_face(pygame, g), (0, 0))
     lamps, bulb_check = boot_strip_mode(phase, phase_t)
     if phase == "sweep":
-        bloom = _bloom_layer(pygame, surf)
-        _draw_windows_off(pygame, surf, g, on=False)
-        draw_welcome_sweep(pygame, surf, phase_t, bloom, g=g)
-        draw_hardware_strip(pygame, fonts, surf, face, bulb_check=False, lamps=lamps, g=g, bloom=bloom)
-        composite_bloom(pygame, surf, bloom)
+        draw_live_face(
+            pygame,
+            fonts,
+            surf,
+            face,
+            rpm_override=RPM_MAX * smoothstep(phase_t),
+            bulb_check=True,
+            g=g,
+        )
     elif phase == "ready":
         _draw_windows_off(pygame, surf, g, on=False)
         card = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
-        draw_ready_card(fonts, card, face, g=g)
+        draw_ready_card(fonts, card, face, g=g, pygame=pygame)
         card.set_alpha(int(255 * clamp(phase_t * 3.2, 0.0, 1.0)))
         surf.blit(card, (0, 0))
         draw_hardware_strip(pygame, fonts, surf, face, bulb_check=False, lamps=lamps, g=g)
@@ -1639,8 +1648,12 @@ def main(argv: list[str] | None = None) -> None:
                     args.intro = False
                 if event.key == pygame.K_1:
                     apply_face_style(FaceStyle.AP1)
+                    args.intro = True
+                    boot_t = 0.0
                 if event.key == pygame.K_2:
                     apply_face_style(FaceStyle.AP2)
+                    args.intro = True
+                    boot_t = 0.0
 
         incoming = source.poll()
         if incoming is not None:

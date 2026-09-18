@@ -44,6 +44,9 @@ export type ArcSpec = {
   hatch_n: number;
   hatch_w_deg: number;
   hatch_inner_over: number;
+  cell_rpm: number;
+  cell_gap_deg: number;
+  redline_rpm: number;
   minors_per: number;
   line_w: number;
   line_gap: number;
@@ -77,12 +80,14 @@ export type FaceSpec = {
   temp: Rect;
   temp_segs: number;
   temp_icon: Pt;
+  temp_icon_h: number;
   temp_c: Pt;
   temp_h: Pt;
   temp_underline_y: number;
   fuel: Rect;
   fuel_segs: number;
   fuel_icon: Pt;
+  fuel_icon_h: number;
   fuel_e: Pt;
   fuel_f: Pt;
   fuel_underline_y: number;
@@ -103,6 +108,8 @@ export type FaceSpec = {
   oval_w: number;
   oval_h: number;
   units_label: Pt;
+  rpm_dx: number;
+  rpm_dy: number;
   sel_label: string;
   clock: Pt | null;
   side_gauges_arched: boolean;
@@ -251,14 +258,40 @@ export function tickRpms(t: ArcSpec): Array<{ rpm: number; major: boolean }> {
   return out;
 }
 
-export function hatchAngles(t: ArcSpec, side: "left" | "right"): number[] {
-  const step = (t.hatch_deg - 1) / t.hatch_n;
-  const out: number[] = [];
-  for (let i = 0; i < t.hatch_n; i += 1) {
-    const off = 1.4 + step * i;
-    out.push(side === "left" ? t.a0_deg - off : t.a9_deg + off);
+export function cellWindow(t: ArcSpec, rpm0: number, rpm1: number, closed = true): [number, number] {
+  const d0 = t.a0_deg + divAt(t, Math.max(0, rpm0)) * t.deg_per_div;
+  const d1 = t.a0_deg + divAt(t, Math.max(0, rpm1)) * t.deg_per_div;
+  const half = t.cell_gap_deg / 2;
+  return closed ? [d0 + half, d1 - half] : [d0 + half, d1];
+}
+
+export function scaleCells(t: ArcSpec): Array<{ rpm0: number; rpm1: number; d0: number; d1: number }> {
+  const out: Array<{ rpm0: number; rpm1: number; d0: number; d1: number }> = [];
+  for (let rpm = 0; rpm < RPM_MAX; rpm += t.cell_rpm) {
+    const [d0, d1] = cellWindow(t, rpm, rpm + t.cell_rpm);
+    if (d1 > d0) out.push({ rpm0: rpm, rpm1: rpm + t.cell_rpm, d0, d1 });
   }
   return out;
+}
+
+export function hatchSpans(t: ArcSpec, side: "left" | "right"): Array<[number, number]> {
+  const gap = t.cell_gap_deg;
+  const start = side === "left" ? t.a0_deg - t.hatch_deg : t.a9_deg;
+  const end = side === "left" ? t.a0_deg : t.a9_deg + t.hatch_deg;
+  const usable = end - start - 2 * gap;
+  const cell = (usable - (t.hatch_n - 1) * gap) / t.hatch_n;
+  if (cell <= 0) return [];
+  const out: Array<[number, number]> = [];
+  let a = start + gap;
+  for (let i = 0; i < t.hatch_n; i += 1) {
+    out.push([a, a + cell]);
+    a += cell + gap;
+  }
+  return out;
+}
+
+export function hatchAngles(t: ArcSpec, side: "left" | "right"): number[] {
+  return hatchSpans(t, side).map(([a0, a1]) => (a0 + a1) / 2);
 }
 
 const f2 = (v: number) => v.toFixed(2);

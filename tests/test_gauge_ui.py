@@ -87,8 +87,8 @@ class IntroTests(unittest.TestCase):
 
     def test_boot_hides_lamps_until_reveal(self) -> None:
         lamps, bulb = boot_strip_mode("sweep", 0.5)
-        self.assertEqual(lamps, {})
-        self.assertFalse(bulb)
+        self.assertIsNone(lamps)
+        self.assertTrue(bulb)
         lamps, bulb = boot_strip_mode("ready", 0.5)
         self.assertEqual(lamps, {})
         self.assertFalse(bulb)
@@ -195,16 +195,33 @@ class FaceGeomTests(unittest.TestCase):
             self.assertAlmostEqual(r / FACE.module[2], t.r_line, delta=0.002)
 
     def test_band_peak_and_ends_land_on_oem(self) -> None:
-        """Band outer edge peaks at ~2.3 % H; 0 / 9 ticks at x ≈ 0.19 / 0.81, y ≈ 0.36 H."""
+        """Band outer edge peaks at ~10 % H; 0 / 9 ticks at x ≈ 0.17 / 0.83, y ≈ 0.47 H."""
         t = AP1.tach
         _, peak_y = FACE.arc_px(t.r_out, -90.0)
-        self.assertAlmostEqual(self._pct(0, peak_y)[1], 0.023, delta=0.01)
+        self.assertAlmostEqual(self._pct(0, peak_y)[1], 0.10, delta=0.015)
         x0, y0 = self._pct(*tach_arch_xy(0.0))
         x9, y9 = self._pct(*tach_arch_xy(1.0))
-        self.assertAlmostEqual(x0, 0.19, delta=0.02)
-        self.assertAlmostEqual(x9, 0.81, delta=0.02)
-        self.assertAlmostEqual(y0, 0.36, delta=0.03)
+        self.assertAlmostEqual(x0, 0.17, delta=0.03)
+        self.assertAlmostEqual(x9, 0.83, delta=0.03)
+        self.assertAlmostEqual(y0, 0.47, delta=0.03)
         self.assertAlmostEqual(y0, y9, delta=0.002)
+
+    def test_bar_graph_cells_have_real_gaps(self) -> None:
+        t = AP1.tach
+        cells = t.iter_scale_cells()
+        self.assertEqual(len(cells), RPM_MAX // t.cell_rpm)
+        self.assertEqual(sum(1 for rpm0, *_ in cells if rpm0 >= t.redline_rpm), 5)
+        for i, (_a, _b, d0, d1) in enumerate(cells):
+            self.assertGreater(d1, d0)
+            if i:
+                self.assertGreaterEqual(d0 - cells[i - 1][3], t.cell_gap_deg * 0.99)
+        right = t.hatch_spans("right")
+        self.assertEqual(len(right), t.hatch_n)
+        for i, (d0, d1) in enumerate(right):
+            self.assertGreater(d1 - d0, t.cell_gap_deg)
+            if i:
+                self.assertGreaterEqual(d0 - right[i - 1][1], t.cell_gap_deg * 0.99)
+        self.assertGreater(right[0][0], t.a9_deg)
 
     def test_zero_to_one_is_squeezed(self) -> None:
         t = AP1.tach
@@ -224,9 +241,9 @@ class FaceGeomTests(unittest.TestCase):
             # numerals are displaced along the inward normal, i.e. below the arc
             self.assertGreater((px - ax) * nx + (py - ay) * ny, 0)
             self.assertGreater(py, ay)
-        # "5" sits at ~19 % H on the plate, "0" at ~43 % H
-        self.assertAlmostEqual(self._pct(*tach_num_xy(5 / 9))[1], 0.19, delta=0.03)
-        self.assertAlmostEqual(self._pct(*tach_num_xy(0.0))[1], 0.43, delta=0.03)
+        # "5" sits at ~28 % H on the plate, "0" at ~53 % H (shallower cap)
+        self.assertAlmostEqual(self._pct(*tach_num_xy(5 / 9))[1], 0.28, delta=0.03)
+        self.assertAlmostEqual(self._pct(*tach_num_xy(0.0))[1], 0.53, delta=0.03)
 
     def test_arc_stack_radii_do_not_overlap(self) -> None:
         """Hood lip, band, hatch, baseline and numerals each own a radius."""
@@ -281,11 +298,72 @@ class FaceGeomTests(unittest.TestCase):
         self.assertGreater(fw, fh * 2.2)
         self.assertLess(tx + tw, FACE.speed_win[0])
         self.assertGreater(fx, FACE.speed_win[0] + FACE.speed_win[2])
-        # OEM plate: TEMP window x 0.13–0.29 at 52–57.5 % H; FUEL 0.815–0.925 at 46.5–51 % H
-        self._assert_pct((tx, ty), (0.13, 0.52))
-        self._assert_pct((fx, fy), (0.815, 0.465))
+        # TEMP sits between 0 and the speedo; FUEL between the speedo and 9
+        self._assert_pct((tx, ty), (0.232, 0.540))
+        self._assert_pct((fx, fy), (0.675, 0.540))
         self.assertEqual(AP1.temp_segs, 8)
         self.assertEqual(AP1.fuel_segs, 16)
+
+    def test_well_elements_clear_tach_numerals(self) -> None:
+        """Windows, pictograms and lamp wells must not sit on a tach numeral."""
+        mx, my, mw, mh = FACE.module
+
+        def frac_box(x: float, y: float, w: float, h: float) -> tuple[float, float, float, float]:
+            return (x, y, w, h)
+
+        def overlap(a: tuple[float, float, float, float], b: tuple[float, float, float, float], pad: float = 0.004) -> bool:
+            return not (
+                a[0] + a[2] + pad < b[0]
+                or b[0] + b[2] + pad < a[0]
+                or a[1] + a[3] + pad < b[1]
+                or b[1] + b[3] + pad < a[1]
+            )
+
+        num_w = AP1.tach.num_size
+        num_h = AP1.tach.num_size * MODULE_ASPECT
+        numerals = []
+        for i in range(10):
+            nx, ny = tach_num_xy(i / 9)
+            numerals.append((i, frac_box((nx - mx) / mw - num_w / 2, (ny - my) / mh - num_h / 2, num_w, num_h)))
+
+        thermo_h = AP1.temp_icon_h * MODULE_ASPECT
+        pump_h = AP1.fuel_icon_h * MODULE_ASPECT
+        # Pump hose runs ~1.1× icon height to the right of centre.
+        symbols = [
+            ("temp_icon", frac_box(AP1.temp_icon.x - AP1.temp_icon_h * 0.45, AP1.temp_icon.y - thermo_h / 2, AP1.temp_icon_h * 0.9, thermo_h)),
+            ("fuel_icon", frac_box(AP1.fuel_icon.x - AP1.fuel_icon_h * 0.45, AP1.fuel_icon.y - pump_h / 2, AP1.fuel_icon_h * 1.15, pump_h)),
+        ]
+        for spot in AP1.arc_lamps:
+            d = AP1.arc_lamp_r * 2
+            symbols.append((spot.key, frac_box(spot.x - AP1.arc_lamp_r, spot.y - AP1.arc_lamp_r * MODULE_ASPECT, d, d * MODULE_ASPECT)))
+
+        windows = [
+            ("speed", (AP1.speed.x, AP1.speed.y, AP1.speed.w, AP1.speed.h)),
+            ("odo", (AP1.odo.x, AP1.odo.y, AP1.odo.w, AP1.odo.h)),
+            ("temp", (AP1.temp.x, AP1.temp.y, AP1.temp.w, AP1.temp.h)),
+            ("fuel", (AP1.fuel.x, AP1.fuel.y, AP1.fuel.w, AP1.fuel.h)),
+        ]
+        for i, nbox in numerals:
+            for name, box in windows + symbols:
+                self.assertFalse(overlap(nbox, box), f"numeral {i} overlaps {name}")
+        for a, ab in symbols:
+            for b, bb in symbols:
+                if a >= b:
+                    continue
+                self.assertFalse(overlap(ab, bb, pad=0.006), f"{a} overlaps {b}")
+        for name, box in symbols:
+            for win_name, win in windows:
+                self.assertFalse(overlap(box, win, pad=0.002), f"{name} overlaps {win_name}")
+
+    def test_well_columns_have_gutters(self) -> None:
+        """TEMP | odo | FUEL are three columns; speed sits under 5, not on it."""
+        self.assertLess(AP1.temp.x + AP1.temp.w, AP1.odo.x - 0.050)
+        self.assertLess(AP1.temp_h.x, AP1.odo.x - 0.050)
+        self.assertGreater(AP1.fuel.x, AP1.odo.x + AP1.odo.w + 0.050)
+        self.assertGreater(AP1.fuel_e.x, AP1.trip_right + 0.050)
+        self.assertGreater(AP1.odo.y, AP1.speed.y + AP1.speed.h + 0.002)
+        n5x, n5y = tach_num_xy(5 / 9)
+        self.assertGreater(AP1.speed.y, (n5y - FACE.module[1]) / FACE.module[3] + 0.06)
 
     def test_temp_blocks_idle_low(self) -> None:
         # 89 °C → 3–4 of 8 blocks like the real cluster; H → all 8
@@ -298,12 +376,12 @@ class FaceGeomTests(unittest.TestCase):
     def test_lcd_windows_lock_to_oem(self) -> None:
         sx, sy, sw, sh = FACE.speed_win
         ox, oy, ow, oh = FACE.odo_win
-        self._assert_pct((sx, sy), (0.39, 0.30))
-        self.assertAlmostEqual(sw / FACE.module[2], 0.22, delta=0.02)
-        self._assert_pct((ox, oy), (0.39, 0.57))
+        self._assert_pct((sx, sy), (0.418, 0.370))
+        self.assertAlmostEqual(sw / FACE.module[2], 0.164, delta=0.02)
+        self._assert_pct((ox, oy), (0.405, 0.512))
         self.assertGreater(oy, sy + sh)
         self.assertAlmostEqual(self._pct(*FACE.speed_c)[0], 0.50, delta=0.01)
-        self.assertAlmostEqual(sh / FACE.module[3], 0.24, delta=0.03)
+        self.assertAlmostEqual(sh / FACE.module[3], 0.138, delta=0.03)
 
     def test_strip_and_hardware_lock(self) -> None:
         lx, ly, lw, lh = FACE.lamp_band
@@ -320,7 +398,8 @@ class FaceGeomTests(unittest.TestCase):
         self.assertGreater(FACE.step, 0)
         self.assertGreater(FACE.lcd[0], FACE.module[0])
         self.assertLess(FACE.lcd[0] + FACE.lcd[2], FACE.module[0] + FACE.module[2])
-        self.assertLessEqual(FACE.hood_peak_y, FACE.module[1] + 2)
+        # visor occupies the top ~3 % H; the lip is no longer flush with the module
+        self.assertAlmostEqual(self._pct(0, FACE.hood_peak_y)[1], 0.026, delta=0.015)
 
     def test_car_mode_fills_the_panel(self) -> None:
         g = build_face_geom(1280, 720, car=True)
@@ -418,16 +497,17 @@ class HeadlessDrawTests(unittest.TestCase):
         reveal = self._draw(face, "reveal", 0.40)
         self.assertGreater(self.count_warm(reveal, step=12), 20)
 
-    def test_sweep_does_not_show_live_high_beam(self) -> None:
-        from oem_icons import LAMP_BLUE
+    def test_sweep_is_the_car_self_test(self) -> None:
+        from oem_icons import LAMP_BLUE, LAMP_RED
         from _headless import region
 
         face = DisplayState()
         face.snap(sample_telem())
-        self.assertTrue(face.lamps.get("high_beam"))
         sweep = self._draw(face, "sweep", 0.55)
         strip = region(sweep, FACE.lamp_band)
-        self.assertEqual(self.sample_near(strip, LAMP_BLUE, step=2, tol=40), 0)
+        self.assertGreater(self.sample_near(strip, LAMP_RED, step=2, tol=40), 0)
+        well = region(sweep, FACE.lcd)
+        self.assertGreater(self.sample_near(well, LAMP_BLUE, step=2, tol=40), 0)
 
     def test_live_speedo_is_red_lcd(self) -> None:
         from gauge_ui import RED_LCD

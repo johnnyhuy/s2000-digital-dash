@@ -10,8 +10,16 @@ export default function Home() {
       <header className="masthead">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/docs/assets/honda-unofficial-mark.svg"
-          alt="Unofficial geometric H mark — not Honda trademark artwork"
+          src="/docs/assets/honda-h-mark.svg"
+          alt="Retraced Honda H-mark"
+          width={56}
+          height={56}
+        />
+        <img
+          src="/docs/assets/s2000-badge.svg"
+          alt="Retraced S2000 badge"
+          className="s2000-badge"
+          height={28}
         />
         <div>
           <h1>S2000 Digital Dash</h1>

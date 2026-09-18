@@ -64,19 +64,22 @@ class ArcSpec:
     """Bar-graph tachometer on a true circular arc."""
 
     cx: float = 0.50            # W
-    cy: float = 1.300           # H — centre sits well below the module
-    r_out: float = 0.543        # W — band outer edge (peak lands at ~2.3 % H)
+    cy: float = 1.487           # H — bench-photo circle, adapted to 2.35:1
+    r_out: float = 0.590        # W — shallower cap; band apex ≈ 10 % H
     band: float = 0.033         # W — band thickness (r_in = r_out − band)
-    a0_deg: float = -127.8      # 0 r/min   (ticks at x = 0.19 / 0.81, y = 0.36 H)
+    a0_deg: float = -127.8      # 0 r/min   (ticks at x ≈ 0.17 / 0.83, y ≈ 0.47 H)
     a9_deg: float = -52.2       # 9 000 r/min  (75.6° sweep, measured)
     first_div: float = 0.60     # OEM squeezes 0→1 to ~60 % of a division
-    hatch_deg: float = 5.5      # band overrun past 0 and 9 (5 stripes each)
+    hatch_deg: float = 5.5      # band overrun past 0 and 9 (5 blocks each)
     hatch_n: int = 5
-    hatch_w_deg: float = 0.62
+    hatch_w_deg: float = 0.62   # unused: hatch_spans owns block width
     hatch_inner_over: float = 0.0    # W — hatches stay inside the band (do not cross the ticks)
+    cell_rpm: int = 200         # bar-graph step; 8→9 is five blocks (OEM redline)
+    cell_gap_deg: float = 0.16  # black well between cells (not a drawn line)
+    redline_rpm: float = 8000.0 # first redline cell; five blocks 8→9
     minors_per: int = 4
     line_w: float = 0.0020      # W — white baseline arc under the band
-    line_gap: float = 0.008     # W — dark gap so the baseline is not painted on the band
+    line_gap: float = 0.003     # W — hairline well between band and baseline
     tick_major: tuple[float, float] = (0.0024, 0.012)  # (w, len) in W
     tick_minor: tuple[float, float] = (0.0014, 0.007)
     num_inset: float = 0.034    # W — baseline → numeral centre (clears tick tips)
@@ -131,14 +134,46 @@ class ArcSpec:
     def band_end_deg(self) -> float:
         return self.a9_deg + self.hatch_deg
 
-    def hatch_angles(self, side: str) -> list[float]:
-        """Centre angles of the five printed stripes past 0 (left) or 9 (right)."""
-        step = (self.hatch_deg - 1.0) / self.hatch_n
-        out: list[float] = []
-        for i in range(self.hatch_n):
-            off = 1.4 + step * i
-            out.append(self.a0_deg - off if side == "left" else self.a9_deg + off)
+    def cell_window(self, rpm0: float, rpm1: float, *, closed: bool = True) -> tuple[float, float]:
+        """Screen-degree span of one bar-graph cell, inset by half the well gap."""
+        d0 = self.angle_deg(rpm0)
+        d1 = self.angle_deg(rpm1)
+        half = self.cell_gap_deg / 2.0
+        return (d0 + half, d1 - half) if closed else (d0 + half, d1)
+
+    def iter_scale_cells(self) -> list[tuple[float, float, float, float]]:
+        """``(rpm0, rpm1, deg0, deg1)`` for every printed 0→9 cell."""
+        out: list[tuple[float, float, float, float]] = []
+        step = self.cell_rpm
+        for rpm in range(0, int(RPM_MAX), step):
+            d0, d1 = self.cell_window(float(rpm), float(rpm + step))
+            if d1 > d0:
+                out.append((float(rpm), float(rpm + step), d0, d1))
         return out
+
+    def hatch_spans(self, side: str) -> list[tuple[float, float]]:
+        """Five discrete hatch blocks in the overrun past 0 (left) or 9 (right)."""
+        gap = self.cell_gap_deg
+        n = self.hatch_n
+        if side == "left":
+            start, end = self.a0_deg - self.hatch_deg, self.a0_deg
+        else:
+            start, end = self.a9_deg, self.a9_deg + self.hatch_deg
+        pad = gap
+        usable = (end - start) - 2.0 * pad
+        cell = (usable - (n - 1) * gap) / n
+        if cell <= 0.0:
+            return []
+        a = start + pad
+        spans: list[tuple[float, float]] = []
+        for _ in range(n):
+            spans.append((a, a + cell))
+            a += cell + gap
+        return spans
+
+    def hatch_angles(self, side: str) -> list[float]:
+        """Centre angles of the five printed blocks past 0 (left) or 9 (right)."""
+        return [(a0 + a1) / 2.0 for a0, a1 in self.hatch_spans(side)]
 
     def tick_rpms(self) -> list[tuple[int, bool]]:
         """(rpm, is_major) for every printed tick, 0 → 9 000."""
@@ -190,12 +225,14 @@ class FaceSpec:
     temp: Rect
     temp_segs: int
     temp_icon: Anchor
+    temp_icon_h: float          # W — coolant pictogram height (must fit under numeral 1)
     temp_c: Anchor
     temp_h: Anchor
     temp_underline_y: float     # H
     fuel: Rect
     fuel_segs: int
     fuel_icon: Anchor
+    fuel_icon_h: float          # W — pump pictogram height (hose must clear numeral 8)
     fuel_e: Anchor
     fuel_f: Anchor
     fuel_underline_y: float
@@ -216,6 +253,8 @@ class FaceSpec:
     oval_w: float               # W
     oval_h: float               # H
     units_label: Anchor         # "mph·km/h"
+    rpm_dx: float = -0.018      # W — x1000r/min from numeral 0 (left, so it does not run into C)
+    rpm_dy: float = 0.020       # W — hangs under the 0, not on the C/H row
     sel_label: str = "SEL"
     clock: Anchor | None = None
     side_gauges_arched: bool = False
@@ -236,36 +275,41 @@ AP1 = FaceSpec(
     crown_r=_AP1_TACH.r_out + CROWN_GAP,
     crown_lip=CROWN_LIP,
     spring_y=0.58,
-    speed=Rect(0.39, 0.30, 0.22, 0.24),
-    speed_digit_h=0.20,
-    speed_right=0.596,
-    unit_x=0.622,
-    unit_y_top=0.455,
-    unit_y_bot=0.515,
-    odo=Rect(0.39, 0.57, 0.22, 0.13),
-    odo_digit_h=0.056,
-    odo_left=0.408,
-    odo_cy=0.648,
-    trip_label=Anchor(0.572, 0.598),
-    trip_digit_h=0.050,
-    trip_right=0.598,
-    trip_cy=0.655,
-    temp=Rect(0.130, 0.520, 0.160, 0.055),
+    # Three-column well inside the numeral ring. Speed sits under 5 (not
+    # in the 5–6 pocket); TEMP / odo / FUEL share the spring row with
+    # gutters so C/H/E/F and the icons do not sit on 0/1/8/9 or the LCD.
+    speed=Rect(0.418, 0.370, 0.164, 0.138),
+    speed_digit_h=0.112,
+    speed_right=0.548,
+    unit_x=0.558,
+    unit_y_top=0.408,
+    unit_y_bot=0.450,
+    odo=Rect(0.405, 0.512, 0.190, 0.068),
+    odo_digit_h=0.042,
+    odo_left=0.412,
+    odo_cy=0.552,
+    trip_label=Anchor(0.560, 0.506),
+    trip_digit_h=0.036,
+    trip_right=0.585,
+    trip_cy=0.552,
+    temp=Rect(0.232, 0.540, 0.095, 0.028),
     temp_segs=8,
-    temp_icon=Anchor(0.150, 0.478),
-    temp_c=Anchor(0.121, 0.548),  # C hugs the bar: bar.x − half-letter − hair
-    temp_h=Anchor(0.299, 0.548),  # H hugs the bar: bar right + half-letter + hair
-    temp_underline_y=0.569,  # rule touches the block bottoms (no floating gap)
-    fuel=Rect(0.815, 0.465, 0.110, 0.045),
+    temp_icon=Anchor(0.300, 0.516),
+    temp_icon_h=0.012,
+    temp_c=Anchor(0.218, 0.554),
+    temp_h=Anchor(0.334, 0.554),
+    temp_underline_y=0.572,
+    fuel=Rect(0.675, 0.540, 0.078, 0.024),
     fuel_segs=16,
-    fuel_icon=Anchor(0.905, 0.425),
-    fuel_e=Anchor(0.806, 0.490),
-    fuel_f=Anchor(0.934, 0.490),
-    fuel_underline_y=0.506,  # rule touches the block bottoms (no floating gap)
+    fuel_icon=Anchor(0.692, 0.516),
+    fuel_icon_h=0.012,
+    fuel_e=Anchor(0.662, 0.554),
+    fuel_f=Anchor(0.760, 0.554),
+    fuel_underline_y=0.568,
     arc_lamps=(
-        LampSpot("turn_l", 0.350, 0.340, tone="green", size=0.022),
-        LampSpot("turn_r", 0.650, 0.340, tone="green", size=0.022),
-        LampSpot("high_beam", 0.712, 0.420, tone="blue", size=0.020),
+        LampSpot("turn_l", 0.378, 0.415, tone="green", size=0.016),
+        LampSpot("turn_r", 0.605, 0.405, tone="green", size=0.016),
+        LampSpot("high_beam", 0.658, 0.468, tone="blue", size=0.014),
     ),
     arc_lamp_r=0.0185,
     strip=Rect(0.155, 0.745, 0.750, 0.140),
@@ -328,12 +372,14 @@ AP2 = FaceSpec(
     temp=Rect(0.690, 0.310, 0.150, 0.170),   # arched: rect is the arc box
     temp_segs=10,
     temp_icon=Anchor(0.765, 0.435),
+    temp_icon_h=0.028,
     temp_c=Anchor(0.705, 0.490),
     temp_h=Anchor(0.825, 0.490),
     temp_underline_y=0.0,
     fuel=Rect(0.755, 0.540, 0.150, 0.170),
     fuel_segs=10,
     fuel_icon=Anchor(0.830, 0.665),
+    fuel_icon_h=0.026,
     fuel_e=Anchor(0.756, 0.735),
     fuel_f=Anchor(0.894, 0.735),
     fuel_underline_y=0.0,

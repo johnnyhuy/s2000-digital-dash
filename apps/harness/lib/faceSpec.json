@@ -5,29 +5,29 @@
       {
         "key": "turn_l",
         "kind": "",
-        "size": 0.022,
+        "size": 0.016,
         "tone": "green",
         "word": "",
-        "x": 0.35,
-        "y": 0.34
+        "x": 0.378,
+        "y": 0.415
       },
       {
         "key": "turn_r",
         "kind": "",
-        "size": 0.022,
+        "size": 0.016,
         "tone": "green",
         "word": "",
-        "x": 0.65,
-        "y": 0.34
+        "x": 0.605,
+        "y": 0.405
       },
       {
         "key": "high_beam",
         "kind": "",
-        "size": 0.02,
+        "size": 0.014,
         "tone": "blue",
         "word": "",
-        "x": 0.712,
-        "y": 0.42
+        "x": 0.658,
+        "y": 0.468
       }
     ],
     "btn_d": 0.05,
@@ -56,40 +56,41 @@
       "y": 0.935
     },
     "clock": null,
-    "crown_cy": 1.3,
+    "crown_cy": 1.487,
     "crown_lip": 0.018,
-    "crown_r": 0.557,
+    "crown_r": 0.604,
     "extras": {},
     "fuel": {
-      "h": 0.045,
-      "w": 0.11,
-      "x": 0.815,
-      "y": 0.465
+      "h": 0.024,
+      "w": 0.078,
+      "x": 0.675,
+      "y": 0.54
     },
     "fuel_e": {
-      "x": 0.806,
-      "y": 0.49
+      "x": 0.662,
+      "y": 0.554
     },
     "fuel_f": {
-      "x": 0.934,
-      "y": 0.49
+      "x": 0.76,
+      "y": 0.554
     },
     "fuel_icon": {
-      "x": 0.905,
-      "y": 0.425
+      "x": 0.692,
+      "y": 0.516
     },
+    "fuel_icon_h": 0.012,
     "fuel_segs": 16,
-    "fuel_underline_y": 0.506,
+    "fuel_underline_y": 0.568,
     "module_aspect": 2.35,
     "odo": {
-      "h": 0.13,
-      "w": 0.22,
-      "x": 0.39,
-      "y": 0.57
+      "h": 0.068,
+      "w": 0.19,
+      "x": 0.405,
+      "y": 0.512
     },
-    "odo_cy": 0.648,
-    "odo_digit_h": 0.056,
-    "odo_left": 0.408,
+    "odo_cy": 0.552,
+    "odo_digit_h": 0.042,
+    "odo_left": 0.412,
     "oval_h": 0.06,
     "oval_w": 0.04,
     "panel_lamps": [
@@ -142,16 +143,18 @@
       "x": 0.79,
       "y": 0.59
     },
+    "rpm_dx": -0.018,
+    "rpm_dy": 0.02,
     "sel_label": "SEL",
     "side_gauges_arched": false,
     "speed": {
-      "h": 0.24,
-      "w": 0.22,
-      "x": 0.39,
-      "y": 0.3
+      "h": 0.138,
+      "w": 0.164,
+      "x": 0.418,
+      "y": 0.37
     },
-    "speed_digit_h": 0.2,
-    "speed_right": 0.596,
+    "speed_digit_h": 0.112,
+    "speed_right": 0.548,
     "spring_y": 0.58,
     "strip": {
       "h": 0.14,
@@ -247,23 +250,26 @@
       "a0_deg": -127.8,
       "a9_deg": -52.2,
       "band": 0.033,
+      "cell_gap_deg": 0.16,
+      "cell_rpm": 200,
       "cx": 0.5,
-      "cy": 1.3,
+      "cy": 1.487,
       "deg_per_div": 8.790697674418604,
       "first_div": 0.6,
       "hatch_deg": 5.5,
       "hatch_inner_over": 0.0,
       "hatch_n": 5,
       "hatch_w_deg": 0.62,
-      "line_gap": 0.008,
+      "line_gap": 0.003,
       "line_w": 0.002,
       "minors_per": 4,
       "num_inset": 0.034,
       "num_size": 0.034,
-      "r_in": 0.51,
-      "r_line": 0.501,
-      "r_num": 0.46699999999999997,
-      "r_out": 0.543,
+      "r_in": 0.5569999999999999,
+      "r_line": 0.5529999999999999,
+      "r_num": 0.5189999999999999,
+      "r_out": 0.59,
+      "redline_rpm": 8000.0,
       "tick_major": [
         0.0024,
         0.012
@@ -274,35 +280,36 @@
       ]
     },
     "temp": {
-      "h": 0.055,
-      "w": 0.16,
-      "x": 0.13,
-      "y": 0.52
+      "h": 0.028,
+      "w": 0.095,
+      "x": 0.232,
+      "y": 0.54
     },
     "temp_c": {
-      "x": 0.121,
-      "y": 0.548
+      "x": 0.218,
+      "y": 0.554
     },
     "temp_h": {
-      "x": 0.299,
-      "y": 0.548
+      "x": 0.334,
+      "y": 0.554
     },
     "temp_icon": {
-      "x": 0.15,
-      "y": 0.478
+      "x": 0.3,
+      "y": 0.516
     },
+    "temp_icon_h": 0.012,
     "temp_segs": 8,
-    "temp_underline_y": 0.569,
-    "trip_cy": 0.655,
-    "trip_digit_h": 0.05,
+    "temp_underline_y": 0.572,
+    "trip_cy": 0.552,
+    "trip_digit_h": 0.036,
     "trip_label": {
-      "x": 0.572,
-      "y": 0.598
+      "x": 0.56,
+      "y": 0.506
     },
-    "trip_right": 0.598,
-    "unit_x": 0.622,
-    "unit_y_bot": 0.515,
-    "unit_y_top": 0.455,
+    "trip_right": 0.585,
+    "unit_x": 0.558,
+    "unit_y_bot": 0.45,
+    "unit_y_top": 0.408,
     "units_label": {
       "x": 0.9,
       "y": 0.862
@@ -377,9 +384,9 @@
       "x": 0.392,
       "y": 0.592
     },
-    "crown_cy": 1.3,
+    "crown_cy": 1.487,
     "crown_lip": 0.018,
-    "crown_r": 0.557,
+    "crown_r": 0.604,
     "extras": {},
     "fuel": {
       "h": 0.17,
@@ -399,6 +406,7 @@
       "x": 0.83,
       "y": 0.665
     },
+    "fuel_icon_h": 0.026,
     "fuel_segs": 10,
     "fuel_underline_y": 0.0,
     "module_aspect": 2.35,
@@ -416,6 +424,8 @@
     "panel_lamps": [],
     "panel_left": null,
     "panel_right": null,
+    "rpm_dx": -0.018,
+    "rpm_dy": 0.02,
     "sel_label": "CLOCK",
     "side_gauges_arched": true,
     "speed": {
@@ -530,23 +540,26 @@
       "a0_deg": -132.0,
       "a9_deg": -74.0,
       "band": 0.033,
+      "cell_gap_deg": 0.16,
+      "cell_rpm": 200,
       "cx": 0.5,
-      "cy": 1.3,
+      "cy": 1.487,
       "deg_per_div": 6.744186046511628,
       "first_div": 0.6,
       "hatch_deg": 6.5,
       "hatch_inner_over": 0.0,
       "hatch_n": 5,
       "hatch_w_deg": 0.62,
-      "line_gap": 0.008,
+      "line_gap": 0.003,
       "line_w": 0.002,
       "minors_per": 4,
       "num_inset": 0.034,
       "num_size": 0.034,
-      "r_in": 0.51,
-      "r_line": 0.501,
-      "r_num": 0.46699999999999997,
-      "r_out": 0.543,
+      "r_in": 0.5569999999999999,
+      "r_line": 0.5529999999999999,
+      "r_num": 0.5189999999999999,
+      "r_out": 0.59,
+      "redline_rpm": 8000.0,
       "tick_major": [
         0.0024,
         0.012
@@ -574,6 +587,7 @@
       "x": 0.765,
       "y": 0.435
     },
+    "temp_icon_h": 0.028,
     "temp_segs": 10,
     "temp_underline_y": 0.0,
     "trip_cy": 0.672,

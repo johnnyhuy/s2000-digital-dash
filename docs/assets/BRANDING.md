@@ -1,20 +1,18 @@
-# Unofficial DIY branding
+# DIY cluster marks
 
-The title mark in `honda-unofficial-mark.svg` is an **original geometric H**
-drawn for this repository.
+`honda-h-mark.svg` and `s2000-badge.svg` are **retraces** of generated
+reference plates in `docs/assets/brand/`. They are original vector
+drawings for this unofficial DIY cluster — **not** Honda Motor Co., Ltd.
+trademark artwork, and this project is not affiliated with or endorsed
+by Honda.
 
-- **Not** Honda Motor Co., Ltd. trademark artwork
-- **Not** the Honda wing logo
-- **Not** the official Honda H-mark / grille badge
+- Honda H-mark: squircle ring + pill-ended H, taken off
+  `brand/honda-h-mark-ref.png` (S2000-era steering-wheel plate)
+- S2000 badge: italic five-glyph wordmark, taken off
+  `brand/s2000-badge-ref.png`
 
-If someone asks for a “Honda logo SVG”, ship this file and the README
-disclaimer. Do **not** scrape, download, or embed official Honda brand
-assets.
-
-Same mark is copied to `apps/harness/public/docs/assets/` for the web demo.
-
-Product name in docs and chrome is **S2000 Digital Dash** (AP1 + AP2 faces).
-The live GitHub repo is `johnnyhuy/s2000-digital-dash`. See the root README.
+The older geometric H (`honda-unofficial-mark.svg`) stays in the tree
+as history. The live GitHub repo is `johnnyhuy/s2000-digital-dash`.
 
 Cluster type is **M PLUS Rounded 1c** Bold / ExtraBold (tach numerals,
 C/H, E/F, bezel and LCD legends) - the closest OFL match to the OEM plate's
@@ -38,16 +36,11 @@ nozzle. Telltales: red `#e22820`, amber `#ec941c`, green `#22b84c`, ISO
 high-beam blue `#1c54d8` (never neon cyan). Off lamps sit just above black
 (`#1a1816` on the web strip, `#1a1816` in pygame) so the row still reads
 without competing with lit bulbs. Icons are white-on-transparent ISO
-silhouettes (hollow battery with +/−, oil-can with drop, 3-ray outlined
-high-beam D, CEL with CHECK punched through the block, filled key bow,
-person with sash and arm nubs, top-down car with both doors ajar) under
-`assets/icons/`, tinted at draw time. The web strip draws the same
-pictograms inline (`LampIcons.tsx`) so CSS masks cannot collapse them.
-Word lamps set in M PLUS Rounded 1c. Tach numerals sit **inside** the
-well along the inward normal of the arc, ticks hang from the white
-baseline. Analog lag on RPM; green turn lamps pulse at about 85
-flashes/min after the strike; the red hatch lights past 9. Boot motion is
-sweep comet along the band → READY glow → reveal settle with a bulb check.
+silhouettes under `assets/icons/`, tinted at draw time. The web strip
+draws the same pictograms inline (`LampIcons.tsx`).
+
+Boot motion is the car's ignition self-test (bar 0→9, all lamps, `188`)
+then a READY card with the retraced H and S2000 badge, then reveal.
 Preset buttons on the web harness snap the face so Idle / Cruise / VTEC /
-Warn are readable immediately. PUSH CANCEL is a small dial mark beside its
-legend under the −/+ rocker, matching the OEM bezel.
+Warn are readable immediately. Switching AP1 / AP2 replays the boot.
+PUSH CANCEL is a small dial mark beside its legend under the −/+ rocker.
