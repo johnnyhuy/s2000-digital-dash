@@ -27,7 +27,7 @@ After it, the six-track loop resumes on top of `face_spec.py`.
 | Tach curve | circular arc, centre ≈ 130 % H below top, r ≈ 54 % W | quadratic bezier `y = 28 u²` | `ArcSpec` circle; 0/9 ticks at (19 %, 36 %) / (81 %, 36 %), apex 2.4 % |
 | Tach readout | amber **bar graph** cells + red hatch past 9 | white chevron needle on a printed band | 100 rpm cells, 0.22° gaps, hatch lights over 9; no needle |
 | 0 → 1 division | squeezed (~60 %) | uniform | `first_div = 0.6` |
-| Hood crown | concentric with the band, constant gap | parabola with rectangular side notches | circle concentric with the tach, r = r_out + 0.4 % W, 1.2 % lip, springs at 58 % H |
+| Hood crown | concentric with the band, constant gap | parabola with rectangular side notches | circle concentric with the tach, r = r_out + 1.4 % W well, 1.8 % lip, springs at 58 % H |
 | Digits | mitred 45° 7-seg, hairline gaps, chamfered corners | rounded strokes | `lcd_digits.py` / `SevenSeg.tsx` rewritten, ghost `#4a0c0e` |
 | Numerals | rounded gothic, inside the well | Barlow Condensed italic | M PLUS Rounded 1c Bold, on `r_num` along the inward normal |
 | TEMP / FUEL | 8 / 16 block bars with icon + letters | 6 thin ticks | `SegBar`, idle knee at 3–4 blocks (`temp_segments_lit`) |

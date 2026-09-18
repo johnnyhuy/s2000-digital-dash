@@ -57,8 +57,8 @@
     },
     "clock": null,
     "crown_cy": 1.3,
-    "crown_lip": 0.012,
-    "crown_r": 0.547,
+    "crown_lip": 0.018,
+    "crown_r": 0.557,
     "extras": {},
     "fuel": {
       "h": 0.045,
@@ -252,25 +252,25 @@
       "deg_per_div": 8.790697674418604,
       "first_div": 0.6,
       "hatch_deg": 5.5,
-      "hatch_inner_over": 0.01,
+      "hatch_inner_over": 0.0,
       "hatch_n": 5,
       "hatch_w_deg": 0.62,
-      "line_gap": 0.003,
+      "line_gap": 0.008,
       "line_w": 0.002,
       "minors_per": 4,
-      "num_inset": 0.03,
+      "num_inset": 0.034,
       "num_size": 0.034,
       "r_in": 0.51,
-      "r_line": 0.506,
-      "r_num": 0.476,
+      "r_line": 0.501,
+      "r_num": 0.46699999999999997,
       "r_out": 0.543,
       "tick_major": [
-        0.0028,
-        0.014
+        0.0024,
+        0.012
       ],
       "tick_minor": [
-        0.0017,
-        0.008
+        0.0014,
+        0.007
       ]
     },
     "temp": {
@@ -378,8 +378,8 @@
       "y": 0.592
     },
     "crown_cy": 1.3,
-    "crown_lip": 0.012,
-    "crown_r": 0.547,
+    "crown_lip": 0.018,
+    "crown_r": 0.557,
     "extras": {},
     "fuel": {
       "h": 0.17,
@@ -535,25 +535,25 @@
       "deg_per_div": 6.744186046511628,
       "first_div": 0.6,
       "hatch_deg": 6.5,
-      "hatch_inner_over": 0.01,
+      "hatch_inner_over": 0.0,
       "hatch_n": 5,
       "hatch_w_deg": 0.62,
-      "line_gap": 0.003,
+      "line_gap": 0.008,
       "line_w": 0.002,
       "minors_per": 4,
-      "num_inset": 0.03,
+      "num_inset": 0.034,
       "num_size": 0.034,
       "r_in": 0.51,
-      "r_line": 0.506,
-      "r_num": 0.476,
+      "r_line": 0.501,
+      "r_num": 0.46699999999999997,
       "r_out": 0.543,
       "tick_major": [
-        0.0028,
-        0.014
+        0.0024,
+        0.012
       ],
       "tick_minor": [
-        0.0017,
-        0.008
+        0.0014,
+        0.007
       ]
     },
     "temp": {

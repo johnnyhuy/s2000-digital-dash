@@ -38,7 +38,7 @@ Everything below is derived from that one circle.
 | --- | --- |
 | Module aspect | **2.35:1** |
 | Bottom | flat |
-| Hood crown | circle **concentric with the tach** `(50 %, 130 % H)`, r = band `r_out` + **0.4 % W** gap = **54.7 % W**; cowl lip **1.2 % W** outside it |
+| Hood crown | circle **concentric with the tach** `(50 %, 130 % H)`, r = band `r_out` + **1.4 % W** well = **55.7 % W**; cowl lip **1.8 % W** outside it |
 | Crown top | y ≈ **0.5 %** (constant gap over the band apex; the lip rises just past the module top) |
 | Spring line | y = **58 %** - crown meets the flat lower bezel; springs land at x ≈ 5 % / 95 % |
 | Lower bezel | full width below the spring; strip and buttons live here |
