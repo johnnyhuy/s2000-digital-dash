@@ -676,12 +676,61 @@ def blit_text(surf, font, text: str, color, pos, anchor: str = "topleft") -> Non
     surf.blit(img, rect)
 
 
+_BRAND_DIR = Path(__file__).resolve().parents[1] / "assets" / "brand"
+_BRAND_CACHE: dict[str, object] = {}
+_S2000_BADGE_ASPECT = 2731.535 / 245.88
+
+
+def _brand_png(pygame, name: str):
+    cached = _BRAND_CACHE.get(name)
+    if cached is not None:
+        return cached
+    path = _BRAND_DIR / name
+    if not path.is_file():
+        raise FileNotFoundError(f"brand mark missing: {path}")
+    surf = pygame.image.load(str(path)).convert_alpha()
+    _BRAND_CACHE[name] = surf
+    return surf
+
+
+def _blit_brand(pygame, dest, name: str, cx: int, cy: int, max_w: int, max_h: int) -> None:
+    src = _brand_png(pygame, name)
+    sw, sh = src.get_size()
+    scale = min(max_w / sw, max_h / sh)
+    img = pygame.transform.smoothscale(src, (max(1, int(sw * scale)), max(1, int(sh * scale))))
+    dest.blit(img, img.get_rect(center=(cx, cy)))
+
+
+def _draw_bezel_brand(pygame, dest, g: FaceGeom) -> None:
+    """Honda H + S2000 wordmark on the lower bezel, live and boot."""
+    mx, my, mw, mh = g.module
+    cx = mx + mw // 2
+    cy = my + int(mh * g.spec.cancel_text.y)
+    h_size = max(16, int(mw * 0.022))
+    badge_h = max(8, int(mw * 0.012))
+    badge_w = max(40, int(badge_h * _S2000_BADGE_ASPECT))
+    gap = max(4, int(mw * 0.008))
+    total = h_size + gap + badge_w
+    left = cx - total // 2
+    _blit_brand(pygame, dest, "honda-h-mark.png", left + h_size // 2, cy, h_size, h_size)
+    _blit_brand(
+        pygame,
+        dest,
+        "s2000-badge.png",
+        left + h_size + gap + badge_w // 2,
+        cy,
+        badge_w,
+        badge_h,
+    )
+
+
 def reset_render_caches() -> None:
     """Drop cached fonts / surfaces. Call after ``pygame.quit()`` — SDL_ttf
     handles do not survive a re-init and dereferencing them segfaults."""
     _FONT_CACHE.clear()
     _STATIC_CACHE.clear()
     _ICON_CACHE.clear()
+    _BRAND_CACHE.clear()
 
 
 def build_fonts(pygame) -> dict:
@@ -1018,6 +1067,7 @@ def _draw_hardware_print(pygame, surf, g: FaceGeom) -> None:
     _cruise_cancel_icon(pygame, surf, ix, iy, int(g.w(0.012)), WHITE)
     blit_text(surf, _font(pygame, int(g.w(0.0135)), kind="round_x"), "PUSH CANCEL", WHITE, g.anchor_px(s.cancel_text), "midleft")
     blit_text(surf, _font(pygame, int(g.w(0.0105)), kind="round_x"), "mph\u00b7km/h", WHITE, g.anchor_px(s.units_label), "midright")
+    _draw_bezel_brand(pygame, surf, g)
 
     # in-arc round windows (turn / high beam) — dark glass, lit later
     for spot in s.arc_lamps:
@@ -1387,30 +1437,6 @@ def draw_hardware_strip(
         if spot.key == "batt_warn" and batt_low:
             lit = True
         _draw_lamp(pygame, surf, None, g, spot, lit, bulb_check)
-
-
-_BRAND_DIR = Path(__file__).resolve().parents[1] / "assets" / "brand"
-_BRAND_CACHE: dict[str, object] = {}
-
-
-def _brand_png(pygame, name: str):
-    cached = _BRAND_CACHE.get(name)
-    if cached is not None:
-        return cached
-    path = _BRAND_DIR / name
-    if not path.is_file():
-        raise FileNotFoundError(f"brand mark missing: {path}")
-    surf = pygame.image.load(str(path)).convert_alpha()
-    _BRAND_CACHE[name] = surf
-    return surf
-
-
-def _blit_brand(pygame, dest, name: str, cx: int, cy: int, max_w: int, max_h: int) -> None:
-    src = _brand_png(pygame, name)
-    sw, sh = src.get_size()
-    scale = min(max_w / sw, max_h / sh)
-    img = pygame.transform.smoothscale(src, (max(1, int(sw * scale)), max(1, int(sh * scale))))
-    dest.blit(img, img.get_rect(center=(cx, cy)))
 
 
 def draw_ready_card(fonts, surf, face: DisplayState, g: FaceGeom | None = None, pygame=None) -> None:
