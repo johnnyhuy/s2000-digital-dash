@@ -1,15 +1,16 @@
-# DIY cluster marks
+# Brand marks
 
-`honda-h-mark.svg` and `s2000-badge.svg` are **retraces** of generated
-reference plates in `docs/assets/brand/`. They are original vector
-drawings for this unofficial DIY cluster — **not** Honda Motor Co., Ltd.
-trademark artwork, and this project is not affiliated with or endorsed
-by Honda.
+`honda-h-mark.svg` and `s2000-badge.svg` are the **public logo files**,
+not DIY retraces. This unofficial project is **not affiliated with or
+endorsed by Honda Motor Co., Ltd.** The marks remain Honda trademarks.
 
-- Honda H-mark: squircle ring + pill-ended H, taken off
-  `brand/honda-h-mark-ref.png` (S2000-era steering-wheel plate)
-- S2000 badge: italic five-glyph wordmark, taken off
-  `brand/s2000-badge-ref.png`
+- Honda H-mark: automotive H emblem (`#E40521`). Letterforms are
+  PD-textlogo / Simple Icons Honda (CC0).
+- S2000 wordmark: traced from Wikimedia Commons
+  [File:S2000-logo.png](https://commons.wikimedia.org/wiki/File:S2000-logo.png)
+  (PD-textlogo; Brands of the World). Original PNG is
+  `brand/S2000-logo.png`. `s2000-badge-on-dark.svg` is the same path
+  in off-white for the black cluster / masthead.
 
 The older geometric H (`honda-unofficial-mark.svg`) stays in the tree
 as history. The live GitHub repo is `johnnyhuy/s2000-digital-dash`.
@@ -40,7 +41,7 @@ silhouettes under `assets/icons/`, tinted at draw time. The web strip
 draws the same pictograms inline (`LampIcons.tsx`).
 
 Boot motion is the car's ignition self-test (bar 0→9, all lamps, `188`)
-then a READY card with the retraced H and S2000 badge, then reveal.
+then a READY card with the Honda H-mark and S2000 wordmark, then reveal.
 Preset buttons on the web harness snap the face so Idle / Cruise / VTEC /
 Warn are readable immediately. Switching AP1 / AP2 replays the boot.
 PUSH CANCEL is a small dial mark beside its legend under the −/+ rocker.

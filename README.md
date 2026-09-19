@@ -1,6 +1,6 @@
 <h1 align="center">
-  <img src="docs/assets/honda-h-mark.svg" alt="Retraced Honda H-mark" width="56" valign="middle" />
-  <img src="docs/assets/s2000-badge.svg" alt="Retraced S2000 badge" height="28" valign="middle" />
+  <img src="docs/assets/honda-h-mark.svg" alt="Honda H-mark" width="56" valign="middle" />
+  <img src="docs/assets/s2000-badge.svg" alt="S2000 wordmark" height="28" valign="middle" />
 </h1>
 
 <p align="center">
@@ -65,7 +65,7 @@ Bar-graph tach **0–9 ×1000** on a circular arc with amber / red hatches past 
 Skippable with Space or `--no-intro` (web harness: Space or **Skip boot**):
 
 1. Tach bar fills 0→9 with every lamp and `188` lit (OEM bulb check)
-2. **READY** with the retraced Honda H and S2000 badge
+2. **READY** with the Honda H-mark and S2000 wordmark
 3. Gauge reveal, then live
 
 </td>

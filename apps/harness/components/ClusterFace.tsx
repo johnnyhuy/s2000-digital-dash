@@ -502,19 +502,29 @@ function Hardware({ g, lamps, bulbCheck }: { g: FaceGeom; lamps: Record<string, 
 }
 
 // --- boot card --------------------------------------------------------------------------------------
-function HondaHMark({ cx, cy, size }: { cx: number; cy: number; size: number }) {
-  const x = cx - size / 2;
-  const y = cy - size / 2;
-  const sw = size / 16;
-  const bar = size * 0.12;
-  const h = size * 0.48;
-  const gap = size * 0.18;
+const S2000_BADGE_ASPECT = 2731.535 / 245.88;
+
+function BrandMarks({ g }: { g: FaceGeom }) {
+  const mid = g.module.w / 2;
+  const hSize = wpx(g, 0.058);
+  const badgeH = wpx(g, 0.018);
+  const badgeW = badgeH * S2000_BADGE_ASPECT;
   return (
-    <g aria-hidden className="honda-h-mark">
-      <rect x={x + sw} y={y + sw} width={size - sw * 2} height={size - sw * 2} rx={size / 5} fill="none" stroke="#d2d6da" strokeWidth={sw} />
-      <rect x={cx - gap - bar / 2} y={cy - h / 2} width={bar} height={h} rx={bar / 2} fill="#dce0e4" />
-      <rect x={cx + gap - bar / 2} y={cy - h / 2} width={bar} height={h} rx={bar / 2} fill="#dce0e4" />
-      <rect x={cx - gap - bar / 2} y={cy - bar / 2 - size * 0.02} width={gap * 2 + bar} height={bar} rx={bar / 2} fill="#dce0e4" />
+    <g aria-hidden className="brand-marks">
+      <image
+        href="/docs/assets/honda-h-mark.svg"
+        x={mid - hSize / 2}
+        y={hpx(g, 0.298) - hSize / 2}
+        width={hSize}
+        height={hSize}
+      />
+      <image
+        href="/docs/assets/s2000-badge-on-dark.svg"
+        x={mid - badgeW / 2}
+        y={hpx(g, 0.388) - badgeH / 2}
+        width={badgeW}
+        height={badgeH}
+      />
     </g>
   );
 }
@@ -530,10 +540,7 @@ function ReadyCard({ g, face }: { g: FaceGeom; face: DisplayState }) {
   ];
   return (
     <g className="ready-card">
-      <HondaHMark cx={g.module.w / 2} cy={hpx(g, 0.318)} size={wpx(g, 0.062)} />
-      <text className="unit-label" x={g.module.w / 2} y={hpx(g, 0.398)} textAnchor="middle" fontSize={wpx(g, 0.016)} fill="#dce0e4" letterSpacing="0.22em">
-        S2000
-      </text>
+      <BrandMarks g={g} />
       <text x={cx} y={sw.y + sw.h * 0.78} textAnchor="middle" fontSize={wpx(g, 0.046)} fontWeight={700} fill={AMBER_HOT} className="ready-word" letterSpacing="0.06em">
         READY
       </text>

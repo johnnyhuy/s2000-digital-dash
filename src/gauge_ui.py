@@ -1389,34 +1389,47 @@ def draw_hardware_strip(
         _draw_lamp(pygame, surf, None, g, spot, lit, bulb_check)
 
 
-def _draw_h_mark(pygame, surf, cx: int, cy: int, size: int) -> None:
-    """Retraced S2000-era H-mark: squircle ring + pill-ended H."""
-    ring = pygame.Rect(0, 0, size, size)
-    ring.center = (cx, cy)
-    pygame.draw.rect(surf, (210, 214, 218), ring, width=max(2, size // 16), border_radius=size // 5)
-    bar_w = max(3, int(size * 0.12))
-    bar_h = int(size * 0.48)
-    gap = int(size * 0.18)
-    left = pygame.Rect(0, 0, bar_w, bar_h)
-    left.midleft = (cx - gap - bar_w // 2, cy)
-    right = left.copy()
-    right.midright = (cx + gap + bar_w // 2, cy)
-    cross = pygame.Rect(0, 0, gap + bar_w, bar_w)
-    cross.center = (cx, cy - int(size * 0.02))
-    chrome = (220, 224, 228)
-    pygame.draw.rect(surf, chrome, left, border_radius=bar_w // 2)
-    pygame.draw.rect(surf, chrome, right, border_radius=bar_w // 2)
-    pygame.draw.rect(surf, chrome, cross, border_radius=bar_w // 2)
+_BRAND_DIR = Path(__file__).resolve().parents[1] / "assets" / "brand"
+_BRAND_CACHE: dict[str, object] = {}
+
+
+def _brand_png(pygame, name: str):
+    cached = _BRAND_CACHE.get(name)
+    if cached is not None:
+        return cached
+    path = _BRAND_DIR / name
+    if not path.is_file():
+        raise FileNotFoundError(f"brand mark missing: {path}")
+    surf = pygame.image.load(str(path)).convert_alpha()
+    _BRAND_CACHE[name] = surf
+    return surf
+
+
+def _blit_brand(pygame, dest, name: str, cx: int, cy: int, max_w: int, max_h: int) -> None:
+    src = _brand_png(pygame, name)
+    sw, sh = src.get_size()
+    scale = min(max_w / sw, max_h / sh)
+    img = pygame.transform.smoothscale(src, (max(1, int(sw * scale)), max(1, int(sh * scale))))
+    dest.blit(img, img.get_rect(center=(cx, cy)))
 
 
 def draw_ready_card(fonts, surf, face: DisplayState, g: FaceGeom | None = None, pygame=None) -> None:
-    """Honda H + S2000 badge in the well, READY in the speed window."""
+    """Honda H + S2000 wordmark in the well, READY in the speed window."""
     g = _geom(g)
     mx, my, mw, mh = g.module
     sx, sy, sw, sh = g.speed_win
     cx = mx + mw // 2
-    _draw_h_mark(pygame, surf, cx, my + int(mh * 0.318), max(28, int(mw * 0.062)))
-    blit_text(surf, fonts["label"], "S2000", (220, 224, 228), (cx, my + int(mh * 0.392)), "center")
+    h_size = max(28, int(mw * 0.058))
+    _blit_brand(pygame, surf, "honda-h-mark.png", cx, my + int(mh * 0.298), h_size, h_size)
+    _blit_brand(
+        pygame,
+        surf,
+        "s2000-badge.png",
+        cx,
+        my + int(mh * 0.388),
+        max(48, int(mw * 0.22)),
+        max(10, int(mw * 0.018)),
+    )
     blit_text(surf, fonts["ready"], "READY", AMBER_HOT, (cx, sy + int(sh * 0.72)), "center")
     # widths are proportional so the odometer chip gets the room it needs
     chips = [
