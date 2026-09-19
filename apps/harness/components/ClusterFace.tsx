@@ -494,6 +494,13 @@ function Hardware({ g, lamps, bulbCheck }: { g: FaceGeom; lamps: Record<string, 
       <OvalButton g={g} c={s.btn_sel} label={s.sel_label} />
       <OvalButton g={g} c={s.btn_trip} label="TRIP" />
       <CancelMark g={g} />
+      <BrandLockup
+        g={g}
+        x={g.module.w / 2}
+        y={hpx(g, g.spec.cancel_text.y)}
+        hSize={wpx(g, 0.022)}
+        badgeH={wpx(g, 0.012)}
+      />
       <text className="unit-label" x={units.x} y={units.y + wpx(g, 0.004)} fontSize={wpx(g, 0.0105)} fill={WHITE} textAnchor="middle">
         mph·km/h
       </text>
@@ -504,13 +511,44 @@ function Hardware({ g, lamps, bulbCheck }: { g: FaceGeom; lamps: Record<string, 
 // --- boot card --------------------------------------------------------------------------------------
 const S2000_BADGE_ASPECT = 2731.535 / 245.88;
 
-function BrandMarks({ g }: { g: FaceGeom }) {
+function BrandLockup({
+  g,
+  x,
+  y,
+  hSize,
+  badgeH,
+}: {
+  g: FaceGeom;
+  x: number;
+  y: number;
+  hSize: number;
+  badgeH: number;
+}) {
+  const badgeW = badgeH * S2000_BADGE_ASPECT;
+  const gap = wpx(g, 0.008);
+  const total = hSize + gap + badgeW;
+  const x0 = x - total / 2;
+  return (
+    <g aria-hidden className="brand-lockup">
+      <image href="/docs/assets/honda-h-mark.svg" x={x0} y={y - hSize / 2} width={hSize} height={hSize} />
+      <image
+        href="/docs/assets/s2000-badge-on-dark.svg"
+        x={x0 + hSize + gap}
+        y={y - badgeH / 2}
+        width={badgeW}
+        height={badgeH}
+      />
+    </g>
+  );
+}
+
+function ReadyBrand({ g }: { g: FaceGeom }) {
   const mid = g.module.w / 2;
   const hSize = wpx(g, 0.058);
   const badgeH = wpx(g, 0.018);
   const badgeW = badgeH * S2000_BADGE_ASPECT;
   return (
-    <g aria-hidden className="brand-marks">
+    <g aria-hidden className="ready-brand">
       <image
         href="/docs/assets/honda-h-mark.svg"
         x={mid - hSize / 2}
@@ -540,7 +578,7 @@ function ReadyCard({ g, face }: { g: FaceGeom; face: DisplayState }) {
   ];
   return (
     <g className="ready-card">
-      <BrandMarks g={g} />
+      <ReadyBrand g={g} />
       <text x={cx} y={sw.y + sw.h * 0.78} textAnchor="middle" fontSize={wpx(g, 0.046)} fontWeight={700} fill={AMBER_HOT} className="ready-word" letterSpacing="0.06em">
         READY
       </text>
