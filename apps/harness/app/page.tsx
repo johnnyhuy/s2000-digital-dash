@@ -11,13 +11,13 @@ export default function Home() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/docs/assets/honda-h-mark.svg"
-          alt="Retraced Honda H-mark"
+          alt="Honda H-mark"
           width={56}
           height={56}
         />
         <img
-          src="/docs/assets/s2000-badge.svg"
-          alt="Retraced S2000 badge"
+          src="/docs/assets/s2000-badge-on-dark.svg"
+          alt="S2000 wordmark"
           className="s2000-badge"
           height={28}
         />
