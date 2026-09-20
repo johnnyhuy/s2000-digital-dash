@@ -309,45 +309,71 @@ body {
   align-items: center;
 }
 
+/* Match the cluster's charcoal bezel, rounded switches and amber legends.
+   Instrument controls keep these colours in either page theme. */
 .primary,
 .preset,
-.ghost {
+.ghost,
+.theme-control select {
   appearance: none;
-  border: 1px solid var(--line);
-  background: var(--control);
-  color: var(--paper);
-  border-radius: 4px;
-  padding: 0.42rem 0.9rem;
-  font: inherit;
+  color-scheme: dark;
+  border: 1px solid #686862;
+  background: linear-gradient(180deg, #29292a, #111112);
+  color: #f4f3ee;
+  border-radius: 999px;
+  min-height: 44px;
+  padding: 0.55rem 1rem;
+  box-shadow: inset 0 1px 0 #ffffff1a, inset 0 -2px 0 #00000080;
   font-family: var(--font-cluster);
-  font-size: 0.84rem;
-  letter-spacing: 0.04em;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
   cursor: pointer;
 }
 
-.primary {
-  background: #eca824;
-  color: #1a1004;
-  border-color: #eca824;
-  font-weight: 700;
+.primary,
+.preset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
 }
 
+.primary::before,
+.preset::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 1px;
+  background: #494945;
+}
+
+.primary[aria-pressed="true"],
 .preset.on {
-  background: var(--selected-bg);
-  border-color: var(--amber);
-  color: var(--selected-text);
+  border-color: #f49420;
+  color: #ffb838;
+  background: #17130d;
+}
+
+.primary[aria-pressed="true"]::before,
+.preset.on::before {
+  background: #ffb838;
 }
 
 .ghost:hover,
 .preset:hover,
-.primary:hover {
-  filter: brightness(1.08);
+.primary:hover,
+.theme-control select:hover {
+  border-color: #ffb838;
+  color: #ffb838;
 }
 
 .ghost:active,
 .preset:active,
 .primary:active {
   transform: translateY(1px);
+  box-shadow: inset 0 2px 3px #000;
 }
 
 .presets {
@@ -482,7 +508,13 @@ body {
 .web-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem; margin: 1rem; color: var(--muted); font-size: .85rem; }
 .web-tools a { color: var(--amber); text-decoration: underline; }
 .theme-control { display: flex; align-items: center; gap: .5rem; }
-.theme-control select { border: 1px solid var(--line); border-radius: 4px; padding: .4rem .6rem; background: var(--control); color: var(--paper); font: inherit; }
+.theme-control select {
+  padding-right: 2.3rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%23ffb838' stroke-width='2'/%3E%3C/svg%3E"), linear-gradient(180deg, #29292a, #111112);
+  background-repeat: no-repeat;
+  background-position: right .85rem center, center;
+}
+.theme-control option { background: #171718; color: #f4f3ee; }
 button:focus-visible, a:focus-visible, select:focus-visible, pre:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
 .cluster-stage { background: #000; border-radius: 8px; }
 .display-preview { position: fixed; inset: 0; display: grid; place-items: center; background: #000; overflow: hidden; }

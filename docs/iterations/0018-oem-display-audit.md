@@ -40,6 +40,8 @@ geometry, exact startup timing or verified hardware fit is made.
 - The custom READY screen puts the real marks and READY inside the central
   windows. Removed crowded diagnostic chips. This remains a custom boot sequence.
 - Web controls, text, logos, focus states and JSON support System/Light/Dark.
+  Rounded charcoal switches, cluster typography and amber selected indicators
+  match the instrument in both page themes, including the appearance selector.
   The instrument retains its black field and warning colours in every theme.
 - `/display?style=ap1` or `ap2` provides a control-free, aspect-preserving OLED
   preview. It still uses mock data. Pygame `--car` now fits height as well as width; `--size WIDTHxHEIGHT` reaches the actual render loop and screenshot path.
