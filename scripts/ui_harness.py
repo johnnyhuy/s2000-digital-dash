@@ -42,6 +42,7 @@ SCENES: tuple[tuple[str, str, str, float, str], ...] = (
     ("harness_ap2_sweep", "sample", "sweep", 0.55, "ap2"),
     ("harness_ap2_ready", "sample", "ready", 0.55, "ap2"),
     ("harness_ap2_live", "sample", "live", 1.0, "ap2"),
+    ("harness_ap2_selftest", "selftest", "live", 1.0, "ap2"),
 )
 
 

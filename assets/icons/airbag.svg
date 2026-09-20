@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 48" width="64" height="48" role="img" aria-label="Supplemental restraint system">
+  <title>Supplemental restraint system</title>
+  <!-- Traced / redrawn from OEM AP1 lamp-strip plates in refs/oem/plates/.
+       White on transparent; tinted at draw time. Not Honda Motor Co. artwork. -->
+<g fill="#fff"><circle cx="21" cy="8" r="5"/><circle cx="43" cy="22" r="9"/>
+<path d="M17 15h8l5 13-5 4-6-10-3 11h15l6 12h-7l-5-7H10z"/></g></svg>

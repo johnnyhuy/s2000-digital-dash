@@ -132,11 +132,11 @@ class AssetTests(unittest.TestCase):
         belt = (ASSETS / "seatbelt.svg").read_text(encoding="utf-8")
         cel = (ASSETS / "cel.svg").read_text(encoding="utf-8")
         self.assertIn("evenodd", battery)
-        self.assertIn("evenodd", oil)
+        self.assertIn('fill="none"', oil)  # outlined oil can has a transparent interior
         self.assertIn("evenodd", beam)
         self.assertIn("evenodd", belt)
         self.assertIn("evenodd", cel)
-        self.assertIn("fill-rule", oil)
+        self.assertIn('stroke="#fff"', oil)
         self.assertEqual(beam.count("<rect"), 3)
         self.assertIn("16.2 22.2", cel)
         self.assertIn("<circle", belt)

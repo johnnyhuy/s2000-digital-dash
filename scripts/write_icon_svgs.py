@@ -11,6 +11,7 @@ from the Car Spy AP1 frame and the self-test lamp-strip descriptions).
 from __future__ import annotations
 
 import shutil
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -95,16 +96,13 @@ SVGS: dict[str, str] = {
     ),
     "oil": wrap(
         "oil",
-        """  <g fill="#fff">
-    <path fill-rule="evenodd" d="M4.4 26.2c0-9.4 6.8-16.4 17-16.4h5.6v4.8H22c-6.2 0-10.2 4.2-10.2 11.6S15.8 37.8 22 37.8h5v4.8h-5.6C11.2 42.6 4.4 35.6 4.4 26.2z"/>
-    <rect x="28.4" y="10.4" width="11.2" height="4.6" rx="0.6"/>
-    <path fill-rule="evenodd" d="M20.6 15.2h26.2v22.2H20.6z M25.2 19.8h17v13H25.2z"/>
-    <path fill-rule="evenodd" d="M45.2 16.2 56.6 5.8l5 5.2-8.8 8z M48.8 17.6 56.6 10.6l1.7 1.8-6.2 5.6z"/>
-    <path d="M57.4 14.4c0 3.2 2.2 5.7 4.3 5.7s4.3-2.5 4.3-5.7c0-2.5-1.8-5.5-4.3-8.5-2.5 3-4.3 6-4.3 8.5z"/>
-  </g>
-""",
+        '<g fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round">\n<path d="M17 19h23l13-7 3 4-14 17H18L10 21H4v-6h10z"/>\n<path d="M24 19v-6m-6 0h13"/>\n</g><path fill="#fff" d="M58 24c-2 4-4 6-4 9a4 4 0 0 0 8 0c0-3-2-5-4-9z"/>',
         label="Oil pressure telltale",
     ),
+    "trunk": wrap("trunk", '<g fill="#fff"><path d="M5 27h8l10-10h20l10 10h6v10H5z"/><circle cx="17" cy="38" r="5"/><circle cx="48" cy="38" r="5"/><path d="m7 23-4-11 3-1 6 12z"/></g>', label="Trunk open"),
+    "airbag": wrap("airbag", '<g fill="#fff"><circle cx="21" cy="8" r="5"/><circle cx="43" cy="22" r="9"/>\n<path d="M17 15h8l5 13-5 4-6-10-3 11h15l6 12h-7l-5-7H10z"/></g>', label="Supplemental restraint system"),
+    "coolant": wrap("coolant", '<g fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M27 27V5h6v22a6 6 0 1 1-6 0zM34 9h7m-7 7h7m-7 7h7M13 38q4-4 8 0t8 0 8 0 8 0M13 44q4-4 8 0t8 0 8 0 8 0"/></g>', label="Coolant temperature"),
+    "fuel": wrap("fuel", '<g fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round"><path d="M14 41V7h22v34M9 41h32M36 19h5v15q0 7 6 7t6-7V17L43 7M45 9v10h8"/><path d="M19 12h12v10H19z"/></g>', label="Fuel pump"),
     "cel": wrap(
         "cel",
         f"""  <g fill="#fff">
@@ -163,62 +161,18 @@ SVGS: dict[str, str] = {
     ),
 }
 
-ATLAS = '''<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 72" width="980" height="72" role="img" aria-label="AP1 OEM lamp atlas">
-  <title>AP1 OEM lamp atlas — self-test order</title>
-  <rect width="980" height="72" fill="#0a0a0a"/>
-  <g transform="translate(8,16)" fill="#28c85c"><path d="M34 6 6 24l28 18v-10h10V16H34z"/></g>
-  <g transform="translate(52,16)" fill="#2460e4">
-    <path fill-rule="evenodd" d="M24 7.2h4.6C38.2 7.2 43 12.6 43 18.4S38.2 29.6 28.6 29.6H24V7.2z M26.8 10.2v16.4h2.2c7.6 0 10.8-3.8 10.8-8.2S36.6 10.2 29 10.2h-2.2z"/>
-    <rect x="3.2" y="11.2" width="16.4" height="2.6" rx="0.3"/>
-    <rect x="2.4" y="17.1" width="17.6" height="2.6" rx="0.3"/>
-    <rect x="3.2" y="23" width="16.4" height="2.6" rx="0.3"/>
-  </g>
-  <text x="130" y="44" text-anchor="middle" font-family="Barlow Condensed, DejaVu Sans, Liberation Sans, sans-serif" font-size="18" font-weight="700" fill="#ec941c">ABS</text>
-  <text x="210" y="44" text-anchor="middle" font-family="Barlow Condensed, DejaVu Sans, Liberation Sans, sans-serif" font-size="18" font-weight="700" fill="#e22820">BRAKE</text>
-  <g transform="translate(268,16)" fill="#e22820">
-    <rect x="5.4" y="1.4" width="6.4" height="4.4" rx="0.4"/>
-    <rect x="16.2" y="1.4" width="6.4" height="4.4" rx="0.4"/>
-    <path fill-rule="evenodd" d="M1.4 7.6h25.2v17.2H1.4z M4.8 11h18.4v10.4H4.8z"/>
-    <rect x="6.2" y="14.8" width="6.4" height="2"/>
-    <rect x="8.4" y="12.6" width="2" height="6.4"/>
-    <rect x="15.4" y="14.8" width="6.4" height="2"/>
-  </g>
-  <g transform="translate(316,14)" fill="#e22820">
-    <path fill-rule="evenodd" d="M1.6 18.8c0-5.6 4-9.6 10-9.6h4.6v3.4h-4c-3.2 0-5.4 2.2-5.4 6.2s2.2 6.2 5.4 6.2h4V28h-4.6c-6 0-10-4-10-9.2z"/>
-    <rect x="13" y="11.6" width="16.4" height="13.6" rx="0.8"/>
-    <path d="M28.4 11.6 37.6 4.2l3.4 3.6-6.4 5.6z"/>
-    <path d="M38.6 11.2c0 2.4 1.6 4.2 3.2 4.2s3.2-1.8 3.2-4.2c0-1.8-1.4-4-3.2-6.2-1.8 2.2-3.2 4.4-3.2 6.2z"/>
-  </g>
-  <g transform="translate(360,14)" fill="#ec941c">
-    <path d="M4 16h5l2.4-5.2h7l1.6 5.2h12l2.6-3.4H38v5.4h2.4v9H38V36H4v-4H1.2v-8.2H4z"/>
-    <rect x="12" y="20" width="20" height="5.6" fill="#0a0a0a"/>
-    <text x="22" y="25" text-anchor="middle" font-family="Barlow Condensed, DejaVu Sans, Liberation Sans, sans-serif" font-size="6" font-weight="800" fill="#ec941c">CHECK</text>
-  </g>
-  <g transform="translate(414,16)" fill="#28c85c">
-    <path fill-rule="evenodd" d="M9.4 4.4a10.2 10.2 0 1 0 .01 0zm0 4.6a5.6 5.6 0 1 0 .01 0z"/>
-    <rect x="17.2" y="12.4" width="19.2" height="5.6" rx="0.7"/>
-    <rect x="28.4" y="18" width="3.2" height="6.4"/>
-    <rect x="33.2" y="18" width="3.2" height="8.8"/>
-  </g>
-  <text x="500" y="32" text-anchor="middle" font-family="Barlow Condensed, DejaVu Sans, Liberation Sans, sans-serif" font-size="11" font-weight="700" fill="#ec941c">MAINT</text>
-  <text x="500" y="48" text-anchor="middle" font-family="Barlow Condensed, DejaVu Sans, Liberation Sans, sans-serif" font-size="11" font-weight="700" fill="#ec941c">REQ'D</text>
-  <text x="568" y="44" text-anchor="middle" font-family="Barlow Condensed, DejaVu Sans, Liberation Sans, sans-serif" font-size="16" font-weight="700" fill="#ec941c">EPS</text>
-  <g transform="translate(600,10)" fill="#e22820">
-    <circle cx="22" cy="8" r="5.6"/>
-    <path d="M19.6 13h4.8v2.8h-4.8z"/>
-    <path fill-rule="evenodd" d="M10.4 17.4 16.8 16.2 19.4 18.4h5.2l2.6-2.2 6.4 1.2-2.2 22.2H12.6z M14.8 16.6 34.8 39.6h-6.4L13.2 21.6z"/>
-    <path d="M14.2 16 33.8 39.2h-4.8L13.2 21.2z"/>
-  </g>
-  <g transform="translate(652,8)" fill="#e22820">
-    <path fill-rule="evenodd" d="M17.6 5.2h13.6c1.6 0 3.1 .9 3.8 2.4L39.2 13.6v21.6c0 1.4-.8 2.7-2.1 3.5L32 42.4H20l-5.1-3.7c-1.3-.8-2.1-2.1-2.1-3.5V13.6L13.8 7.6c.7-1.5 2.2-2.4 3.8-2.4z M21.2 12.2h6.4v5.8h-6.4z"/>
-    <path d="M12.8 18.4 3.2 23.6l2.4 4 8.8-4.8z"/>
-    <path d="M39.2 18.4l9.6 5.2-2.4 4-8.8-4.8z"/>
-  </g>
-  <text x="760" y="44" text-anchor="middle" font-family="Barlow Condensed, DejaVu Sans, Liberation Sans, sans-serif" font-size="16" font-weight="700" fill="#e22820">SRS</text>
-  <g transform="translate(800,16)" fill="#28c85c"><path d="M10 6v9H0v12h10v9l28-15z"/></g>
-</svg>
-'''
+def atlas_svg() -> str:
+    """Review sheet of the actual masters, not another hand-maintained copy."""
+    width = len(SVGS) * 72
+    out = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} 72" width="{width}" height="72">',
+           f'<rect width="{width}" height="72" fill="#0a0a0a"/>']
+    for i, (name, svg) in enumerate(SVGS.items()):
+        view_box = re.search(r'viewBox="([^"]+)"', svg)[1]
+        body = svg[svg.index('>', svg.index('<svg')) + 1:svg.rindex('</svg>')]
+        colour = "#22b84c" if name in ("turn_l", "turn_r", "immobilizer") else "#1c54d8" if name == "high_beam" else "#ec941c" if name in ("cel", "abs", "eps", "maint", "fuel") else "#e22820"
+        body = body.replace('"#fff"', f'"{colour}"')
+        out.append(f'<svg x="{i * 72 + 4}" y="12" width="64" height="48" viewBox="{view_box}">{body}</svg>')
+    return "\n".join(out) + "</svg>\n"
 
 
 def main() -> None:
@@ -230,7 +184,7 @@ def main() -> None:
         written.append(path)
         print(path.relative_to(ROOT))
     atlas = DEST / "atlas.svg"
-    atlas.write_text(ATLAS, encoding="utf-8")
+    atlas.write_text(atlas_svg(), encoding="utf-8")
     written.append(atlas)
     print(atlas.relative_to(ROOT))
     if HARNESS.is_dir():

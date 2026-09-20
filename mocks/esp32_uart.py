@@ -36,6 +36,7 @@ OEM_EXTRA_LAMPS = (
     "eps",
     "seatbelt",
     "door",
+    "trunk",
     "srs",
 )
 

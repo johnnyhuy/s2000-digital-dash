@@ -1,4 +1,4 @@
-/** OEM-style boot clock — same phase lengths as src/gauge_ui.py.
+/** Custom demo boot clock — same phase lengths as src/gauge_ui.py.
  *  sweep = bar 0→9 + bulb check; ready = Honda H + S2000 wordmark; reveal settles. */
 
 import { RPM_REDLINE } from "./protocol.ts";

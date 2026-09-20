@@ -43,3 +43,7 @@ npx vercel --yes
 ```
 
 `vercel.json` in this directory sets `framework: nextjs`.
+
+## Appearance and OLED preview
+
+Appearance supports System, Light and Dark and saves the choice locally. Instrument colours remain unchanged. `/display?style=ap1` (or `ap2`) hides the page controls and fits the face to the viewport without stretching. This is still a mock telemetry preview, not a hardware connection. The exact 7-inch OLED model and active area remain unconfirmed.

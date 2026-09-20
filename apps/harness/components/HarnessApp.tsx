@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { MODULE_H, VIEW_W, specFor } from "@/lib/geometry";
 import { ClusterFace } from "./ClusterFace";
 import {
   FACE_STYLES,
@@ -35,7 +36,7 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-export function HarnessApp() {
+export function HarnessApp({ displayOnly = false }: { displayOnly?: boolean }) {
   const [playing, setPlaying] = useState(true);
   const [scenario, setScenario] = useState<Scenario>("cruise");
   const [faceStyle, setFaceStyle] = useState<FaceStyle>("ap1");
@@ -81,6 +82,7 @@ export function HarnessApp() {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.code !== "Space" || event.repeat) return;
+      if (event.target instanceof HTMLElement && event.target.closest("button, select, input, textarea, a")) return;
       if (skippedRef.current || bootRef.current >= introDurationS()) return;
       event.preventDefault();
       skippedRef.current = true;
@@ -163,12 +165,13 @@ export function HarnessApp() {
   const booting = phase !== "live";
 
   return (
-    <div className="harness">
+    <div className={displayOnly ? "harness harness-display" : "harness"}
+      style={displayOnly ? { width: `min(100vw, calc(100dvh * ${VIEW_W / (MODULE_H + VIEW_W * specFor(faceStyle).crown_lip)}))` } : undefined}>
       <section className="stage">
         <ClusterFace face={face} style={faceStyle} phase={phase} phaseT={phaseT} />
       </section>
 
-      <section className="desk" aria-label="Harness controls">
+      {!displayOnly ? <section className="desk" aria-label="Harness controls">
         <div className="desk-row">
           <button
             type="button"
@@ -230,7 +233,7 @@ export function HarnessApp() {
         <pre className="json" tabIndex={0} aria-label="Current protocol JSON">
           {JSON.stringify(json, null, 2)}
         </pre>
-      </section>
+      </section> : null}
     </div>
   );
 }

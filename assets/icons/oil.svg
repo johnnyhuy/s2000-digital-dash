@@ -3,11 +3,7 @@
   <title>Oil pressure telltale</title>
   <!-- Traced / redrawn from OEM AP1 lamp-strip plates in refs/oem/plates/.
        White on transparent; tinted at draw time. Not Honda Motor Co. artwork. -->
-  <g fill="#fff">
-    <path fill-rule="evenodd" d="M4.4 26.2c0-9.4 6.8-16.4 17-16.4h5.6v4.8H22c-6.2 0-10.2 4.2-10.2 11.6S15.8 37.8 22 37.8h5v4.8h-5.6C11.2 42.6 4.4 35.6 4.4 26.2z"/>
-    <rect x="28.4" y="10.4" width="11.2" height="4.6" rx="0.6"/>
-    <path fill-rule="evenodd" d="M20.6 15.2h26.2v22.2H20.6z M25.2 19.8h17v13H25.2z"/>
-    <path fill-rule="evenodd" d="M45.2 16.2 56.6 5.8l5 5.2-8.8 8z M48.8 17.6 56.6 10.6l1.7 1.8-6.2 5.6z"/>
-    <path d="M57.4 14.4c0 3.2 2.2 5.7 4.3 5.7s4.3-2.5 4.3-5.7c0-2.5-1.8-5.5-4.3-8.5-2.5 3-4.3 6-4.3 8.5z"/>
-  </g>
-</svg>
+<g fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round">
+<path d="M17 19h23l13-7 3 4-14 17H18L10 21H4v-6h10z"/>
+<path d="M24 19v-6m-6 0h13"/>
+</g><path fill="#fff" d="M58 24c-2 4-4 6-4 9a4 4 0 0 0 8 0c0-3-2-5-4-9z"/></svg>

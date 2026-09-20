@@ -30,6 +30,10 @@ KINDS = (
     "srs",
     "turn_r",
     "atlas",
+    "trunk",
+    "airbag",
+    "coolant",
+    "fuel",
 )
 
 

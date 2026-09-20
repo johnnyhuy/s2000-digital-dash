@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 48" width="64" height="48" role="img" aria-label="Fuel pump">
+  <title>Fuel pump</title>
+  <!-- Traced / redrawn from OEM AP1 lamp-strip plates in refs/oem/plates/.
+       White on transparent; tinted at draw time. Not Honda Motor Co. artwork. -->
+<g fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round"><path d="M14 41V7h22v34M9 41h32M36 19h5v15q0 7 6 7t6-7V17L43 7M45 9v10h8"/><path d="M19 12h12v10H19z"/></g></svg>

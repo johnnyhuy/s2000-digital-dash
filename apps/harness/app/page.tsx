@@ -1,3 +1,4 @@
+import { ThemeControl } from "@/components/ThemeControl";
 import { HarnessApp } from "@/components/HarnessApp";
 
 export default function Home() {
@@ -15,6 +16,7 @@ export default function Home() {
           width={56}
           height={56}
         />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/docs/assets/s2000-badge-on-dark.svg"
           alt="S2000 wordmark"
@@ -26,6 +28,8 @@ export default function Home() {
           <p>Web cluster harness · AP1 / AP2 face styles · frozen JSON protocol</p>
         </div>
       </header>
+
+      <div className="web-tools"><ThemeControl /><a href="/display">OLED preview</a></div>
 
       <main>
         <HarnessApp />
