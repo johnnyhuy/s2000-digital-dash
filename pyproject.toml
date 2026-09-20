@@ -17,6 +17,7 @@ dev = [
 cad = [
     "numpy>=1.26",
     "trimesh>=4.4",
+    "pillow>=10",
 ]
 
 [tool.pytest.ini_options]

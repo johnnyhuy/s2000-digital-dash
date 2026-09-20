@@ -111,8 +111,8 @@ LAMP_TONE = {"red": LAMP_RED, "amber": LAMP_AMBER, "green": LAMP_GREEN, "blue": 
 MODULE_X_PCT = 0.040
 MODULE_W_PCT = 0.920
 
-# Boot (OEM ignition self-test, then a branded READY card):
-#   sweep  — bar fills 0→9, all lamps + 188 (the car's bulb check)
+# Custom demo boot (lamp check, branded READY, then reveal):
+#   sweep  — illustrative bar fill 0→9, all lamps + 188
 #   ready  — Honda H + S2000 badge + READY
 #   reveal — settle onto live values
 #   live
@@ -202,7 +202,8 @@ def build_face_geom(
     parsed = parse_face_style(style)
     spec = spec_for(parsed.value)
     if car:
-        mx, mw = 0, w
+        mw = min(w, int(h * MODULE_ASPECT))
+        mx = (w - mw) // 2
     else:
         mx = _pct(w * MODULE_X_PCT)
         mw = _pct(w * MODULE_W_PCT)
@@ -276,7 +277,7 @@ def apply_face_style(style: FaceStyle | str, car: bool | None = None) -> FaceGeo
     global FACE, _CAR_MODE
     if car is not None:
         _CAR_MODE = car
-    FACE = build_face_geom(style=style, car=_CAR_MODE)
+    FACE = build_face_geom(W, H, style=style, car=_CAR_MODE)
     return FACE
 
 
@@ -284,9 +285,21 @@ def _geom(g: FaceGeom | None) -> FaceGeom:
     return FACE if g is None else g
 
 
+def display_size(value: str) -> tuple[int, int]:
+    try:
+        width, height = map(int, value.lower().split("x"))
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("use WIDTHxHEIGHT, for example 1280x720") from exc
+    if width < 320 or height < 240:
+        raise argparse.ArgumentTypeError("display must be at least 320x240")
+    return width, height
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description="S2000 digital cluster (AP1 / AP2 face styles)")
-    p.add_argument("--windowed", action="store_true", help="1920×1080 window instead of fullscreen")
+    p.add_argument("--windowed", action="store_true", help="Window instead of fullscreen")
+    p.add_argument("--size", type=display_size, default=(1920, 1080), metavar="WIDTHxHEIGHT",
+                   help="Render at the configured panel resolution (default 1920x1080)")
     p.add_argument(
         "--smoke",
         action="store_true",
@@ -329,7 +342,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument(
         "--car",
         action="store_true",
-        help="In-car framing: module fills the panel width, no drawn cowl or caption",
+        help="In-car framing: contain the complete face without stretching, no drawn cowl or caption",
     )
     args = p.parse_args(argv)
     if args.intro is None:
@@ -809,6 +822,7 @@ def selftest_telem() -> Telemetry:
         "ect_hot": True,
         "brake": True,
         "door": True,
+        "trunk": True,
         "srs": True,
         "seatbelt": True,
         "immobilizer": True,
@@ -937,39 +951,18 @@ def _draw_numerals(pygame, surf, g: FaceGeom, col=WHITE) -> None:
 def _draw_windows_off(pygame, surf, g: FaceGeom, on: bool) -> None:
     glass = LCD if on else LCD_OFF
     rad = max(4, int(g.w(0.007)))
-    lcd_window(pygame, surf, g.speed_win, glass, LCD_EDGE, door=(255, 42, 28, 10 if on else 0), radius=rad)
-    lcd_window(pygame, surf, g.odo_win, glass, LCD_EDGE, door=(255, 42, 28, 10 if on else 0), radius=rad)
+    lcd_window(pygame, surf, g.speed_win, glass, LCD_EDGE, door=(0, 0, 0, 0), radius=rad)
+    lcd_window(pygame, surf, g.odo_win, glass, LCD_EDGE, door=(0, 0, 0, 0), radius=rad)
 
 
 def _thermometer_icon(pygame, surf, cx: int, cy: int, hgt: int, col) -> None:
-    """OEM coolant pictogram: stem + bulb, three ticks right, two waves below."""
-    s = hgt / 30.0
-    stem_w = max(2, int(3 * s))
-    pygame.draw.rect(surf, col, pygame.Rect(cx - stem_w // 2, cy - int(15 * s), stem_w, int(15 * s)), border_radius=stem_w // 2)
-    pygame.draw.circle(surf, col, (cx, cy + int(2 * s)), max(3, int(4.5 * s)))
-    for dy in (-12, -8, -4):
-        y = cy + int(dy * s)
-        pygame.draw.line(surf, col, (cx + int(3 * s), y), (cx + int(8 * s), y), max(1, int(2 * s)))
-    for base in (9, 14):
-        pts = []
-        for i in range(0, 19):
-            x = cx - int(9 * s) + int(i * s)
-            pts.append((x, cy + int(base * s) + int(round(math.sin(i * math.pi / 4.5) * 1.6 * s))))
-        pygame.draw.lines(surf, col, False, pts, max(1, int(2 * s)))
+    sprite = _icon(pygame, "coolant", col, max(1, hgt))
+    surf.blit(sprite, sprite.get_rect(center=(cx, cy)))
 
 
 def _pump_icon(pygame, surf, cx: int, cy: int, hgt: int, col) -> None:
-    """OEM fuel pictogram: pump body with window, hose to the right, base."""
-    s = hgt / 30.0
-    body = pygame.Rect(cx - int(9 * s), cy - int(14 * s), int(13 * s), int(24 * s))
-    pygame.draw.rect(surf, col, body, border_radius=max(1, int(2 * s)))
-    pygame.draw.rect(surf, FACE_BLACK, pygame.Rect(body.x + int(2.5 * s), body.y + int(3 * s), int(8 * s), int(6 * s)))
-    pygame.draw.rect(surf, col, pygame.Rect(cx - int(11 * s), cy + int(10 * s), int(17 * s), int(3 * s)))
-    hose_w = max(1, int(2.2 * s))
-    pygame.draw.line(surf, col, (body.right, cy - int(6 * s)), (body.right + int(4 * s), cy - int(6 * s)), hose_w)
-    pygame.draw.arc(surf, col, pygame.Rect(body.right + int(1 * s), cy - int(6 * s), int(7 * s), int(12 * s)), -math.pi / 2, math.pi / 2, hose_w)
-    pygame.draw.line(surf, col, (body.right + int(7 * s), cy), (body.right + int(7 * s), cy + int(8 * s)), hose_w)
-    pygame.draw.rect(surf, col, pygame.Rect(body.right + int(5 * s), cy + int(7 * s), int(4 * s), int(3 * s)))
+    sprite = _icon(pygame, "fuel", col, max(1, hgt))
+    surf.blit(sprite, sprite.get_rect(center=(cx, cy)))
 
 
 def _gauge_window(pygame, surf, g: FaceGeom, rect: tuple[int, int, int, int]) -> None:
@@ -979,7 +972,7 @@ def _gauge_window(pygame, surf, g: FaceGeom, rect: tuple[int, int, int, int]) ->
 def _draw_side_gauge_print(pygame, surf, g: FaceGeom) -> None:
     """TEMP / FUEL windows, letters, icons and underlines (printed parts)."""
     s = g.spec
-    letter = _font(pygame, int(g.w(0.020)), kind="round_x")
+    letter = _font(pygame, int(g.w(0.017)), kind="round_x")
     if s.side_gauges_arched:
         for rect, icon, left, right, lt, rt in (
             (s.temp, "temp", s.temp_c, s.temp_h, "C", "H"),
@@ -1434,41 +1427,32 @@ def draw_hardware_strip(
     del bloom
     for spot in s.strip_lamps + s.panel_lamps + s.arc_lamps:
         lit = bool(flags.get(spot.key, False))
+        if spot.key == "fuel_low" and lamps is None and face.fuel_pct < FUEL_LOW_PCT:
+            lit = True
         if spot.key == "batt_warn" and batt_low:
             lit = True
         _draw_lamp(pygame, surf, None, g, spot, lit, bulb_check)
 
 
 def draw_ready_card(fonts, surf, face: DisplayState, g: FaceGeom | None = None, pygame=None) -> None:
-    """Honda H + S2000 wordmark in the well, READY in the speed window."""
+    """Custom branding contained in the central LCD windows."""
     g = _geom(g)
     mx, my, mw, mh = g.module
     sx, sy, sw, sh = g.speed_win
     cx = mx + mw // 2
-    h_size = max(28, int(mw * 0.058))
-    _blit_brand(pygame, surf, "honda-h-mark.png", cx, my + int(mh * 0.298), h_size, h_size)
+    h_size = max(16, int(mw * 0.035))
+    _blit_brand(pygame, surf, "honda-h-mark.png", cx, my + int(mh * 0.395), h_size, h_size)
     _blit_brand(
         pygame,
         surf,
         "s2000-badge.png",
         cx,
-        my + int(mh * 0.388),
+        my + int(mh * 0.495),
         max(48, int(mw * 0.22)),
-        max(10, int(mw * 0.018)),
+        max(8, int(mw * 0.014)),
     )
-    blit_text(surf, fonts["ready"], "READY", AMBER_HOT, (cx, sy + int(sh * 0.72)), "center")
-    # widths are proportional so the odometer chip gets the room it needs
-    chips = [
-        ("BATT", f"{face.batt_v:.1f}V", 0.20),
-        ("FUEL", f"{face.fuel_pct:.0f}%", 0.18),
-        ("TEMP", f"{face.ect_c:.0f}°C", 0.20),
-        ("ODO", f"{face.odo_km:,.0f}km", 0.42),
-    ]
-    row_y = my + int(mh * 0.555)
-    for i, (name, val, _share) in enumerate(chips):
-        x = mx + int(mw * (0.30 + 0.13 * i))
-        blit_text(surf, fonts["micro"], name, DIM, (x, row_y), "center")
-        blit_text(surf, fonts["label"], val, AMBER, (x, row_y + int(mh * 0.038)), "center")
+    blit_text(surf, _font(pygame, int(mw * 0.030), kind="ready"), "READY", AMBER_HOT,
+              (cx, my + int(mh * 0.625)), "center")
 
 
 def draw_live_face(
@@ -1626,7 +1610,9 @@ def init_pygame(windowed: bool, headless: bool):
 
 
 def main(argv: list[str] | None = None) -> None:
+    global W, H
     args = parse_args(argv)
+    W, H = args.size
     if args.smoke:
         os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
         os.environ.setdefault("SDL_AUDIODRIVER", "dummy")

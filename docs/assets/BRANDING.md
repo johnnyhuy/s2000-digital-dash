@@ -26,7 +26,7 @@ files are absent.
 
 The tach is the OEM **bar graph on a true circular arc**: an unlit band
 grading `#6c380e` → `#ac5c18` toward both ends with hairline cell lines,
-amber `#f49420` cells lighting in 100 rpm steps, amber hatch below 0 and
+amber `#f49420` cells lighting in 200 rpm steps, amber hatch below 0 and
 red hatch above 9 (`#ff3c28` when lit). There is no needle in either
 renderer. The hood crown is a second circle with a thin off-white lip just
 outside the band. LCD red is `#ff4228` with a faint `#4a0c0e` 188 / 888888
@@ -45,3 +45,5 @@ then a READY card with the Honda H-mark and S2000 wordmark, then reveal.
 Preset buttons on the web harness snap the face so Idle / Cruise / VTEC /
 Warn are readable immediately. Switching AP1 / AP2 replays the boot.
 PUSH CANCEL is a small dial mark beside its legend under the −/+ rocker.
+
+Pictograms are reviewed redraws, not certified Honda artwork. `scripts/export_web_icons.py` generates React plates from the same SVG/PNG masters used by pygame, including alpha-crop sizing. Source comparisons and limits are in `docs/iterations/0018-oem-display-audit.md`.

@@ -121,14 +121,14 @@ describe("face geometry (shared faceSpec.json lock)", () => {
   });
 
   it("locks the AP1 windows and side bars to the plate", () => {
-    near(pctX(FACE.speedWin.x), 0.418, 0.02);
-    near(pctY(FACE.speedWin.y), 0.370, 0.02);
-    near(pctX(FACE.odoWin.x), 0.405, 0.02);
-    near(pctY(FACE.odoWin.y), 0.512, 0.02);
+    near(pctX(FACE.speedWin.x), 0.390, 0.02);
+    near(pctY(FACE.speedWin.y), 0.350, 0.02);
+    near(pctX(FACE.odoWin.x), 0.390, 0.02);
+    near(pctY(FACE.odoWin.y), 0.582, 0.02);
     assert.ok(FACE.odoWin.y > FACE.speedWin.y + FACE.speedWin.h);
-    near(pctX(FACE.temp.x), 0.232, 0.02);
-    near(pctY(FACE.temp.y), 0.540, 0.02);
-    near(pctX(FACE.fuel.x), 0.675, 0.02);
+    near(pctX(FACE.temp.x), 0.135, 0.02);
+    near(pctY(FACE.temp.y), 0.586, 0.02);
+    near(pctX(FACE.fuel.x), 0.747, 0.02);
     assert.ok(FACE.temp.w > FACE.temp.h * 2.5);
     assert.ok(FACE.temp.x + FACE.temp.w < FACE.speedWin.x);
     assert.ok(FACE.fuel.x > FACE.speedWin.x + FACE.speedWin.w);

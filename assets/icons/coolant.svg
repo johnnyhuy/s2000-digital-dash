@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 48" width="64" height="48" role="img" aria-label="Coolant temperature">
+  <title>Coolant temperature</title>
+  <!-- Traced / redrawn from OEM AP1 lamp-strip plates in refs/oem/plates/.
+       White on transparent; tinted at draw time. Not Honda Motor Co. artwork. -->
+<g fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M27 27V5h6v22a6 6 0 1 1-6 0zM34 9h7m-7 7h7m-7 7h7M13 38q4-4 8 0t8 0 8 0 8 0M13 44q4-4 8 0t8 0 8 0 8 0"/></g></svg>

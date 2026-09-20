@@ -276,8 +276,8 @@ def lcd_window(
         alpha = int(70 * (1.0 - t) ** 1.6)
         band_h = max(1, h // steps + 1)
         pygame.draw.rect(glass, (0, 0, 0, alpha), pygame.Rect(0, int(t * (h - band_h)), w, band_h))
-    for i in range(0, w, 3):
-        pygame.draw.line(glass, door, (i, 0), (i, h))
+    # The OLED supplies the pixel grid; synthetic screen-door lines alias.
+    del door
     mask = pygame.Surface((w, h), pygame.SRCALPHA)
     pygame.draw.rect(mask, (255, 255, 255, 255), pygame.Rect(0, 0, w, h), border_radius=radius)
     glass.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)

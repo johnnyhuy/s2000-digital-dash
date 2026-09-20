@@ -234,34 +234,6 @@ function OdoWindow({ g, face, on, battWarn, clock }: { g: FaceGeom; face: Displa
 }
 
 // --- side gauges ------------------------------------------------------------------------------
-function CoolantIcon({ x, y, h, fill }: { x: number; y: number; h: number; fill: string }) {
-  const s = h / 30;
-  return (
-    <g transform={`translate(${x} ${y}) scale(${s})`} fill={fill} stroke={fill} aria-hidden>
-      <rect x="-1.45" y="-15.2" width="2.9" height="16.4" rx="1.45" stroke="none" />
-      <circle cx="0" cy="4.7" r="4.35" stroke="none" />
-      <circle cx="0" cy="4.7" r="1.45" fill={FACE_BLACK} stroke="none" />
-      <path d="M2.2 -11.6h5.1M2.2 -7.1h5.1M2.2 -2.6h5.1" strokeWidth="1.35" fill="none" strokeLinecap="round" />
-      <path d="M-8.1 11.4c2.15-2.35 4.3-2.35 6.45 0s4.3 2.35 6.45 0 4.3-2.35 6.45 0" fill="none" strokeWidth="1.4" strokeLinecap="round" />
-      <path d="M-7 14.9c1.95-2.05 3.9-2.05 5.85 0s3.9 2.05 5.85 0 3.9-2.05 5.85 0" fill="none" strokeWidth="1.3" strokeLinecap="round" />
-    </g>
-  );
-}
-
-function PumpIcon({ x, y, h, fill }: { x: number; y: number; h: number; fill: string }) {
-  const s = h / 22;
-  return (
-    <g transform={`translate(${x} ${y}) scale(${s})`} fill={fill} stroke={fill} aria-hidden>
-      <rect x="-7.4" y="-8.4" width="11.4" height="15.8" rx="1.05" stroke="none" />
-      <rect x="-5.6" y="-13.8" width="7.8" height="5.6" rx="0.7" stroke="none" />
-      <rect x="-4.6" y="-4.8" width="5.6" height="3.3" fill={FACE_BLACK} stroke="none" />
-      <path d="M3.6 -3.9c6.6-5.6 12.4-0.4 11.8 7.4" fill="none" strokeWidth="1.7" strokeLinecap="round" />
-      <rect x="12.6" y="-1.2" width="3.05" height="8.2" rx="0.7" stroke="none" />
-      <rect x="-7.4" y="7.2" width="11.4" height="1.7" rx="0.35" stroke="none" />
-    </g>
-  );
-}
-
 /** AP1 horizontal block gauge inside a red-backlit window. */
 function SegBar({ r, segs, lit, colour, on }: { r: Rect; segs: number; lit: number; colour: (i: number) => string; on: boolean }) {
   const pad = r.h * 0.16;
@@ -322,10 +294,10 @@ function SideGauges({ g, face, on, bulbCheck }: { g: FaceGeom; face: DisplayStat
   const litW = on ? WHITE : DIM;
   return (
     <g aria-hidden>
-      <CoolantIcon x={tIcon.x} y={tIcon.y} h={wpx(g, s.temp_icon_h)} fill={hot && on ? RED : litW} />
+      <PICTOGRAMS.coolant x={tIcon.x} y={tIcon.y} height={wpx(g, s.temp_icon_h)} fill={hot && on ? RED : litW} />
       {label(s.temp_c, "C", litW)}
       {label(s.temp_h, "H", hot && on ? RED : litW)}
-      <PumpIcon x={fIcon.x} y={fIcon.y} h={wpx(g, s.fuel_icon_h)} fill={low && on ? AMBER_HOT : litW} />
+      <PICTOGRAMS.fuel x={fIcon.x} y={fIcon.y} height={wpx(g, s.fuel_icon_h)} fill={low && on ? AMBER_HOT : litW} />
       {label(s.fuel_e, "E", low && on ? RED : litW)}
       {label(s.fuel_f, "F", litW)}
       {s.side_gauges_arched ? (
@@ -401,7 +373,7 @@ function Lamp({ g, spot, lit, index }: { g: FaceGeom; spot: LampSpot; lit: boole
   if (!Pictogram) return null;
   return (
     <g className={cls} style={style} aria-label={spot.key}>
-      <Pictogram x={p.x} y={p.y} width={h / 0.75} fill={colour} />
+      <Pictogram x={p.x} y={p.y} height={h} fill={colour} />
     </g>
   );
 }
@@ -544,22 +516,22 @@ function BrandLockup({
 
 function ReadyBrand({ g }: { g: FaceGeom }) {
   const mid = g.module.w / 2;
-  const hSize = wpx(g, 0.058);
-  const badgeH = wpx(g, 0.018);
+  const hSize = wpx(g, 0.035);
+  const badgeH = wpx(g, 0.014);
   const badgeW = badgeH * S2000_BADGE_ASPECT;
   return (
     <g aria-hidden className="ready-brand">
       <image
         href="/docs/assets/honda-h-mark.svg"
         x={mid - hSize / 2}
-        y={hpx(g, 0.298) - hSize / 2}
+        y={hpx(g, 0.395) - hSize / 2}
         width={hSize}
         height={hSize}
       />
       <image
         href="/docs/assets/s2000-badge-on-dark.svg"
         x={mid - badgeW / 2}
-        y={hpx(g, 0.388) - badgeH / 2}
+        y={hpx(g, 0.495) - badgeH / 2}
         width={badgeW}
         height={badgeH}
       />
@@ -567,34 +539,13 @@ function ReadyBrand({ g }: { g: FaceGeom }) {
   );
 }
 
-function ReadyCard({ g, face }: { g: FaceGeom; face: DisplayState }) {
-  const sw = g.speedWin;
-  const cx = sw.x + sw.w / 2;
-  const chips: Array<[string, string]> = [
-    ["BATT", `${face.batt_v.toFixed(1)}V`],
-    ["FUEL", `${face.fuel_pct.toFixed(0)}%`],
-    ["TEMP", `${face.ect_c.toFixed(0)}°C`],
-    ["ODO", `${Math.round(face.odo_km).toLocaleString("en-AU")}km`],
-  ];
+function ReadyCard({ g }: { g: FaceGeom }) {
   return (
     <g className="ready-card">
       <ReadyBrand g={g} />
-      <text x={cx} y={sw.y + sw.h * 0.78} textAnchor="middle" fontSize={wpx(g, 0.046)} fontWeight={700} fill={AMBER_HOT} className="ready-word" letterSpacing="0.06em">
+      <text x={g.module.w / 2} y={hpx(g, 0.625) + wpx(g, 0.010)} textAnchor="middle" fontSize={wpx(g, 0.030)} fontWeight={700} fill={AMBER_HOT} className="ready-word">
         READY
       </text>
-      {chips.map(([name, val], i) => {
-        const x = g.module.w * (0.30 + 0.13 * i);
-        return (
-          <g key={name}>
-            <text className="unit-label" x={x} y={hpx(g, 0.555)} textAnchor="middle" fontSize={wpx(g, 0.0085)} fill={DIM}>
-              {name}
-            </text>
-            <text className="unit-label" x={x} y={hpx(g, 0.593)} textAnchor="middle" fontSize={wpx(g, 0.0135)} fill={AMBER}>
-              {val}
-            </text>
-          </g>
-        );
-      })}
     </g>
   );
 }
@@ -620,7 +571,7 @@ export function ClusterFace({
   const bulbCheck = selfTest || (phase === "reveal" && phaseT < 0.55);
   const battWarn = liveLike && (face.batt_v < BATT_LOW_V || Boolean(face.lamps.batt_warn));
   const speed = Math.round(Math.max(0, Math.min(399, face.speed_kmh)));
-  const lamps = liveLike ? face.lamps : {};
+  const lamps = liveLike ? { ...face.lamps, fuel_low: face.fuel_pct < FUEL_LOW_PCT || face.lamps.fuel_low, batt_warn: battWarn } : {};
   const odoFace = bulbCheck ? { ...face, odo_km: 888888, trip_km: 888.8 } : face;
   const styleName = style === "ap2" ? "AP2" : "AP1";
   const rx = wpx(g, 0.012);
@@ -657,7 +608,7 @@ export function ClusterFace({
             <SideGauges g={g} face={face} on={selfTest || liveLike} bulbCheck={bulbCheck} />
             <SpeedWindow g={g} speed={speed} on={selfTest || liveLike} bulbCheck={bulbCheck} />
             <OdoWindow g={g} face={odoFace} on={selfTest || liveLike} battWarn={battWarn} clock={FACE_CLOCK} />
-            {phase === "ready" ? <ReadyCard g={g} face={face} /> : null}
+            {phase === "ready" ? <ReadyCard g={g} /> : null}
             <ArcLamps g={g} lamps={lamps} bulbCheck={bulbCheck} />
             <Hardware g={g} lamps={lamps} bulbCheck={bulbCheck} />
           </g>

@@ -45,12 +45,12 @@
 
 Red 7-seg speed/odo on an **amber tach** in a hooded arched cowl. Flat 2.35:1 elevation - no fake 3D skew.
 
-- **AP1** (default): **horizontal TEMP left / FUEL right** block bars flanking the speed/odo. Tach is the OEM **amber bar graph on a true circular arc** - cells light in 100 rpm steps, red hatch past 9, no needle. Every anchor comes from one measured lock, [`src/face_spec.py`](src/face_spec.py), explained in [`refs/flat/DIMENSIONS.md`](refs/flat/DIMENSIONS.md) and shared with the web harness and the CAD.
+- **AP1** (default): **horizontal TEMP left / FUEL right** block bars flanking the speed/odo. Tach is the OEM **amber bar graph on a true circular arc** - cells light in 200 rpm steps, red hatch past 9, no needle. Every anchor comes from one shared, photo-derived layout, [`src/face_spec.py`](src/face_spec.py), explained in [`refs/flat/DIMENSIONS.md`](refs/flat/DIMENSIONS.md) and shared with the web harness and the CAD.
 - **AP2**: interpretive stacked arched TEMP / FUEL on the right, plus a clock row. Uses [`refs/oem/ap2/`](refs/oem/ap2/) as reference - **not** a pixel-perfect plate.
 
 Toggle in the [web harness](apps/harness/) or `python src/gauge_ui.py --style ap2` (keys `1` / `2` live). Protocol fields stay frozen.
 
-Bar-graph tach **0–9 ×1000** on a circular arc with amber / red hatches past each end, mitred red 7-seg speed, **ODO / TRIP A**, 8-block TEMP and 16-block FUEL. Turn arrows and high beam sit in round wells inside the arc like the OEM; the bottom strip carries the rest: red BRAKE / battery / oil / seatbelt / SRS, amber ABS / CEL / MAINT / EPS, green immobilizer.
+Bar-graph tach **0–9 ×1000** on a circular arc with amber / red hatches past each end, mitred red 7-seg speed, **ODO / TRIP A**, 8-block TEMP and 16-block FUEL. Turn arrows and high beam sit in round wells inside the arc like the OEM; AP1 puts ABS in the left pocket and low fuel / seat belt / SRS in the right pocket. The lower strip carries brake, battery, oil, CEL, immobilizer, maintenance, cruise, EPS, trunk and door warnings. AP2 uses a separate airbag pictogram and relocates the left-side indicators, following the Honda manual.
 
 </td>
 <td width="50%">
@@ -64,7 +64,9 @@ Bar-graph tach **0–9 ×1000** on a circular arc with amber / red hatches past 
 
 Skippable with Space or `--no-intro` (web harness: Space or **Skip boot**):
 
-1. Tach bar fills 0→9 with every lamp and `188` lit (OEM bulb check)
+The sweep → branded READY → reveal is a **custom demo animation**, not a verified recording of factory ignition timing. Honda documents individual lamp checks; it does not establish this combined animation.
+
+1. Tach bar fills 0→9 with every lamp and `188` lit (demo bulb check)
 2. **READY** with the Honda H-mark and S2000 wordmark
 3. Gauge reveal, then live
 
@@ -140,7 +142,7 @@ uv sync --extra dev
 Shareable Next.js demo of the same face, drawn as one SVG straight from the exported lock (`apps/harness/lib/faceSpec.json`) - red mitred 7-seg, amber bar-graph tach, side block bars, telltale strip and buttons all share pygame's numbers. Client-side mock loop (play/pause, **AP1 / AP2** face, idle / cruise / VTEC / warn) and the same sweep → READY → reveal boot as the Pi UI. Cluster type is self-hosted M PLUS Rounded 1c; telltales are inline ISO pictograms.
 
 <p align="center">
-  <img src="docs/assets/web-ap1-cruise.png" alt="Web AP1 cruise: 80 km/h, amber bar graph, coolant waves, ISO high beam" width="960" />
+  <img src="docs/assets/web-ap1-cruise.png" alt="Web AP1 cruise: digital speed, amber bar graph and shared warning pictograms" width="960" />
 </p>
 <p align="center">
   <sub>Web AP1 cruise. Warn and AP2 stills: <a href="docs/assets/web-ap1-warn.png"><code>web-ap1-warn.png</code></a>, <a href="docs/assets/web-ap2-warn.png"><code>web-ap2-warn.png</code></a>.</sub>
@@ -156,6 +158,33 @@ npm run build
 **Vercel:** create a project with **Root Directory** `apps/harness` (Next.js preset). See [`apps/harness/README.md`](apps/harness/README.md).
 
 The banner on that page is the same **unofficial DIY / not Honda Motor Co.** disclaimer as this README.
+
+The web page follows the system theme, with an **Appearance** selector for Light / Dark / System. The instrument itself stays black with unchanged warning colours. The choice persists locally.
+
+[Light web preview](docs/assets/web-ap1-light.png) · [Dark web preview](docs/assets/web-ap1-dark.png)
+
+**OLED preview:** open `/display?style=ap1` (or `ap2`) in a fullscreen browser on the Pi. This route uses mock telemetry, hides the web controls, and fits the complete face without stretching or cropping. Pygame `--car --size 1280x720` renders at the chosen panel resolution and uses aspect-preserving fit. Replace `1280x720` with the OLED’s configured native landscape resolution. Neither route establishes physical mounting dimensions.
+
+The target is Johnny's **7-inch OLED + Raspberry Pi**, for a **2001 AP1**. The exact panel model, native resolution and active area are still unrecorded. See [the reference audit](docs/iterations/0018-oem-display-audit.md) for sources, corrected proportions, validation and remaining limits.
+
+## Bench studio and 3D setup
+
+The web workspace now separates the instrument preview from its face, drive-condition
+and playback controls. Readouts sit below the preview; raw telemetry is collapsed
+until needed. **Replay startup** works without changing the selected face.
+
+Open **3D setup** (`/setup`) to orbit the complete display enclosure, inspect its
+assembled, exploded or electronics-only view, select front/rear cameras, or expand
+the viewer fullscreen. GLB scenes and a ZIP of CAD source + four prototype STLs
+are downloadable from the viewer. The 3D library loads only on this route.
+
+![Digital display setup](docs/assets/setup-exploded.png)
+
+The new [`cad/setup/`](cad/setup/README.md) model includes a rectangular OLED frame,
+vented enclosure, removable Pi carrier and rear cover, plus Pi/connector/cooler
+clearance proxies. It complements the existing arched mask option. The panel and
+vehicle-fit dimensions remain provisional; the model is a bench layout, not an
+installation-ready housing.
 
 ## Run
 
@@ -174,6 +203,7 @@ Fullscreen by default. Esc or Q quits.
 | `--windowed` | 1920×1080 window instead of fullscreen |
 | `--intro` / `--no-intro` | Force or skip the boot sequence (intro is on unless `--smoke`) |
 | `--smoke` | Dummy SDL, draw a few frames, exit (CI / Pi check; no live pipe needed) |
+| `--size WIDTHxHEIGHT` | Panel render resolution, e.g. `1280x720` (default `1920x1080`) |
 | `--screenshot DIR` | Write `01_sweep.png` … `05_cruise.png` into DIR |
 | `--serial [PORT]` | Phase 2 UART stub (needs `pyserial`; default `/dev/ttyUSB0`) |
 | `--style ap1\|ap2` | Face layout. **ap1** (default) horizontal TEMP/FUEL flanking the speedo; **ap2** arched side gauges |
@@ -238,7 +268,7 @@ Optional: `lamps` object (`oil`, `cel`, `abs`, `turn_l`, `turn_r`, `high_beam`, 
 - `src/face_style.py` - `ap1` / `ap2` face enum (layout only)
 - `src/face_spec.py` - **the face lock**: AP1/AP2 arc geometry, windows, lamps, buttons; exports `faceSpec.json` + `face_lock.scad`
 - `src/gauge_ui.py` - pygame 1920×1080 cluster + intro + `--style`, drawn from the lock
-- `src/lcd_digits.py` - OEM mitred 7-segment speed / odo with ghost + bloom
+- `src/lcd_digits.py` - Mitred 7-segment speed / odo with unlit segments, no bloom
 - `scripts/measure_oem_ui.py` - perspective-corrected landmark / circle-fit measurement of the OEM photo
 - `src/serial_reader.py` - Phase 2 UART stub + `SerialLineReader` (pyserial optional)
 - `mocks/` - mock ESP32 UART emitter + in-memory / PTY serial (no firmware)
@@ -248,7 +278,7 @@ Optional: `lamps` object (`oil`, `cel`, `abs`, `turn_l`, `turn_r`, `high_beam`, 
 - `assets/icons/` - OEM telltale SVG/PNG atlas (tinted at draw time)
 - `cad/` - OpenSCAD placeholders (overlay bezel + connectors + `replace_face/`). PETG/ASA notes stay here.
 - `shots/` - sweep / ready / reveal / live / cruise stills
-- `docs/assets/` - unofficial geometric H, intro GIF, VP9 hero, OEM|UI compares
+- `docs/assets/` - Honda / S2000 marks, intro GIF, VP9 hero, OEM|UI compares
 - `scripts/bake_showcase.py` - regenerate stills + 30 fps hero
 - `scripts/ui_harness.py` - screenshot / ahash harness
 - `scripts/compare_oem.py` - OEM photo | UI composites
@@ -273,7 +303,7 @@ This is an **unofficial** enthusiast / DIY bench project.
 - Personal / educational use only
 - The overlay odometer is **display-only**. Keep the **OEM cluster plugged** for the legal odometer
 - Phase 1 is not vehicle wiring. Do not treat placeholder CAD as production geometry
-- The title icon is an original geometric **H**, not Honda Motor Co. trademark artwork
+- Honda H and S2000 marks are Honda trademarks; sources are recorded in `docs/assets/BRANDING.md`
 
 ## Community
 

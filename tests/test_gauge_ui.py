@@ -299,8 +299,8 @@ class FaceGeomTests(unittest.TestCase):
         self.assertLess(tx + tw, FACE.speed_win[0])
         self.assertGreater(fx, FACE.speed_win[0] + FACE.speed_win[2])
         # TEMP sits between 0 and the speedo; FUEL between the speedo and 9
-        self._assert_pct((tx, ty), (0.232, 0.540))
-        self._assert_pct((fx, fy), (0.675, 0.540))
+        self._assert_pct((tx, ty), (0.135, 0.586))
+        self._assert_pct((fx, fy), (0.747, 0.586))
         self.assertEqual(AP1.temp_segs, 8)
         self.assertEqual(AP1.fuel_segs, 16)
 
@@ -376,12 +376,12 @@ class FaceGeomTests(unittest.TestCase):
     def test_lcd_windows_lock_to_oem(self) -> None:
         sx, sy, sw, sh = FACE.speed_win
         ox, oy, ow, oh = FACE.odo_win
-        self._assert_pct((sx, sy), (0.418, 0.370))
-        self.assertAlmostEqual(sw / FACE.module[2], 0.164, delta=0.02)
-        self._assert_pct((ox, oy), (0.405, 0.512))
+        self._assert_pct((sx, sy), (0.390, 0.350))
+        self.assertAlmostEqual(sw / FACE.module[2], 0.210, delta=0.02)
+        self._assert_pct((ox, oy), (0.390, 0.582))
         self.assertGreater(oy, sy + sh)
         self.assertAlmostEqual(self._pct(*FACE.speed_c)[0], 0.50, delta=0.01)
-        self.assertAlmostEqual(sh / FACE.module[3], 0.138, delta=0.03)
+        self.assertAlmostEqual(sh / FACE.module[3], 0.218, delta=0.03)
 
     def test_strip_and_hardware_lock(self) -> None:
         lx, ly, lw, lh = FACE.lamp_band

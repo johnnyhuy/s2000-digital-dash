@@ -65,3 +65,10 @@ Connectors (both ends)
 | `replace_face/` | Option 1 full-face replace stack - see that folder’s README |
 
 Open in [OpenSCAD](https://openscad.org/) and F6 to render after you edit the measured numbers.
+
+## Complete digital-screen setup
+
+[`setup/`](setup/README.md) adds a rectangular OLED enclosure, rear cover and
+removable Pi carrier. Four closed STL prototypes, source SCAD, embedded-screen
+GLBs and a downloadable ZIP feed the web `/setup` inspector. Panel and bay
+dimensions remain provisional. This complements the arched replace-face mask.

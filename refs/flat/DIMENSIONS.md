@@ -11,12 +11,12 @@ Percentages are of the **module bounding box**, origin top-left. `x`,
 `w` and every radius are fractions of module **width**; `y` and `h` are
 fractions of module **height**. Arc centres are given in both.
 
-Physical envelope (OEM face, estimated): **170 mm × 72.3 mm** → **2.35:1**.
+Provisional design envelope (not a measured OEM face): **170 mm × 72.3 mm** → **2.35:1**.
 
 ## Evidence
 
 - OEM lit photo: `refs/oem/lit/lit_ap1_carspy_cluster.jpg` (Car Spy, CC BY 2.0)
-- OEM plates and calliper JSON: `refs/oem/plates/`
+- Historic illustrative plates and estimated measurement JSON: `refs/oem/plates/`
 - AP2 reference (interpretive): `refs/oem/ap2/`
 - Flat elevation (historic, parabola era): `refs/flat/ap1_cluster_flat.svg`
 - Measurement script: `scripts/measure_oem_ui.py` (perspective-corrected
@@ -49,8 +49,8 @@ Everything below is derived from that one circle.
 | --- | --- | --- |
 | Centre | `(50 %, 148.7 % H)` | same (shared housing, concentric crown) |
 | Band outer / inner radius | 59.0 % / 55.7 % W | same |
-| Baseline (white line) radius | 54.8 % W | same |
-| Numeral radius | 51.4 % W | same |
+| Baseline (white line) radius | 55.3 % W | same |
+| Numeral radius | 51.9 % W | same |
 | 0 → 9 sweep (screen angles) | **−127.8° → −52.2°** (75.6°) | −132° → −74° (58°) |
 | 0 tick / 9 tick | (17 %, 47 %) / (83 %, 47 %) | (13 %, 53 %) / (65 %, 25 %) |
 | Band apex | y ≈ **10 %** | same |
@@ -59,22 +59,24 @@ Everything below is derived from that one circle.
 | Hatches | amber overrun below 0 and red above 9, **5.5°** each, 5 blocks | 6.5° |
 
 The tach is a **bar graph**: amber cells light from 0 up to the current
-rpm in 100 rpm steps with a 0.22° gap between cells; the red hatch lights
+rpm in 200 rpm steps with a 0.16° gap between cells; the red hatch lights
 past 9. There is no needle.
 
 ## Face layout - AP1
 
 | Item | Placement |
 | --- | --- |
-| Speed window | rect **(40 %, 34.5 %) 20 × 17.5 %**, 3-digit 7-seg (ghost `188`), digit h = 14.5 % H, right edge 58.4 %; `mph` (unlit) over `km/h` to the right — sits under numeral 5 |
-| ODO / TRIP window | rect **(40 %, 53.5 %) 20 × 10.5 %**; 6-digit odo (h 5.0 %) at y 59.5 %; `TRIP A` + `xxx.x` (h 4.4 %) at y 60.0 % |
-| TEMP | **horizontal 8-block bar** at **(21.5 %, 50 %) 15 × 4.5 %**, between 0 and the speedo; thermometer icon above, `C` / `H` hugging the bar ends, white underline exactly bar-wide |
-| FUEL | **horizontal 16-block bar** at **(66.8 %, 50 %) 10.5 × 3.8 %**, between the speedo and 9; pump icon above, `E` / `F` hugging the bar ends, underline exactly bar-wide |
-| Arc telltales | round wells in the well: **←** (33.8 %, 40 %), **→** (66.2 %, 40 %), high beam (69.8 %, 44.8 %) |
-| Telltale strip | rect **(15.5 %, 74.5 %) 75 × 14 %**: BRAKE 19 %, battery 26 %, oil 32 %, CEL 39 %, ABS 46 %, MAINT 55 %, EPS 64 %, SRS 72 %, seatbelt 80 % |
-| Lower panels | left (6 %, 61.5 %) 18.5 × 9 %; right (79 %, 59 %) 14.5 × 9 % |
-| Buttons | −/+ at (6 %, 81.5 %) / (11.8 %, 81.5 %), d 5 % W; **SEL** (93.5 %, 74.5 %), **TRIP** (97.8 %, 74.5 %), ovals 4 × 6 % |
-| Printed legends | `PUSH CANCEL` at (15.7 %, 93.5 %); `mph·km/h` at (90 %, 86 %); `x1000r/min` under the 0 numeral |
+| Speed window | **(39 %, 35 %) 21 × 21.8 %**; digit height **19.4 % H**, right edge 59 % W |
+| ODO / TRIP window | **(39 %, 58.2 %) 21 × 11.8 %**; digit heights 5.2 % / 4.8 % H, centres y 66.1 % |
+| TEMP | horizontal 8-block bar **(13.5 %, 58.6 %) 12.5 × 3 %**, C/H clear of both ends |
+| FUEL | horizontal 16-block bar **(74.7 %, 58.6 %) 12.5 × 3 %**, E/F clear of both ends |
+| Side symbols | shared coolant / fuel SVG masters; silhouette height **2.2 % W** |
+| Arc telltales | left (33.5 %, 45.5 %), right (67.5 %, 45.5 %), high beam (72 %, 53.5 %) |
+| Warning pockets | ABS left; low fuel, belt and SRS right, centred y 68.2 % |
+| Lower strip | brake, battery, oil, CEL, immobilizer, maintenance, cruise, EPS, trunk, door |
+| Hardware | retained −/+, SEL/TRIP and bezel marks; custom Honda/S2000 lockup is not factory face printing |
+
+These are photo-derived design proportions, **not a pixel-perfect OEM measurement**. Lamp locations were checked against Honda's 2003 manual p.45 and 2005 manual p.39; those are North American diagrams, so market-specific legends still need checking against the actual 2001 Australian car. The brake (!) symbol is retained from this project's reference variant.
 
 Temp blocks idle at 3–4 of 8 across the whole normal range and climb
 quickly toward H (`temp_segments_lit`, knee at 85 % of the window).
@@ -84,7 +86,7 @@ quickly toward H (`temp_segments_lit`, knee at 85 % of the window).
 Same housing and crown. Differences: shorter tach sweep ending at 2
 o'clock, **stacked arched TEMP / FUEL** on the right - TEMP (69 %, 31 %)
 15 × 17 %, FUEL (75.5 %, 54 %) 15 × 17 %, 10 blocks each - a **clock**
-row at (39 %, 59 %), SRS in the well beside the left arrow, a wider
+row at (39.2 %, 61 %), SRS in the well beside the left arrow, a wider
 telltale strip (22 % → 84.5 %) and SEL/TRIP pushed to the corners.
 `refs/oem/ap2/` is reference, not a plate.
 
@@ -93,7 +95,7 @@ telltale strip (22 % → 84.5 %) and SEL/TRIP pushed to the corners.
 `src/lcd_digits.py` / `SevenSeg.tsx`: digit w = 0.58 h, gap 0.20 h,
 stroke 0.155 h, hairline segment gap 0.016 h, chamfered outer corners
 0.045 h, mitred 45° joints. Unlit `8` ghost behind every glyph, colons
-and points as squares. Speed/odo/trip glow through a red LCD bloom.
+and points as squares. Speed/odo/trip use red segments without software bloom or synthetic pixel-grid lines.
 
 ## Fonts
 
@@ -126,3 +128,9 @@ harness.
 
 Regenerate everything downstream with `uv run python src/face_spec.py`
 (JSON + SCAD) and `bash cad/replace_face/export.sh` (meshes).
+
+## Replacement display fit
+
+`--car` contains the 2.35:1 face in the available pygame canvas on both axes. `/display` does the same for the SVG (including its cowl padding). Unused pixels stay black. A 7-inch diagonal alone does not determine resolution, active width, orientation or mounting alignment.
+
+At the **provisional** 154 mm active width, the AP1 speed digit is about 12.7 mm tall, odo digits about 3.4 mm, and a 2.2 % W symbol about 3.4 mm. These are design estimates, not measurements of the user's OLED. Geometry and digit bounds are exercised at 800×480, 1280×720 and 1920×1080; containment also covers 1920×720 and 1280×400.

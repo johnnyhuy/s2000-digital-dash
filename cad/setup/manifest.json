@@ -1,0 +1,46 @@
+{
+  "units": "mm",
+  "prototype": true,
+  "parts": [
+    {
+      "part": "bezel",
+      "extent_mm": [
+        174.0,
+        110.0,
+        3.0
+      ],
+      "watertight": true,
+      "bodies": 1
+    },
+    {
+      "part": "enclosure",
+      "extent_mm": [
+        174.0,
+        110.0,
+        42.0
+      ],
+      "watertight": true,
+      "bodies": 1
+    },
+    {
+      "part": "rear_cover",
+      "extent_mm": [
+        174.0,
+        110.0,
+        6.0
+      ],
+      "watertight": true,
+      "bodies": 1
+    },
+    {
+      "part": "carrier",
+      "extent_mm": [
+        144.0,
+        90.0,
+        7.0
+      ],
+      "watertight": true,
+      "bodies": 1
+    }
+  ]
+}
