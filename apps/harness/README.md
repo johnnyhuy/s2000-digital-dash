@@ -47,3 +47,13 @@ npx vercel --yes
 ## Appearance and OLED preview
 
 Appearance supports System, Light and Dark and saves the choice locally. Instrument colours remain unchanged. `/display?style=ap1` (or `ap2`) hides the page controls and fits the face to the viewport without stretching. This is still a mock telemetry preview, not a hardware connection. The exact 7-inch OLED model and active area remain unconfirmed.
+
+## Workspaces
+
+- `/`: instrument studio with grouped controls, telemetry readouts and collapsible JSON.
+- `/setup`: interactive CAD inspector (assembled / exploded / electronics), camera views, fullscreen and downloads. Loads the locally bundled `@google/model-viewer` only here.
+- `/display?style=ap1`: control-free simulated OLED output.
+
+Regenerate shipped 3D files with `uv run --extra cad python cad/setup/export.py`
+from the repository root. The Pi and panel models are clearance references, not
+verified manufacturing drawings.

@@ -167,6 +167,25 @@ The web page follows the system theme, with an **Appearance** selector for Light
 
 The target is Johnny's **7-inch OLED + Raspberry Pi**, for a **2001 AP1**. The exact panel model, native resolution and active area are still unrecorded. See [the reference audit](docs/iterations/0018-oem-display-audit.md) for sources, corrected proportions, validation and remaining limits.
 
+## Bench studio and 3D setup
+
+The web workspace now separates the instrument preview from its face, drive-condition
+and playback controls. Readouts sit below the preview; raw telemetry is collapsed
+until needed. **Replay startup** works without changing the selected face.
+
+Open **3D setup** (`/setup`) to orbit the complete display enclosure, inspect its
+assembled, exploded or electronics-only view, select front/rear cameras, or expand
+the viewer fullscreen. GLB scenes and a ZIP of CAD source + four prototype STLs
+are downloadable from the viewer. The 3D library loads only on this route.
+
+![Digital display setup](docs/assets/setup-exploded.png)
+
+The new [`cad/setup/`](cad/setup/README.md) model includes a rectangular OLED frame,
+vented enclosure, removable Pi carrier and rear cover, plus Pi/connector/cooler
+clearance proxies. It complements the existing arched mask option. The panel and
+vehicle-fit dimensions remain provisional; the model is a bench layout, not an
+installation-ready housing.
+
 ## Run
 
 ```bash
