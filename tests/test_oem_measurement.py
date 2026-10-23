@@ -1,21 +1,25 @@
 """The acceptance tool must reject missing, stale, and visibly wrong pixels."""
 import json
+import subprocess
+import sys
 
 import pytest
 import pygame
 
-from scripts import compare_oem, measure_oem_ui
+from scripts import measure_oem_ui
 
 
 @pytest.fixture(scope="module")
 def capture(tmp_path_factory):
     dest = tmp_path_factory.mktemp("oem-composites")
-    previous = compare_oem.DEST
-    try:
-        compare_oem.DEST = dest
-        assert compare_oem.main() == 0
-    finally:
-        compare_oem.DEST = previous
+    # Rendering owns pygame.init/quit. Keep it out of the test process so
+    # cached font objects in other render tests cannot outlive SDL teardown.
+    subprocess.run([
+        sys.executable, "-c",
+        "import sys; from pathlib import Path; from scripts import compare_oem; "
+        "compare_oem.DEST = Path(sys.argv[1]); raise SystemExit(compare_oem.main())",
+        str(dest),
+    ], check=True, capture_output=True, text=True)
     return dest / "compare_ap1_lit_live.png"
 
 
