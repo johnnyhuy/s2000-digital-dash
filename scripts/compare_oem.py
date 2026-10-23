@@ -8,6 +8,8 @@ Writes PNGs into docs/assets/compare/. Protocol field names are unchanged.
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 import sys
 from pathlib import Path
@@ -186,6 +188,27 @@ def main() -> int:
         frame = compose(pygame, oem, ui, lab_l, lab_r)
         dest = DEST / name
         pygame.image.save(frame, str(dest))
+        # Panels have different source aspects. Record the actual transform;
+        # measurement must never guess that the divider is at half the width.
+        from gauge_ui import build_face_geom
+
+        style = FaceStyle.AP2 if "ap2" in name else FaceStyle.AP1
+        geom = build_face_geom(style=style)
+        height = 520
+        left_width = _fit_height(pygame, oem, height).get_width()
+        right_width = _fit_height(pygame, ui, height).get_width()
+        sx, sy = right_width / ui.get_width(), height / ui.get_height()
+        mx, my, mw, mh = geom.module
+        metadata = {
+            "schema": 1,
+            "image_sha256": hashlib.sha256(dest.read_bytes()).hexdigest(),
+            "reference": str(oem_path.relative_to(ROOT)),
+            "reference_sha256": hashlib.sha256(oem_path.read_bytes()).hexdigest(),
+            "style": style.value,
+            "ui_panel": [left_width + 10, 36, right_width, height],
+            "ui_module": [left_width + 10 + mx * sx, 36 + my * sy, mw * sx, mh * sy],
+        }
+        dest.with_suffix(".json").write_text(json.dumps(metadata, indent=2) + "\n")
         print(dest)
         written += 1
 

@@ -1,156 +1,145 @@
 #!/usr/bin/env python3
-"""Objectively measure OEM-vs-UI deltas in the live composite.
+"""Measure the captured AP1 pixels in their recorded module coordinate system.
 
-This is the same-room eyeball test the loop prereqs on, automated.
-Outputs a JSON dump of landmark positions on the OEM side (from the
-Car Spy plate) and on the UI side (from the live composite), then the
-delta for each.
-
-Run:  uv run python scripts/measure_oem_ui.py
+Run compare_oem.py first, then measure_oem_ui.py --check --output report.json.
+The geometry gate uses refs/flat/DIMENSIONS.md, not the historic illustrative
+plate picks. Photo colour samples are reported without claiming calibrated
+colour accuracy. A still reference cannot establish OEM motion equivalence.
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
-import sys
 from pathlib import Path
 
+os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
+import pygame
+
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-OEM = ROOT / "refs" / "oem"
-COMPARE = ROOT / "docs" / "assets" / "compare"
+DEFAULT_COMPOSITE = ROOT / "docs/assets/compare/compare_ap1_lit_live.png"
 
-sys.path.insert(0, str(SRC))
-sys.path.insert(0, str(ROOT))
-
-os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
-os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
-
-
-def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="OEM-vs-UI measurement")
-    p.add_argument("--composite", default=str(COMPARE / "compare_ap1_lit_live.png"))
-    return p.parse_args(argv)
+# Independent acceptance intervals from DIMENSIONS.md. Approximate landmarks
+# have the same 1.5 percentage-point allowance as FaceGeomTests; raster edges
+# additionally allow one output pixel. Do not derive expectations from the UI.
+LOCK = {
+    "band_top_pct": (10.0, 1.5),
+    "speed_height_pct": (19.4, 1.0),
+    "speed_right_pct": (59.0, 1.0),
+    "temp_left_pct": (13.5, 0.5),
+    "temp_width_pct": (12.5, 0.5),
+    "fuel_left_pct": (74.7, 0.5),
+    "fuel_width_pct": (12.5, 0.5),
+}
 
 
 def measure_oem() -> dict[str, float]:
-    """Read the OEM measurements plate JSON, return % of module height."""
-    data = json.loads((OEM / "plates" / "oem_ap1_measurements.json").read_text())
-    return {k: v / 100.0 for k, v in data["pct_of_module_height"].items()}
+    """Historic plate percentages, preserved in their original units."""
+    data = json.loads((ROOT / "refs/oem/plates/oem_ap1_measurements.json").read_text())
+    return data["pct_of_module_height"]
 
 
-def measure_ui_landmarks(composite: Path) -> dict[str, float]:
-    """Return rough landmark y-positions (in % of module height) found
-    in the UI composite.
+def load_capture(composite: Path) -> tuple[pygame.Surface, dict]:
+    metadata = json.loads(composite.with_suffix(".json").read_text())
+    if metadata.get("schema") != 1 or metadata.get("style") != "ap1":
+        raise ValueError("measurement requires a schema-1 AP1 capture")
+    if hashlib.sha256(composite.read_bytes()).hexdigest() != metadata["image_sha256"]:
+        raise ValueError("composite changed after its capture metadata was written")
+    reference = ROOT / metadata["reference"]
+    if hashlib.sha256(reference.read_bytes()).hexdigest() != metadata["reference_sha256"]:
+        raise ValueError("OEM reference changed after capture")
+    image = pygame.image.load(str(composite))
+    for key in ("ui_panel", "ui_module"):
+        x, y, w, h = metadata[key]
+        if not all(math.isfinite(v) for v in (x, y, w, h)) or not (
+            x >= 0 and y >= 0 and w > 0 and h > 0
+            and x + w <= image.get_width() and y + h <= image.get_height()
+        ):
+            raise ValueError(f"invalid {key} bounds")
+    return image, metadata
 
-    Landmark reading uses heuristic threshold sweeps against the
-    composite itself — the right half is the UI render, the left is the
-    OEM photo. UI module is the lit-arch region inside the right half.
-    """
-    # Lazy imports — pygame + PIL live elsewhere too
-    import pygame  # noqa: F401
 
-    surf = pygame.image.load(str(composite))
-    w, h = surf.get_size()
-    ui_x = w // 2 + 8  # skip the gap
-    ui_w = w - ui_x
+def pixel_bounds(image: pygame.Surface, module: list[float], roi: tuple, predicate) -> tuple | None:
+    """Inclusive bounds of matching pixels in a normalized module ROI."""
+    mx, my, mw, mh = module
+    x0, y0, x1, y1 = roi
+    points = [
+        (x, y)
+        for y in range(math.ceil(my + y0 * mh), math.floor(my + y1 * mh) + 1)
+        for x in range(math.ceil(mx + x0 * mw), math.floor(mx + x1 * mw) + 1)
+        if predicate(image.get_at((x, y)))
+    ]
+    if not points:
+        return None
+    xs, ys = zip(*points)
+    return min(xs), min(ys), max(xs), max(ys)
 
-    band_top = None
-    band_bottom = None
-    speed_top = None
-    speed_bottom = None
-    lcd_bottom = None
-    lamp_top = None
-    cluster_top = None
-    cluster_bottom = None
 
-    # Sample centre column of UI for landmark detection
-    cx = ui_x + ui_w // 2
-    last_y = None
-    for y in range(36, h):
-        r, g, b = surf.get_at((cx, y))[:3]
-        bright = r + g + b
-        if cluster_top is None and bright > 60:
-            cluster_top = y
-        if band_top is None and (r > 150 and g > 80 and b < 80 and bright > 250):
-            band_top = y
-        if band_top is not None and band_bottom is None and not (r > 150 and g > 80 and b < 80):
-            if bright < 200 and last_y is not None and (last_y - band_top) > 4:
-                band_bottom = last_y
-        if speed_top is None and r > 100 and g < 80 and b < 60:
-            speed_top = y
-        if speed_top is not None and bright < 30:
-            speed_bottom = y - 1
-            break
-        last_y = y
-
-    # Use the bottom of UI for cluster_bottom (last drawn pixel)
-    cluster_bottom = h - 36
-
-    # Convert to UI-relative percentages of pixel-space height
-    ui_height = cluster_bottom - cluster_top
-    if ui_height <= 0:
-        return {}
-
-    def pct(y: int) -> float:
-        return (y - cluster_top) / ui_height * 100.0
-
+def measure(image: pygame.Surface, metadata: dict) -> dict:
+    module = metadata["ui_module"]
+    mx, my, mw, mh = module
+    amber = lambda p: p[0] > 150 and 70 < p[1] < 210 and p[2] < 90
+    red = lambda p: p[0] > 180 and p[1] < 120 and p[2] < 100
+    # Include both lit blocks and the unlit red glass when finding bar spans.
+    glass = lambda p: p[0] > 40 and p[0] > p[1] * 2 and p[0] > p[2] * 2
+    band = pixel_bounds(image, module, (.35, .05, .65, .22), amber)
+    speed = pixel_bounds(image, module, (.39, .35, .60, .568), red)
+    temp = pixel_bounds(image, module, (.12, .57, .27, .622), glass)
+    fuel = pixel_bounds(image, module, (.74, .57, .88, .622), glass)
+    values = {
+        "band_top_pct": (band[1] - my) / mh * 100 if band else None,
+        "speed_height_pct": (speed[3] - speed[1] + 1) / mh * 100 if speed else None,
+        "speed_right_pct": (speed[2] + 1 - mx) / mw * 100 if speed else None,
+        "temp_left_pct": (temp[0] - mx) / mw * 100 if temp else None,
+        "temp_width_pct": (temp[2] - temp[0] + 1) / mw * 100 if temp else None,
+        "fuel_left_pct": (fuel[0] - mx) / mw * 100 if fuel else None,
+        "fuel_width_pct": (fuel[2] - fuel[0] + 1) / mw * 100 if fuel else None,
+    }
+    checks = []
+    for key, (expected, tolerance) in LOCK.items():
+        value = values[key]
+        axis = mh if key in ("band_top_pct", "speed_height_pct") else mw
+        delta = value - expected if value is not None else None
+        checks.append({
+            "landmark": key, "expected_pct": expected, "measured_pct": value,
+            "delta_pct": delta, "delta_px": delta * axis / 100 if delta is not None else None,
+            "tolerance_pct": tolerance + 100 / axis,
+            "pass": delta is not None and abs(delta) <= tolerance + 100 / axis,
+        })
+    aspect_error = abs(mw / mh - 2.35)
+    checks.append({"landmark": "module_aspect", "expected": 2.35,
+                   "measured": mw / mh, "tolerance": .005, "pass": aspect_error <= .005})
     return {
-        "module_top_px": cluster_top,
-        "module_height_px": ui_height,
-        "cluster_top_pct": 0.0,
-        "band_top_pct": pct(band_top) if band_top else None,
-        "band_bottom_pct": pct(band_bottom) if band_bottom else None,
-        "speed_top_pct": pct(speed_top) if speed_top else None,
-        "speed_bottom_pct": pct(speed_bottom) if speed_bottom else None,
-        "cluster_bottom_pct": 100.0,
+        "geometry_pass": all(c["pass"] for c in checks),
+        "checks": checks,
+        "historic_plate_pct": measure_oem(),
+        "limitations": [
+            "Geometry-only gate against DIMENSIONS.md; not full OEM visual acceptance.",
+            "Photo exposure and perspective are not calibrated colour or font evidence.",
+            "Still references provide no OEM timing or motion evidence.",
+        ],
     }
 
 
-def measure_module_width_aspect(composite: Path) -> dict[str, float]:
-    import pygame  # noqa: F401
-
-    surf = pygame.image.load(str(composite))
-    w, h = surf.get_size()
-    ui_x = w // 2 + 8
-    ui_w = w - ui_x
-    # Find module left/right by scanning the middle band row
-    mid_y = h // 2
-    left = None
-    right = None
-    for x in range(ui_x, w):
-        r, g, b = surf.get_at((x, mid_y))[:3]
-        bright = r + g + b
-        if bright > 60:
-            if left is None:
-                left = x
-            right = x
-    width_px = (right or w) - (left or ui_x)
-    return {"ui_x": ui_x, "module_left_px": left, "module_right_px": right, "width_px": width_px}
-
-
 def main(argv: list[str] | None = None) -> int:
-    args = parse_args(argv)
-    composite = Path(args.composite)
-    if not composite.is_file():
-        print(f"missing {composite}", file=sys.stderr)
-        return 2
-
-    oem = measure_oem()
-    ui = measure_ui_landmarks(composite)
-    print("OEM % of module height:")
-    for k, v in oem.items():
-        print(f"  {k:20s} {v:.2f}")
-    print("UI landmarks (px space):")
-    for k, v in ui.items():
-        print(f"  {k:20s} {v}")
-    width = measure_module_width_aspect(composite)
-    print("UI module width:")
-    for k, v in width.items():
-        print(f"  {k:20s} {v}")
-    return 0
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--composite", type=Path, default=DEFAULT_COMPOSITE)
+    parser.add_argument("--check", action="store_true")
+    parser.add_argument("--output", type=Path)
+    args = parser.parse_args(argv)
+    try:
+        image, metadata = load_capture(args.composite)
+        report = measure(image, metadata)
+        report["capture"] = metadata
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        parser.exit(2, f"invalid capture: {exc}\n")
+    text = json.dumps(report, indent=2, allow_nan=False) + "\n"
+    if args.output:
+        args.output.write_text(text)
+    print(text, end="")
+    return int(args.check and not report["geometry_pass"])
 
 
 if __name__ == "__main__":
