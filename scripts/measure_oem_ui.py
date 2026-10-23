@@ -12,9 +12,11 @@ import argparse
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 
-from PIL import Image
+os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
+import pygame
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_COMPOSITE = ROOT / "docs/assets/compare/compare_ap1_lit_live.png"
@@ -39,7 +41,7 @@ def measure_oem() -> dict[str, float]:
     return data["pct_of_module_height"]
 
 
-def load_capture(composite: Path) -> tuple[Image.Image, dict]:
+def load_capture(composite: Path) -> tuple[pygame.Surface, dict]:
     metadata = json.loads(composite.with_suffix(".json").read_text())
     if metadata.get("schema") != 1 or metadata.get("style") != "ap1":
         raise ValueError("measurement requires a schema-1 AP1 capture")
@@ -48,18 +50,18 @@ def load_capture(composite: Path) -> tuple[Image.Image, dict]:
     reference = ROOT / metadata["reference"]
     if hashlib.sha256(reference.read_bytes()).hexdigest() != metadata["reference_sha256"]:
         raise ValueError("OEM reference changed after capture")
-    image = Image.open(composite).convert("RGB")
+    image = pygame.image.load(str(composite))
     for key in ("ui_panel", "ui_module"):
         x, y, w, h = metadata[key]
         if not all(math.isfinite(v) for v in (x, y, w, h)) or not (
             x >= 0 and y >= 0 and w > 0 and h > 0
-            and x + w <= image.width and y + h <= image.height
+            and x + w <= image.get_width() and y + h <= image.get_height()
         ):
             raise ValueError(f"invalid {key} bounds")
     return image, metadata
 
 
-def pixel_bounds(image: Image.Image, module: list[float], roi: tuple, predicate) -> tuple | None:
+def pixel_bounds(image: pygame.Surface, module: list[float], roi: tuple, predicate) -> tuple | None:
     """Inclusive bounds of matching pixels in a normalized module ROI."""
     mx, my, mw, mh = module
     x0, y0, x1, y1 = roi
@@ -67,7 +69,7 @@ def pixel_bounds(image: Image.Image, module: list[float], roi: tuple, predicate)
         (x, y)
         for y in range(math.ceil(my + y0 * mh), math.floor(my + y1 * mh) + 1)
         for x in range(math.ceil(mx + x0 * mw), math.floor(mx + x1 * mw) + 1)
-        if predicate(image.getpixel((x, y)))
+        if predicate(image.get_at((x, y)))
     ]
     if not points:
         return None
@@ -75,7 +77,7 @@ def pixel_bounds(image: Image.Image, module: list[float], roi: tuple, predicate)
     return min(xs), min(ys), max(xs), max(ys)
 
 
-def measure(image: Image.Image, metadata: dict) -> dict:
+def measure(image: pygame.Surface, metadata: dict) -> dict:
     module = metadata["ui_module"]
     mx, my, mw, mh = module
     amber = lambda p: p[0] > 150 and 70 < p[1] < 210 and p[2] < 90

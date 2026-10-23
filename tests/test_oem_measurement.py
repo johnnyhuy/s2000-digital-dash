@@ -2,6 +2,7 @@
 import json
 
 import pytest
+import pygame
 
 from scripts import compare_oem, measure_oem_ui
 
@@ -20,7 +21,7 @@ def capture(tmp_path_factory):
 
 def test_measures_actual_unequal_panels(capture):
     image, metadata = measure_oem_ui.load_capture(capture)
-    assert metadata["ui_panel"][0] != image.width // 2
+    assert metadata["ui_panel"][0] != image.get_width() // 2
     report = measure_oem_ui.measure(image, metadata)
     assert report["geometry_pass"]
     assert measure_oem_ui.measure_oem()["hood_peak"] == 10.42
@@ -29,7 +30,7 @@ def test_measures_actual_unequal_panels(capture):
 
 def test_missing_pixels_fail_instead_of_becoming_zero(capture):
     image, metadata = measure_oem_ui.load_capture(capture)
-    image.paste((0, 0, 0), (0, 0, image.width, image.height))
+    image.fill((0, 0, 0))
     report = measure_oem_ui.measure(image, metadata)
     assert not report["geometry_pass"]
     assert report["checks"][0]["measured_pct"] is None
@@ -40,9 +41,10 @@ def test_displaced_speed_pixels_fail(capture):
     mx, my, mw, mh = metadata["ui_module"]
     box = (round(mx + .39 * mw), round(my + .35 * mh),
            round(mx + .60 * mw), round(my + .568 * mh))
-    digits = image.crop(box)
-    image.paste((0, 0, 0), box)
-    image.paste(digits, (box[0] - round(.04 * mw), box[1]))
+    rect = pygame.Rect(box[0], box[1], box[2] - box[0], box[3] - box[1])
+    digits = image.subsurface(rect).copy()
+    image.fill((0, 0, 0), rect)
+    image.blit(digits, (box[0] - round(.04 * mw), box[1]))
     report = measure_oem_ui.measure(image, metadata)
     right = next(c for c in report["checks"] if c["landmark"] == "speed_right_pct")
     assert not right["pass"]
@@ -51,8 +53,8 @@ def test_displaced_speed_pixels_fail(capture):
 def test_stale_composite_is_rejected(capture, tmp_path):
     other = tmp_path / "changed.png"
     image, metadata = measure_oem_ui.load_capture(capture)
-    image.putpixel((0, 0), (255, 0, 0))
-    image.save(other)
+    image.set_at((0, 0), (255, 0, 0))
+    pygame.image.save(image, str(other))
     other.with_suffix(".json").write_text(json.dumps(metadata))
     with pytest.raises(ValueError, match="composite changed"):
         measure_oem_ui.load_capture(other)
