@@ -70,11 +70,11 @@ past 9. There is no needle.
 | ODO / TRIP window | **(39 %, 58.2 %) 21 × 11.8 %**; digit heights 5.2 % / 4.8 % H, centres y 66.1 % |
 | TEMP | horizontal 8-block bar **(13.5 %, 58.6 %) 12.5 × 3 %**, C/H clear of both ends |
 | FUEL | horizontal 16-block bar **(74.7 %, 58.6 %) 12.5 × 3 %**, E/F clear of both ends |
-| Side symbols | shared coolant / fuel SVG masters; silhouette height **2.2 % W** |
+| Side symbols | shared coolant / fuel SVG masters; silhouette height **2.2 % W**; coolant above the cold end at **(15 %, 53 %)** |
 | Arc telltales | left (33.5 %, 45.5 %), right (67.5 %, 45.5 %), high beam (72 %, 53.5 %) |
 | Warning pockets | ABS left; low fuel, belt and SRS right, centred y 68.2 % |
 | Lower strip | brake, battery, oil, CEL, immobilizer, maintenance, cruise, EPS, trunk, door |
-| Hardware | retained −/+, SEL/TRIP and bezel marks; custom Honda/S2000 lockup is not factory face printing |
+| Hardware | retained −/+, SEL/TRIP and bezel marks; all four button centres on **81.5 % H**; custom Honda/S2000 lockup is not factory face printing |
 
 These are photo-derived design proportions, **not a pixel-perfect OEM measurement**. Lamp locations were checked against Honda's 2003 manual p.45 and 2005 manual p.39; those are North American diagrams, so market-specific legends still need checking against the actual 2001 Australian car. The brake (!) symbol is retained from this project's reference variant.
 
@@ -99,9 +99,17 @@ and points as squares. Speed/odo/trip use red segments without software bloom or
 
 ## Fonts
 
-Tach numerals and legends: **M PLUS Rounded 1c** Bold / ExtraBold (OFL,
-`assets/fonts/`). READY card: Oxanium. Both bundled for pygame and the
-harness.
+Tach numerals and the RPM legend use the shared SVG alphabet in
+`assets/fonts/oem-tach/`, traced from the supplied glyph plate. The source
+manifest records crop coordinates, threshold and reference hash; it is a
+ten-glyph reconstruction, not an identified OEM commercial font. The nominal
+numeral size and arc anchors are unchanged. `scripts/export_tach_font.py`
+exports the same outlines to React; `--trace` rebuilds the masters with potrace.
+
+Other legends retain **M PLUS Rounded 1c** Bold / ExtraBold (OFL,
+`assets/fonts/`). READY retains Oxanium. Both families are bundled for
+pygame and the harness. LCD dimensions and mitred segment geometry remain
+as specified above.
 
 ## What not to regress
 
