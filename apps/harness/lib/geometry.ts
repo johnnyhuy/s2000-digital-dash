@@ -278,14 +278,12 @@ export function hatchSpans(t: ArcSpec, side: "left" | "right"): Array<[number, n
   const gap = t.cell_gap_deg;
   const start = side === "left" ? t.a0_deg - t.hatch_deg : t.a9_deg;
   const end = side === "left" ? t.a0_deg : t.a9_deg + t.hatch_deg;
-  const usable = end - start - 2 * gap;
-  const cell = (usable - (t.hatch_n - 1) * gap) / t.hatch_n;
-  if (cell <= 0) return [];
+  const pitch = (end - start) / t.hatch_n;
+  const width = Math.min(t.hatch_w_deg, pitch - gap);
+  if (width <= 0) return [];
   const out: Array<[number, number]> = [];
-  let a = start + gap;
   for (let i = 0; i < t.hatch_n; i += 1) {
-    out.push([a, a + cell]);
-    a += cell + gap;
+    out.push([start + i * pitch + (pitch - width) / 2, start + i * pitch + (pitch + width) / 2]);
   }
   return out;
 }
