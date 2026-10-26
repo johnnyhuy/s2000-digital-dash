@@ -1,0 +1,12 @@
+{
+  "svg_sha256": "889ec7b8cdba4181c248d3aec317a79d917cf148b65153262a4b4c40efa96d50",
+  "ui_module": [
+    0,
+    18.2340425531915,
+    1000,
+    425.531914893617
+  ],
+  "style": "ap1",
+  "capture_method": "React server renderer; SVG rasterization, no browser CSS",
+  "image_sha256": "f3cc2c2ca9f574d014737176f2a4d78346d1fecf6dec26d3e6cb7052e2c7b71d"
+}

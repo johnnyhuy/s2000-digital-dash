@@ -26,6 +26,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
+os.environ.setdefault("DASH_CLOCK", "12:34")
 
 # Hamming distance allowed on a 16×16 average hash (font/AA drift)
 AHASH_TOLERANCE = 18

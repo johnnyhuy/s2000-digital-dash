@@ -13,6 +13,7 @@ import hashlib
 import json
 import math
 import os
+from collections import Counter
 from pathlib import Path
 
 os.environ.setdefault("PYGAME_HIDE_SUPPORT_PROMPT", "1")
@@ -65,16 +66,19 @@ def load_capture(composite: Path) -> tuple[pygame.Surface, dict]:
     return image, metadata
 
 
-def pixel_bounds(image: pygame.Surface, module: list[float], roi: tuple, predicate) -> tuple | None:
+def pixel_bounds(image: pygame.Surface, module: list[float], roi: tuple, predicate, min_row_pixels=1) -> tuple | None:
     """Inclusive bounds of matching pixels in a normalized module ROI."""
     mx, my, mw, mh = module
     x0, y0, x1, y1 = roi
     points = [
         (x, y)
-        for y in range(math.ceil(my + y0 * mh), math.floor(my + y1 * mh) + 1)
-        for x in range(math.ceil(mx + x0 * mw), math.floor(mx + x1 * mw) + 1)
+        for y in range(max(0, math.ceil(my + y0 * mh)), min(image.get_height() - 1, math.floor(my + y1 * mh)) + 1)
+        for x in range(max(0, math.ceil(mx + x0 * mw)), min(image.get_width() - 1, math.floor(mx + x1 * mw)) + 1)
         if predicate(image.get_at((x, y)))
     ]
+    if min_row_pixels > 1:
+        rows = Counter(y for x, y in points)
+        points = [(x, y) for x, y in points if rows[y] >= min_row_pixels]
     if not points:
         return None
     xs, ys = zip(*points)
@@ -93,9 +97,10 @@ def measure(image: pygame.Surface, metadata: dict) -> dict:
     temp = pixel_bounds(image, module, (.12, .57, .27, .622), glass)
     fuel = pixel_bounds(image, module, (.74, .57, .88, .622), glass)
     coolant = pixel_bounds(image, module, (.12, .48, .162, .57), lambda p: min(p[:3]) > 180)
-    button_grey = lambda p: all(140 < c < 160 for c in p[:3])
-    sel = pixel_bounds(image, module, (.91, .70, .96, .86), button_grey)
-    trip = pixel_bounds(image, module, (.96, .70, 1.0, .86), button_grey)
+    button_grey = lambda p: min(p[:3]) > 100 and max(p[:3]) < 215 and max(p[:3]) - min(p[:3]) < 10
+    # Dense grey button bodies; ignore sparse antialias pixels from mph·km/h.
+    sel = pixel_bounds(image, module, (.91, .70, .96, .86), button_grey, mw * .01)
+    trip = pixel_bounds(image, module, (.96, .70, 1.0, .86), button_grey, mw * .01)
     values = {
         "band_top_pct": (band[1] - my) / mh * 100 if band else None,
         "speed_height_pct": (speed[3] - speed[1] + 1) / mh * 100 if speed else None,
