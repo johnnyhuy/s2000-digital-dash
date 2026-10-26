@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "image_sha256": "a88ec253796db74950d71c58640b1f2d37ec626781a629df022fa1c3fa00f033",
+  "image_sha256": "d838381344decb6505add4fa0d49c448b43f7c2045195d1ae8adafc90e4a481c",
   "reference": "refs/oem/lit/lit_ap1_carspy_cluster.jpg",
   "reference_sha256": "94c6cd4e4d874c79d83db30ffe27c9fd63d03b5d859f20eb22130df817ba5c67",
   "style": "ap1",

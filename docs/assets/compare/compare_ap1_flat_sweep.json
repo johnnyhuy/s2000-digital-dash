@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "image_sha256": "802960573b26ce727dad72e052f498cfe2b78643fb984baf4ef51dc55a3b3f21",
+  "image_sha256": "44bffb0217b8bec9b523684d3d4d96c8269ddd8daad2e0775c9d41367964b4d2",
   "reference": "refs/flat/ap1_cluster_flat.png",
   "reference_sha256": "b5727c11180646d86207ea88080f3c919b68b69e75dedb41522d0d44af67d4cb",
   "style": "ap1",

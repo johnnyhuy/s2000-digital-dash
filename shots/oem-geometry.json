@@ -114,7 +114,7 @@
   ],
   "capture": {
     "schema": 1,
-    "image_sha256": "be3d318e9db6b3dbb0fab9fb0702284a8fb34fee404baac3ca52f152f49f7c68",
+    "image_sha256": "d1a307a7e54b24dc770ae017636bf669962d6e5c2b786b7df1b2590ad29c8504",
     "reference": "refs/oem/lit/lit_ap1_carspy_cluster.jpg",
     "reference_sha256": "94c6cd4e4d874c79d83db30ffe27c9fd63d03b5d859f20eb22130df817ba5c67",
     "style": "ap1",

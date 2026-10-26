@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "image_sha256": "00e60eef6cb43d9b3ff8d7984233eeb81edd8c0a4cc37bdce30e91f32f1357af",
+  "image_sha256": "4fd0ed7c78565fdb581ec3ae1fecab3e59a08fc80a35596dc51eedb4d7c91f5d",
   "reference": "refs/oem/ap2/ap2_s2ki_arched_gauges.jpg",
   "reference_sha256": "35db3be580b6def1e3d0f161fc28c465bdbddb0c4344725595b47be09af784c9",
   "style": "ap2",
