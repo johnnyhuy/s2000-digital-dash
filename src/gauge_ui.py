@@ -42,6 +42,7 @@ from face_spec import (  # noqa: E402
     spec_for,
 )
 from face_style import DEFAULT_FACE_STYLE, FaceStyle, parse_face_style  # noqa: E402
+from motion_spec import SMOOTH_TAU_S  # noqa: E402
 from lcd_digits import blit_digits, composite_bloom, lcd_window  # noqa: E402
 from oem_icons import (  # noqa: E402
     LAMP_AMBER,
@@ -372,7 +373,9 @@ def lerp_colour(
 
 def exp_smooth(current: float, target: float, dt: float, tau: float) -> float:
     """Frame-rate independent approach toward target (tau ≈ seconds to settle)."""
-    if tau <= 0 or dt <= 0:
+    if dt <= 0:
+        return current
+    if tau <= 0:
         return target
     k = 1.0 - math.exp(-dt / tau)
     return current + (target - current) * k
@@ -592,11 +595,8 @@ class DisplayState:
         self.trip_km = max(0.0, self.odo_km - self.trip_origin)
 
     def follow(self, telem: Telemetry, dt: float) -> None:
-        self.rpm = exp_smooth(self.rpm, float(telem.rpm), dt, 0.18)
-        self.speed_kmh = exp_smooth(self.speed_kmh, float(telem.speed_kmh), dt, 0.12)
-        self.fuel_pct = exp_smooth(self.fuel_pct, float(telem.fuel_pct), dt, 0.32)
-        self.ect_c = exp_smooth(self.ect_c, float(telem.ect_c), dt, 0.38)
-        self.batt_v = exp_smooth(self.batt_v, float(telem.batt_v), dt, 0.20)
+        for key, tau in SMOOTH_TAU_S.items():
+            setattr(self, key, exp_smooth(getattr(self, key), float(getattr(telem, key)), dt, tau))
         self.odo_km = float(telem.odo_km)
         self.lamps = dict(telem.lamps)
         if self.trip_origin is None:
@@ -1099,17 +1099,14 @@ def draw_tach_fill(pygame, surf, rpm: float, bloom, g: FaceGeom | None = None) -
     t = g.spec.tach
     step = t.cell_rpm
     rpm = clamp(rpm, 0.0, RPM_MAX * 1.06)
-    if rpm < step * 0.5:
+    if rpm < step:
         return
     a_lit = t.angle_deg(rpm)
     cells = int(min(rpm, RPM_MAX) // step)
-    for i in range(cells + 1):
+    for i in range(cells):
         r0 = i * step
-        r1 = min(rpm, r0 + step)
-        if r1 - r0 < 1.0:
-            continue
-        closed = r1 >= r0 + step
-        d0, d1 = t.cell_window(r0, r1, closed=closed)
+        r1 = r0 + step
+        d0, d1 = t.cell_window(r0, r1)
         if d1 <= d0:
             continue
         col = HATCH_RED_LIT if r0 >= t.redline_rpm else AMBER
