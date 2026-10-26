@@ -304,6 +304,21 @@ class FaceGeomTests(unittest.TestCase):
         self.assertEqual(AP1.temp_segs, 8)
         self.assertEqual(AP1.fuel_segs, 16)
 
+    def test_coolant_symbol_sits_above_cold_end(self) -> None:
+        # Car Spy lit photo: thermometer above the left end of the TEMP
+        # window, not above H in the centre well. Keep the locked bar intact.
+        self.assertAlmostEqual(AP1.temp_icon.x, 0.150, delta=0.010)
+        self.assertLess(AP1.temp_icon.y, AP1.temp.y)
+        self.assertGreaterEqual(AP1.temp_icon.x, AP1.temp.x)
+        self.assertLess(AP1.temp_icon.x, AP1.temp.x + AP1.temp.w / 4)
+
+    def test_sel_trip_share_the_lower_hardware_baseline(self) -> None:
+        # The lit reference puts all four button centres on the same lower
+        # hardware row; the side warning pockets sit above them.
+        for button in (AP1.btn_sel, AP1.btn_trip):
+            self.assertAlmostEqual(button.y, AP1.btn_minus.y, delta=0.001)
+            self.assertGreater(button.y, AP1.panel_right.y + AP1.panel_right.h)
+
     def test_well_elements_clear_tach_numerals(self) -> None:
         """Windows, pictograms and lamp wells must not sit on a tach numeral."""
         mx, my, mw, mh = FACE.module
@@ -565,4 +580,3 @@ class SourceTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
