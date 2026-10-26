@@ -64,6 +64,9 @@ describe("face geometry (shared faceSpec.json lock)", () => {
     }
     const right = hatchSpans(t, "right");
     assert.equal(right.length, t.hatch_n);
+    // Lit AP1 photo: five thin strokes occupy roughly a third of the overrun.
+    const coverage = right.reduce((sum, [a, b]) => sum + b - a, 0) / t.hatch_deg;
+    near(coverage, 0.327, 0.10);
     assert.ok(right[0][0] > t.a9_deg);
     for (let i = 1; i < right.length; i += 1) {
       assert.ok(right[i][0] - right[i - 1][1] >= t.cell_gap_deg * 0.99);

@@ -72,7 +72,7 @@ class ArcSpec:
     first_div: float = 0.60     # OEM squeezes 0→1 to ~60 % of a division
     hatch_deg: float = 5.5      # band overrun past 0 and 9 (5 blocks each)
     hatch_n: int = 5
-    hatch_w_deg: float = 0.62   # unused: hatch_spans owns block width
+    hatch_w_deg: float = 0.33   # thin OEM strokes, ~30% ink across the overrun
     hatch_inner_over: float = 0.0    # W — hatches stay inside the band (do not cross the ticks)
     cell_rpm: int = 200         # bar-graph step; 8→9 is five blocks (OEM redline)
     cell_gap_deg: float = 0.16  # black well between cells (not a drawn line)
@@ -159,17 +159,12 @@ class ArcSpec:
             start, end = self.a0_deg - self.hatch_deg, self.a0_deg
         else:
             start, end = self.a9_deg, self.a9_deg + self.hatch_deg
-        pad = gap
-        usable = (end - start) - 2.0 * pad
-        cell = (usable - (n - 1) * gap) / n
-        if cell <= 0.0:
+        pitch = (end - start) / n
+        width = min(self.hatch_w_deg, pitch - gap)
+        if width <= 0.0:
             return []
-        a = start + pad
-        spans: list[tuple[float, float]] = []
-        for _ in range(n):
-            spans.append((a, a + cell))
-            a += cell + gap
-        return spans
+        return [(start + i * pitch + (pitch - width) / 2,
+                 start + i * pitch + (pitch + width) / 2) for i in range(n)]
 
     def hatch_angles(self, side: str) -> list[float]:
         """Centre angles of the five printed blocks past 0 (left) or 9 (right)."""
