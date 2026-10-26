@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "image_sha256": "80c89958ce22bad4bc2b7c62d797dd98253a90441ff16c7240335730ca96d602",
+  "reference": "refs/flat/ap1_cluster_flat.png",
+  "reference_sha256": "b5727c11180646d86207ea88080f3c919b68b69e75dedb41522d0d44af67d4cb",
+  "style": "ap1",
+  "ui_panel": [
+    1200,
+    36,
+    924,
+    520
+  ],
+  "ui_module": [
+    1237.05625,
+    102.44444444444444,
+    849.8875,
+    361.59259259259255
+  ]
+}

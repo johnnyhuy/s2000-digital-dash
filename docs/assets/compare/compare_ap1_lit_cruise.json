@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "image_sha256": "065c04bfff34a330f2f704d36164fb56e71d0dfb75920c173dc3511c36381500",
+  "reference": "refs/oem/lit/lit_ap1_carspy_cluster.jpg",
+  "reference_sha256": "94c6cd4e4d874c79d83db30ffe27c9fd63d03b5d859f20eb22130df817ba5c67",
+  "style": "ap1",
+  "ui_panel": [
+    703,
+    36,
+    924,
+    520
+  ],
+  "ui_module": [
+    740.05625,
+    102.44444444444444,
+    849.8875,
+    361.59259259259255
+  ]
+}

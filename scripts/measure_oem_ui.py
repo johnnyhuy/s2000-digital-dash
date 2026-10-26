@@ -21,17 +21,21 @@ import pygame
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_COMPOSITE = ROOT / "docs/assets/compare/compare_ap1_lit_live.png"
 
-# Independent acceptance intervals from DIMENSIONS.md. Approximate landmarks
-# have the same 1.5 percentage-point allowance as FaceGeomTests; raster edges
-# additionally allow one output pixel. Do not derive expectations from the UI.
+# Independent acceptance intervals from DIMENSIONS.md: half a percentage
+# point, plus one output pixel for raster edges. Never derive them from the UI.
 LOCK = {
-    "band_top_pct": (10.0, 1.5),
-    "speed_height_pct": (19.4, 1.0),
-    "speed_right_pct": (59.0, 1.0),
+    "band_top_pct": (10.0, 0.5),
+    "speed_height_pct": (19.4, 0.5),
+    "speed_right_pct": (59.0, 0.5),
     "temp_left_pct": (13.5, 0.5),
     "temp_width_pct": (12.5, 0.5),
     "fuel_left_pct": (74.7, 0.5),
     "fuel_width_pct": (12.5, 0.5),
+    # Lit Car Spy reference: thermometer over the cold end; buttons share
+    # the lower hardware row. Raster tolerances are in percentage points.
+    "coolant_x_pct": (15.0, 0.5),
+    "sel_y_pct": (81.5, 0.5),
+    "trip_y_pct": (81.5, 0.5),
 }
 
 
@@ -88,6 +92,10 @@ def measure(image: pygame.Surface, metadata: dict) -> dict:
     speed = pixel_bounds(image, module, (.39, .35, .60, .568), red)
     temp = pixel_bounds(image, module, (.12, .57, .27, .622), glass)
     fuel = pixel_bounds(image, module, (.74, .57, .88, .622), glass)
+    coolant = pixel_bounds(image, module, (.12, .48, .162, .57), lambda p: min(p[:3]) > 180)
+    button_grey = lambda p: all(140 < c < 160 for c in p[:3])
+    sel = pixel_bounds(image, module, (.91, .70, .96, .86), button_grey)
+    trip = pixel_bounds(image, module, (.96, .70, 1.0, .86), button_grey)
     values = {
         "band_top_pct": (band[1] - my) / mh * 100 if band else None,
         "speed_height_pct": (speed[3] - speed[1] + 1) / mh * 100 if speed else None,
@@ -96,11 +104,14 @@ def measure(image: pygame.Surface, metadata: dict) -> dict:
         "temp_width_pct": (temp[2] - temp[0] + 1) / mw * 100 if temp else None,
         "fuel_left_pct": (fuel[0] - mx) / mw * 100 if fuel else None,
         "fuel_width_pct": (fuel[2] - fuel[0] + 1) / mw * 100 if fuel else None,
+        "coolant_x_pct": ((coolant[0] + coolant[2]) / 2 - mx) / mw * 100 if coolant else None,
+        "sel_y_pct": ((sel[1] + sel[3]) / 2 - my) / mh * 100 if sel else None,
+        "trip_y_pct": ((trip[1] + trip[3]) / 2 - my) / mh * 100 if trip else None,
     }
     checks = []
     for key, (expected, tolerance) in LOCK.items():
         value = values[key]
-        axis = mh if key in ("band_top_pct", "speed_height_pct") else mw
+        axis = mh if key in ("band_top_pct", "speed_height_pct", "sel_y_pct", "trip_y_pct") else mw
         delta = value - expected if value is not None else None
         checks.append({
             "landmark": key, "expected_pct": expected, "measured_pct": value,

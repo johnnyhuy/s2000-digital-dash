@@ -65,3 +65,22 @@ def test_stale_composite_is_rejected(capture, tmp_path):
     with pytest.raises(SystemExit) as failure:
         measure_oem_ui.main(["--composite", str(other), "--check"])
     assert failure.value.code == 2
+
+
+@pytest.mark.parametrize("landmark,roi,shift", [
+    ("coolant_x_pct", (.12, .48, .162, .57), (.13, 0)),
+    ("sel_y_pct", (.91, .77, .955, .855), (0, -.07)),
+    ("trip_y_pct", (.957, .77, 1, .855), (0, -.07)),
+])
+def test_old_hardware_positions_fail(capture, landmark, roi, shift):
+    image, metadata = measure_oem_ui.load_capture(capture)
+    mx, my, mw, mh = metadata["ui_module"]
+    x0, y0, x1, y1 = roi
+    rect = pygame.Rect(round(mx + x0 * mw), round(my + y0 * mh),
+                       round((x1 - x0) * mw), round((y1 - y0) * mh))
+    hardware = image.subsurface(rect).copy()
+    image.fill((0, 0, 0), rect)
+    image.blit(hardware, (rect.x + round(shift[0] * mw), rect.y + round(shift[1] * mh)))
+    report = measure_oem_ui.measure(image, metadata)
+    check = next(c for c in report["checks"] if c["landmark"] == landmark)
+    assert not check["pass"]
