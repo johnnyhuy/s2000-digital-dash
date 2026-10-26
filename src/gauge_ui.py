@@ -931,21 +931,18 @@ def _draw_band_unlit(pygame, surf, g: FaceGeom) -> None:
 
 
 def _draw_numerals(pygame, surf, g: FaceGeom, col=WHITE) -> None:
+    from tach_font import glyph
+
     t = g.spec.tach
-    font = _font(pygame, int(g.w(t.num_size)), kind="round")
+    # Preserve the existing ink height and anchors, replace only the alphabet.
+    height = max(1, round(g.w(t.num_size) * 0.72))
     for i in range(10):
         x, y = g.arc_px(t.r_num, t.angle_deg(i * 1000))
-        img = font.render(str(i), True, col)
+        img = glyph(pygame, str(i), height, col)
         surf.blit(img, img.get_rect(center=(int(round(x)), int(round(y)))))
     zx, zy = g.arc_px(t.r_num, t.angle_deg(0))
-    blit_text(
-        surf,
-        _font(pygame, int(g.w(0.0095)), kind="round"),
-        "x1000r/min",
-        col,
-        (int(zx + g.w(g.spec.rpm_dx)), int(zy + g.w(g.spec.rpm_dy))),
-        "center",
-    )
+    legend = glyph(pygame, "rpm", max(1, round(g.w(0.0095) * 0.72)), col)
+    surf.blit(legend, legend.get_rect(center=(int(zx + g.w(g.spec.rpm_dx)), int(zy + g.w(g.spec.rpm_dy)))))
 
 
 def _draw_windows_off(pygame, surf, g: FaceGeom, on: bool) -> None:
