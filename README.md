@@ -139,7 +139,7 @@ uv sync --extra dev
 
 ## Web cluster harness (no Pi)
 
-Shareable Next.js demo of the same face, drawn as one SVG straight from the exported lock (`apps/harness/lib/faceSpec.json`) - red mitred 7-seg, amber bar-graph tach, side block bars, telltale strip and buttons all share pygame's numbers. Client-side mock loop (play/pause, **AP1 / AP2** face, idle / cruise / VTEC / warn) and the same sweep → READY → reveal boot as the Pi UI. Cluster type is self-hosted M PLUS Rounded 1c; telltales are inline ISO pictograms.
+Shareable Next.js demo of the same face, drawn as one SVG straight from the exported lock (`apps/harness/lib/faceSpec.json`) - red mitred 7-seg, amber bar-graph tach, side block bars, telltale strip and buttons all share pygame's numbers. Client-side mock loop (play/pause, **AP1 / AP2** face, idle / cruise / VTEC / warn) and the same sweep → READY → reveal boot as the Pi UI. Tach lettering uses the shared SVG alphabet traced from the supplied glyph plate; other legends use self-hosted M PLUS Rounded 1c. Telltales are inline ISO pictograms.
 
 <p align="center">
   <img src="docs/assets/web-ap1-cruise.png" alt="Web AP1 cruise: digital speed, amber bar graph and shared warning pictograms" width="960" />
@@ -221,6 +221,10 @@ uv run python src/gauge_ui.py --smoke --screenshot shots
 
 # OEM | UI side-by-sides
 uv run python scripts/compare_oem.py
+
+# Reference acceptance: pixel dimensions, colour, hatch ink, font and motion
+node apps/harness/scripts/capture-face.cjs shots/web
+uv run python scripts/accept_oem.py --check --web-dir shots/web --output shots/oem-acceptance.json
 
 # Rebuild stills + 30 fps intro GIF / 60 fps VP9 (needs ffmpeg)
 uv run python scripts/bake_showcase.py
