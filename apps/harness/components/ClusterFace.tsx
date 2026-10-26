@@ -11,7 +11,6 @@ import {
   radialTickPath,
   rectPx,
   sideArchSector,
-  cellWindow,
   divAt,
   scaleCells,
   tachAngleDeg,
@@ -143,14 +142,14 @@ function TachFill({ g, rpm }: { g: FaceGeom; rpm: number }) {
   const t = g.spec.tach;
   const step = t.cell_rpm;
   const r = Math.max(0, Math.min(RPM_MAX * 1.06, rpm));
-  if (r < step * 0.5) return null;
+  if (r < step) return null;
   const aLit = t.a0_deg + divAt(t, r) * t.deg_per_div;
+  const printedCells = scaleCells(t);
   const cells = [];
-  for (let i = 0; i <= Math.floor(Math.min(r, RPM_MAX) / step); i += 1) {
+  for (let i = 0; i < Math.floor(Math.min(r, RPM_MAX) / step); i += 1) {
     const r0 = i * step;
-    const r1 = Math.min(r, r0 + step);
-    if (r1 - r0 < 1) continue;
-    const [d0, d1] = cellWindow(t, r0, r1, r1 >= r0 + step);
+    const cell = printedCells[i];
+    const { d0, d1 } = cell;
     if (d1 <= d0) continue;
     cells.push(<path key={r0} d={arcPath(g, t.r_out, t.r_in, d0, d1, 2)} fill={r0 >= t.redline_rpm ? HATCH_RED_LIT : AMBER} />);
   }

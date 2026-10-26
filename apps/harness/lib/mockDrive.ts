@@ -10,6 +10,7 @@ import {
   emptyLamps,
   type Telemetry,
 } from "./protocol.ts";
+import smoothTau from "./motionSpec.json" with { type: "json" };
 
 export const START_ODO_KM = 142_857.3;
 
@@ -32,7 +33,8 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 export function expSmooth(current: number, target: number, dt: number, tau: number): number {
-  if (tau <= 0 || dt <= 0) return target;
+  if (dt <= 0) return current;
+  if (tau <= 0) return target;
   const k = 1 - Math.exp(-dt / tau);
   return current + (target - current) * k;
 }
@@ -187,11 +189,11 @@ export function followDisplay(
   tripOrigin: number,
 ): DisplayState {
   return {
-    rpm: expSmooth(current.rpm, target.rpm, dt, 0.22),
-    speed_kmh: expSmooth(current.speed_kmh, target.speed_kmh, dt, 0.14),
-    fuel_pct: expSmooth(current.fuel_pct, target.fuel_pct, dt, 0.35),
-    ect_c: expSmooth(current.ect_c, target.ect_c, dt, 0.4),
-    batt_v: expSmooth(current.batt_v, target.batt_v, dt, 0.22),
+    rpm: expSmooth(current.rpm, target.rpm, dt, smoothTau.rpm),
+    speed_kmh: expSmooth(current.speed_kmh, target.speed_kmh, dt, smoothTau.speed_kmh),
+    fuel_pct: expSmooth(current.fuel_pct, target.fuel_pct, dt, smoothTau.fuel_pct),
+    ect_c: expSmooth(current.ect_c, target.ect_c, dt, smoothTau.ect_c),
+    batt_v: expSmooth(current.batt_v, target.batt_v, dt, smoothTau.batt_v),
     odo_km: target.odo_km,
     lamps: { ...target.lamps },
     trip_km: Math.max(0, target.odo_km - tripOrigin),
