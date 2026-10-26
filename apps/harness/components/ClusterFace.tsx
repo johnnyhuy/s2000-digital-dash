@@ -28,6 +28,7 @@ import {
 } from "@/lib/geometry";
 import type { CSSProperties } from "react";
 import { SevenSeg } from "./SevenSeg";
+import { TachGlyph, TACH_DIGITS } from "./TachGlyphs";
 import { PICTOGRAMS } from "./LampIcons";
 import { DEFAULT_FACE_STYLE, type FaceStyle } from "@/lib/faceStyle";
 import { type IntroPhase, revealRpm, smoothstep } from "@/lib/intro";
@@ -126,17 +127,13 @@ function TachPrint({ g, dim }: { g: FaceGeom; dim?: boolean }) {
       {hatch}
       <path d={arcPath(g, t.r_line + t.line_w / 2, t.r_line - t.line_w / 2, t.a0_deg, t.a9_deg)} fill={dim ? DIM : WHITE} />
       {ticks}
-      {Array.from({ length: 10 }, (_, i) => {
+      {TACH_DIGITS.map((digit, i) => {
         const p = tachNumXY(i / 9, g);
         return (
-          <text key={i} className="tach-num" x={p.x} y={p.y + numSize * 0.36} fontSize={numSize} fill={dim ? DIM : WHITE} textAnchor="middle">
-            {i}
-          </text>
+          <TachGlyph key={digit} glyph={digit} x={p.x} y={p.y} height={numSize * 0.72} fill={dim ? DIM : WHITE} />
         );
       })}
-      <text className="unit-label" x={zero.x + wpx(g, g.spec.rpm_dx)} y={zero.y + wpx(g, g.spec.rpm_dy + 0.003)} fontSize={wpx(g, 0.009)} fill={dim ? DIM : WHITE} textAnchor="middle">
-        x1000r/min
-      </text>
+      <TachGlyph glyph="rpm" x={zero.x + wpx(g, g.spec.rpm_dx)} y={zero.y + wpx(g, g.spec.rpm_dy)} height={wpx(g, 0.0095) * 0.72} fill={dim ? DIM : WHITE} />
     </g>
   );
 }

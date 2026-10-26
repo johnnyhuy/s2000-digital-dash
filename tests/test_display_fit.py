@@ -9,7 +9,8 @@ import pygame
 import pytest
 
 from face_spec import AP1, AP2, MODULE_ASPECT
-from gauge_ui import build_face_geom, _font
+from gauge_ui import build_face_geom
+from tach_font import glyph as tach_glyph
 from lcd_digits import measure_text
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -55,9 +56,8 @@ def test_actual_digit_runs_fit_their_windows(style, size):
 def test_numeral_ink_clears_central_windows(style):
     pygame.font.init()
     g = build_face_geom(style=style)
-    font = _font(pygame, int(g.w(g.spec.tach.num_size)), kind="round")
     for i in range(10):
-        glyph = font.render(str(i), True, "white")
+        glyph = tach_glyph(pygame, str(i), round(g.w(g.spec.tach.num_size) * .72), (255, 255, 255))
         cx, cy = g.arc_px(g.spec.tach.r_num, g.spec.tach.angle_deg(i * 1000))
         box = glyph.get_bounding_rect().move(glyph.get_rect(center=(round(cx), round(cy))).topleft)
         for window in (g.speed_win, g.odo_win):
