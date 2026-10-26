@@ -24,6 +24,7 @@ sys.path.insert(0, str(ROOT))
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
+os.environ.setdefault("DASH_CLOCK", "12:34")
 
 
 def _init():

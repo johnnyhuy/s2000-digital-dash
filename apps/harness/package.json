@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:render": "node scripts/capture-face.cjs --check",
     "test": "node --experimental-strip-types --test lib/protocol.test.ts lib/mockDrive.test.ts lib/faceStyle.test.ts lib/geometry.test.ts lib/intro.test.ts"
   },
   "dependencies": {
